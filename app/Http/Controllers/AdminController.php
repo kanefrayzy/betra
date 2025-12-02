@@ -824,31 +824,6 @@ class AdminController extends Controller
             $updatedFields['username'] = $r->get('username');
             $updatedFields['balance'] = $r->get('balance');
 
-            $tournamentPoints = $r->get('tournament_points');
-            if ($tournamentPoints !== null) {
-                $activeTournament = DB::table('tournaments')
-                    ->where('status', 'active')
-                    ->where('start_date', '<=', now())
-                    ->where('end_date', '>=', now())
-                    ->first();
-
-                if ($activeTournament) {
-                    DB::table('tournament_leaderboard')->updateOrInsert(
-                        [
-                            'tournament_id' => $activeTournament->id,
-                            'user_id' => $r->get('id')
-                        ],
-                        [
-                            'turnover' => DB::raw("$tournamentPoints"),
-                            'updated_at' => now()
-                        ]
-                    );
-
-                    // Добавляем запись в лог об изменении очков
-                    $message = "Администратор {$currentUser->username} изменил турнирные очки пользователя ID {$r->get('id')} на {$tournamentPoints}";
-                    \Log::info($message);
-                }
-            }
             // Обработка реферального процента
             $refPercentage = $r->get('ref_percentage');
             if ($refPercentage !== null) {
