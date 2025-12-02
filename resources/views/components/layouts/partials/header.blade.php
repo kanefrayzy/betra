@@ -6,7 +6,7 @@
             <!-- Логотип (десктоп) -->
             <div class="hidden lg:flex">
                 <a href="/" wire:navigate class="mr-8">
-                    <img src="/assets/images/logo.png" alt="Flash" class="h-24">
+                    <img src="/assets/images/logo.png" alt="Flash" class="h-10">
                 </a>
             </div>
 
