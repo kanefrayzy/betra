@@ -36,7 +36,6 @@ class AppInitializeMiddleware
             [$matchingSystems, $otherSystems] = $this->systemFilter($payment_handlers, $user);
             $availableBonuses = $this->getBonusesForUser($user);
             View::share('ref', UserShareDataService::getRef($user));
-            View::share('ins', UserShareDataService::getIns($user));
             View::share(RankService::progress($user));
             View::share('matchingHandlers', $matchingHandlers);
             View::share('otherHandlers', $otherHandlers);
