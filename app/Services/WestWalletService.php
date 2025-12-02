@@ -23,14 +23,13 @@ class WestWalletService
 
     /**
      * Генерация HMAC подписи для запроса
-     * Формат: HMAC-SHA256(timestamp + json_body, private_key)
+     * Формат согласно документации: HMAC-SHA256(timestamp + json_dumps(data), private_key)
+     * ensure_ascii=False в Python = JSON_UNESCAPED_UNICODE в PHP
      */
     private function generateSignature(int $timestamp, array $data = []): string
     {
-        // Сортируем ключи для консистентности
         if (!empty($data)) {
-            ksort($data);
-            $jsonData = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
         } else {
             $jsonData = '';
         }
@@ -42,7 +41,7 @@ class WestWalletService
             'data' => $data,
             'jsonData' => $jsonData,
             'message' => $message,
-            'privateKey' => substr($this->privateKey, 0, 10) . '...'
+            'signature' => hash_hmac('sha256', $message, $this->privateKey)
         ]);
         
         return hash_hmac('sha256', $message, $this->privateKey);
@@ -55,7 +54,8 @@ class WestWalletService
     {
         try {
             $timestamp = time();
-            $signature = $this->generateSignature($timestamp, $method === 'POST' ? $data : []);
+            // Для GET и POST запросов всегда передаем data в generateSignature
+            $signature = $this->generateSignature($timestamp, $data);
 
             $headers = [
                 'Content-Type' => 'application/json',
@@ -145,16 +145,21 @@ class WestWalletService
 
         $response = $this->makeRequest('/address/generate', 'POST', $data);
 
-        if (isset($response['error']) && $response['error'] !== 'ok') {
+        if (!isset($response['error']) || $response['error'] !== 'ok' || !isset($response['data'])) {
             Log::error('WestWallet Address Generation Failed', [
                 'user_id' => $user->id,
                 'currency' => $currency,
                 'response' => $response
             ]);
 
+            $errorMsg = 'Не удалось сгенерировать адрес';
+            if (isset($response['error'])) {
+                $errorMsg .= ': ' . $response['error'];
+            }
+
             return [
                 'error' => true,
-                'message' => $response['message'] ?? 'Не удалось сгенерировать адрес'
+                'message' => $errorMsg
             ];
         }
 
