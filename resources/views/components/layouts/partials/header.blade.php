@@ -1,31 +1,24 @@
 <header class="bg-customHeader sticky top-0 z-20 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-gradient-to-r after:from-white/5 after:via-white/10 after:to-white/5">
 
     <div class="container mx-auto flex h-20 items-center justify-between px-4">
-        <!-- Левая часть -->
         <div class="flex items-center">
-            <!-- Логотип (десктоп) -->
             <div class="hidden lg:flex">
                 <a href="/" wire:navigate class="mr-8">
                     <img src="/assets/images/logo.png?v1" alt="Flash" class="h-10">
                 </a>
             </div>
-
-            <!-- Логотип (мобильный) -->
             <div class="lg:hidden">
                 <a href="/" wire:navigate>
                     <img src="/assets/images/logo-mobile.png?v1" alt="Flash" class="h-8">
                 </a>
             </div>
         </div>
-
-        <!-- Центральная часть - Баланс -->
         @auth
             <!-- Баланс на мобильных -->
             <div class="md:hidden">
                 <livewire:balance/>
             </div>
-            
-            <!-- Баланс на десктопе (по центру) -->
+      
             <div class="hidden md:block">
                 <livewire:balance/>
             </div>

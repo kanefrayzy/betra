@@ -26,7 +26,7 @@ class SlotsController extends Controller
     use Hashable;
 
     protected SlotegratorClient $client;
-    protected $transactionTimeout = 10;
+    protected $transactionTimeout = 2;
     protected $logger;
 
     public function __construct(SlotegratorClient $client)
@@ -204,6 +204,22 @@ class SlotsController extends Controller
     protected function handleTransaction($data, $type)
     {
         $startTime = microtime(true);
+        
+        // Логируем новые опциональные параметры
+        if (isset($data['transaction_datetime'])) {
+            $this->logger->debug('Transaction datetime provided', [
+                'transaction_datetime' => $data['transaction_datetime'],
+                'type' => $type
+            ]);
+        }
+        
+        if (isset($data['casino_request_retry_count'])) {
+            $this->logger->info('Retry attempt detected', [
+                'retry_count' => $data['casino_request_retry_count'],
+                'transaction_id' => $data['transaction_id'] ?? 'unknown'
+            ]);
+        }
+        
         return DB::transaction(function () use ($data, $type, $startTime) {
             $amount = round($data['amount'], 2);
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
@@ -247,8 +263,7 @@ class SlotsController extends Controller
     {
         return DB::transaction(function () use ($data) {
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
-            $betTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
-
+            
             // Проверка на существующую транзакцию возврата
             $existingRefundTransaction = Transaction::where('hash', $data['transaction_id'])->first();
             if ($existingRefundTransaction && $existingRefundTransaction->type === 'refund') {
@@ -256,11 +271,12 @@ class SlotsController extends Controller
                 return $this->getTransactionResponse($existingRefundTransaction->user, $existingRefundTransaction);
             }
 
-            // Если транзакция ставки не найдена
+            $betTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
+
+            // Если транзакция ставки не найдена - по API нужно сохранить refund и вернуть успех
             if (!$betTransaction) {
-
-
-                return $this->errorResponse('Bet transaction not found for refund');
+                $refundTransaction = $this->createRefundTransactionForNonExistentBet($user, $data);
+                return $this->getTransactionResponse($user, $refundTransaction);
             }
 
             // Если ставка существует, выполняем стандартную обработку возврата
@@ -271,6 +287,8 @@ class SlotsController extends Controller
 
     private function createRefundTransactionForNonExistentBet($user, $data)
     {
+        //  сохраняем refund без изменения баланса
+        // (т.к. ставки не было, значит деньги не списывались)
         return Transaction::create([
             'user_id' => $user->id,
             'amount' => $data['amount'],
@@ -283,7 +301,8 @@ class SlotsController extends Controller
                 'bet_transaction_id' => $data['bet_transaction_id'],
                 'amount' => $data['amount'],
                 'balance_before' => $user->balance,
-                'balance_after' => $user->balance + $data['amount']
+                'balance_after' => $user->balance,
+                'note' => 'No balance change - original bet not found'
             ])
         ]);
     }
@@ -330,6 +349,21 @@ class SlotsController extends Controller
 
     protected function createTransaction($user, $data, $type, $amount, $originalBalance)
     {
+        // Валидация типов выигрышей
+        $validWinTypes = [
+            'win', 'jackpot', 'freespin', 'bonus',
+            'pragmatic_prize_drop', 'pragmatic_tournament',
+            'promo', 'prize_drop', 'tournament',
+            'unaccounted_promo', 'loyalty_win'
+        ];
+        
+        if ($type === 'win' && isset($data['type']) && !in_array($data['type'], $validWinTypes)) {
+            $this->logger->warning('Unknown win type detected', [
+                'win_type' => $data['type'],
+                'game_uuid' => $data['game_uuid'] ?? 'unknown'
+            ]);
+        }
+        
         $game = Cache::remember("game_uuid:{$data['game_uuid']}", 3600, function () use ($data) {
             return SlotegratorGame::where('uuid', $data['game_uuid'])->first();
         });
@@ -462,20 +496,27 @@ class SlotsController extends Controller
     protected function processRollbackForTransaction($user, $transaction)
     {
         $amount = round($transaction->amount, 2);
+        
+        // Откатываем баланс в зависимости от ИСХОДНОГО типа транзакции
         if ($transaction->type === 'bet') {
-            $user->balance += $amount;
+            $user->balance += $amount; // Возвращаем ставку
         } elseif ($transaction->type === 'win') {
-            $user->balance -= $amount;
+            $user->balance -= $amount; // Забираем выигрыш
+        } elseif ($transaction->type === 'refund') {
+            $user->balance -= $amount; // Отменяем возврат
         }
         $user->save();
 
+        // ВАЖНО: НЕ меняем type! Только помечаем в context
+        $context = json_decode($transaction->context, true) ?? [];
+        $context['rollback'] = true;
+        $context['rollback_at'] = now()->toDateTimeString();
+        $context['original_amount'] = $amount;
+        
         $transaction->update([
-            'amount' => 0,
-            'type' => 'rollback',
-            'context' => json_encode(array_merge(
-                json_decode($transaction->context, true),
-                ['log' => 'rollback']
-            )),
+            'amount' => 0, // Обнуляем сумму
+            'status' => 'rollback', // Меняем статус
+            'context' => json_encode($context)
         ]);
     }
 
@@ -499,8 +540,42 @@ class SlotsController extends Controller
 
     protected function checkTokenValidity($user, $data): ?string
     {
-        $gameSession = $user->gameSession()->select('token')->first();
-        return (!$gameSession || $gameSession->token !== $data['session_id']) ? 'Invalid game session' : null;
+        $gameSession = $user->gameSession()->first();
+        
+        if (!$gameSession) {
+            return 'No active game session';
+        }
+        
+        // Проверка токена сессии
+        if ($gameSession->token !== $data['session_id']) {
+            return 'Invalid game session token';
+        }
+        
+        // валюта должна совпадать с текущей валютой пользователя
+        if ($data['currency'] !== $user->currency->symbol) {
+            $this->logger->warning('Currency mismatch during game session', [
+                'user_id' => $user->id,
+                'session_currency' => $data['currency'],
+                'current_currency' => $user->currency->symbol,
+                'session_id' => $data['session_id'],
+                'transaction_id' => $data['transaction_id'] ?? 'unknown'
+            ]);
+            return 'Currency mismatch - cannot change currency during active game session';
+        }
+        
+        // Проверка времени сессии
+        if ($gameSession->updated_at->diffInMinutes(now()) > 15) {
+            $this->logger->info('Game session expired', [
+                'user_id' => $user->id,
+                'session_age_minutes' => $gameSession->updated_at->diffInMinutes(now())
+            ]);
+            return 'Session expired';
+        }
+        
+        // Обновляем время последней активности
+        $gameSession->touch();
+        
+        return null;
     }
 
     protected function errorResponse($message)

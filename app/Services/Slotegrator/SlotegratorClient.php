@@ -21,54 +21,81 @@ class SlotegratorClient
         $this->baseUrl = config('services.slotegrator.base_url');
         $this->merchantId = config('services.slotegrator.merchant_id');
         $this->merchantKey = config('services.slotegrator.merchant_key');
-        $this->client = new Client();
+        
+        // Настройки HTTP клиента с timeout
+        $this->client = new Client([
+            'timeout' => 2.5,
+            'connect_timeout' => 1.0,
+        ]);
     }
 
     public function get($endpoint, $params = [])
     {
-        $response = $this->client->get($this->baseUrl . $endpoint, [
-            'query' => $params,
-            'headers' => $this->generateHeaders($params),
-        ]);
+        try {
+            $response = $this->client->get($this->baseUrl . $endpoint, [
+                'query' => $params,
+                'headers' => $this->generateHeaders($params),
+                'http_errors' => false
+            ]);
 
-        return json_decode($response->getBody()->getContents(), true);
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+
+            if ($statusCode !== 200) {
+                Log::error('Slotegrator GET error', [
+                    'endpoint' => $endpoint,
+                    'status' => $statusCode,
+                    'response' => $body
+                ]);
+                throw new Exception("API GET request failed with status {$statusCode}: {$body}");
+            }
+
+            return json_decode($body, true);
+
+        } catch (GuzzleException $e) {
+            Log::error('Slotegrator GET connection error', [
+                'endpoint' => $endpoint,
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception("Service unavailable: " . $e->getMessage());
+        }
     }
 
     public function post(string $endpoint, array $params = [])
     {
         try {
+            // application/x-www-form-urlencoded
             $options = [
-                'json' => $params, // Используем json вместо form_params
+                'form_params' => $params,
                 'headers' => $this->generateHeaders($params),
-                'http_errors' => false // Чтобы обрабатывать ошибки самостоятельно
+                'http_errors' => false
             ];
-
-            // Добавляем Bearer токен если требуется
-            if ($this->merchantKey === null && config('services.slotegrator.api_key')) {
-                $options['headers']['Authorization'] = 'Bearer '.config('services.slotegrator.api_key');
-            }
 
             $response = $this->client->post($this->baseUrl . $endpoint, $options);
 
-            // Обработка ошибок
-            if ($response->getStatusCode() !== 200) {
-                $body = $response->getBody()->getContents();
-                Log::error('Slotegrator API error', [
-                    'status' => $response->getStatusCode(),
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+
+            if ($statusCode !== 200) {
+                Log::error('Slotegrator POST error', [
+                    'endpoint' => $endpoint,
+                    'status' => $statusCode,
                     'response' => $body,
-                    'endpoint' => $endpoint
+                    'params' => $params
                 ]);
-                throw new \Exception("API request failed: ".$body);
+                throw new Exception("API POST request failed with status {$statusCode}: {$body}");
             }
 
-            return json_decode($body, true) ?: $body;
+            $decoded = json_decode($body, true);
+            return $decoded !== null ? $decoded : $body;
 
         } catch (GuzzleException $e) {
-            Log::error('Slotegrator connection error', [
+            Log::error('Slotegrator POST connection error', [
+                'endpoint' => $endpoint,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'params' => $params
             ]);
-            throw new \Exception("Service unavailable");
+            throw new Exception("Service unavailable: " . $e->getMessage());
         }
     }
 
@@ -103,7 +130,7 @@ class SlotegratorClient
         $headers = array_change_key_case($headers, CASE_LOWER);
 
         if (empty($headers['x-merchant-id'][0]) || empty($headers['x-timestamp'][0]) || empty($headers['x-nonce'][0]) || empty($headers['x-sign'][0])) {
-            throw new \Exception('Missing required headers for signature verification');
+            throw new Exception('Missing required headers for signature verification');
         }
 
         $verificationHeaders = [
@@ -112,6 +139,21 @@ class SlotegratorClient
             'X-Nonce' => $headers['x-nonce'][0],
         ];
 
+        // Проверка timestamp (макс 30 секунд разница по документации)
+        $timestamp = (int)$headers['x-timestamp'][0];
+        $currentTimestamp = Carbon::now()->timestamp;
+        $timeDifference = abs($currentTimestamp - $timestamp);
+
+        if ($timeDifference > 30) {
+            Log::warning('Slotegrator request expired', [
+                'request_timestamp' => $timestamp,
+                'current_timestamp' => $currentTimestamp,
+                'difference' => $timeDifference
+            ]);
+            throw new Exception('Request expired - timestamp difference exceeds 30 seconds');
+        }
+
+        // Проверка подписи
         $xSign = $headers['x-sign'][0];
         $mergedParams = array_merge($requestParams, $verificationHeaders);
         ksort($mergedParams);
@@ -119,7 +161,12 @@ class SlotegratorClient
         $expectedSign = hash_hmac('sha1', $hashString, $this->merchantKey);
 
         if ($xSign !== $expectedSign) {
-            throw new \Exception('Invalid sign');
+            Log::error('Slotegrator invalid signature', [
+                'expected' => $expectedSign,
+                'received' => $xSign,
+                'merchant_id' => $headers['x-merchant-id'][0] ?? 'unknown'
+            ]);
+            throw new Exception('Invalid signature');
         }
     }
 
