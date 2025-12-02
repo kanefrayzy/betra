@@ -12,7 +12,7 @@ class Balance extends Component
 {
     public float $balance = 0;
     public string $selectedCurrency = '';
-    public array $currencies = [];
+    public $currencies = [];
     
     protected $listeners = ['balanceUpdated' => 'refreshBalance'];
 
@@ -23,15 +23,39 @@ class Balance extends Component
             return;
         }
         $this->refreshBalance();
-        $this->selectedCurrency = $user->currency->symbol ?? '';
-        $this->currencies = Cache::remember('currency_symbols', 3600, function () {
-            return Currency::pluck('symbol')->toArray();
-        });
+        $this->selectedCurrency = $user->currency->code ?? '';
+        $this->currencies = Currency::select('id', 'name', 'code', 'symbol')->get();
     }
 
     public function render()
     {
         return view('livewire.balance');
+    }
+
+    public function changeCurrency(int $currencyId): void
+    {
+        $user = Auth::user();
+        $newCurrency = Currency::find($currencyId);
+        
+        if (!$user || !$newCurrency || $user->currency_id === $currencyId) {
+            return;
+        }
+
+        if ($user->balance > 0) {
+            $user->balance = (new ExchangeService())->convert(
+                $user->balance,
+                $user->currency->code,
+                $newCurrency->code
+            );
+        }
+
+        $user->currency_id = $currencyId;
+        $user->save();
+        
+        $this->balance = $user->balance;
+        $this->selectedCurrency = $newCurrency->code;
+        
+        $this->dispatch('balanceUpdated');
     }
 
     public function selectCurrency(string $symbol): void
