@@ -23,8 +23,8 @@ class Balance extends Component
             return;
         }
         $this->refreshBalance();
-        $this->selectedCurrency = $user->currency->code ?? '';
-        $this->currencies = Currency::select('id', 'name', 'code', 'symbol')->get();
+        $this->selectedCurrency = $user->currency->symbol ?? '';
+        $this->currencies = Currency::select('id', 'name', 'symbol')->get();
     }
 
     public function render()
@@ -44,8 +44,8 @@ class Balance extends Component
         if ($user->balance > 0) {
             $user->balance = (new ExchangeService())->convert(
                 $user->balance,
-                $user->currency->code,
-                $newCurrency->code
+                $user->currency->symbol,
+                $newCurrency->symbol
             );
         }
 
@@ -53,33 +53,7 @@ class Balance extends Component
         $user->save();
         
         $this->balance = $user->balance;
-        $this->selectedCurrency = $newCurrency->code;
-        
-        $this->dispatch('balanceUpdated');
-    }
-
-    public function selectCurrency(string $symbol): void
-    {
-        $user = Auth::user();
-        $newCurrency = Currency::firstWhere('symbol', $symbol);
-        
-        if (!$user || !$newCurrency || $user->currency->symbol === $symbol) {
-            return;
-        }
-
-        if ($user->balance > 0) {
-            $user->balance = (new ExchangeService())->convert(
-                $user->balance,
-                $user->currency->symbol,
-                $symbol
-            );
-        }
-
-        $user->currency()->associate($newCurrency);
-        $user->save();
-        
-        $this->balance = $user->balance;
-        $this->selectedCurrency = $symbol;
+        $this->selectedCurrency = $newCurrency->symbol;
         
         $this->dispatch('balanceUpdated');
     }

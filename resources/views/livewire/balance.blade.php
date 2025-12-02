@@ -48,39 +48,37 @@
         <div x-show="open" 
              @click.away="open = false"
              x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:enter-start="opacity-0 translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0"
              x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             class="absolute top-full mt-2 w-full md:w-64 bg-[#1a1d24] border border-[#2a3441] rounded-xl shadow-2xl overflow-hidden z-50"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-1"
+             class="absolute top-full mt-2 w-full md:w-56 bg-[#1e2329] rounded-xl shadow-xl overflow-hidden z-50 border border-[#2a3441]"
              style="display: none;">
-            <div class="p-2 space-y-1">
-                @foreach($currencies as $currency)
-                    <button 
-                        wire:click="changeCurrency({{ $currency->id }})"
-                        @click="open = false"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#2a3441] transition-colors group {{ $selectedCurrency === $currency->code ? 'bg-[#2a3441] border border-[#ffb300]/30' : '' }}">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-7 h-7 rounded-full flex items-center justify-center">
-                                <img src="{{ asset('assets/images/curr/'.$currency->code.'.png') }}"
-                                     alt="{{ $currency->code }}"
-                                     class="h-5 w-5"
-                                     onerror="this.style.display='none';">
-                            </div>
-                            <div class="text-left">
-                                <div class="text-white font-semibold text-sm">{{ $currency->name }}</div>
-                                <div class="text-gray-400 text-xs">{{ $currency->code }}</div>
-                            </div>
-                        </div>
-                        @if($selectedCurrency === $currency->code)
-                            <svg class="w-5 h-5 text-[#ffb300]" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        @endif
-                    </button>
-                @endforeach
-            </div>
+            
+            @foreach($currencies as $currency)
+                <button 
+                    wire:click="changeCurrency({{ $currency->id }})"
+                    @click="open = false"
+                    class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 {{ $selectedCurrency === $currency->symbol ? 'bg-[#ffb300] text-black' : 'text-white hover:bg-[#2a3441]' }} {{ $loop->last ? '' : 'border-b border-[#2a3441]' }}">
+                    
+                    <div class="flex items-center gap-3">
+                        <img src="{{ asset('assets/images/curr/'.$currency->symbol.'.png') }}"
+                             alt="{{ $currency->symbol }}"
+                             class="h-5 w-5"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span class="{{ $selectedCurrency === $currency->symbol ? 'text-black' : 'text-[#ffb300]' }} text-xs font-bold hidden">{{ substr($currency->symbol, 0, 1) }}</span>
+                        
+                        <span class="font-bold text-sm">{{ $currency->symbol }}</span>
+                    </div>
+                    
+                    @if($selectedCurrency === $currency->symbol)
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    @endif
+                </button>
+            @endforeach
         </div>
     </div>
 
