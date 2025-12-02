@@ -23,11 +23,27 @@ class WestWalletService
 
     /**
      * Генерация HMAC подписи для запроса
+     * Формат: HMAC-SHA256(timestamp + json_body, private_key)
      */
     private function generateSignature(int $timestamp, array $data = []): string
     {
-        $jsonData = !empty($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : '';
+        // Сортируем ключи для консистентности
+        if (!empty($data)) {
+            ksort($data);
+            $jsonData = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        } else {
+            $jsonData = '';
+        }
+        
         $message = $timestamp . $jsonData;
+        
+        Log::debug('WestWallet HMAC Debug', [
+            'timestamp' => $timestamp,
+            'data' => $data,
+            'jsonData' => $jsonData,
+            'message' => $message,
+            'privateKey' => substr($this->privateKey, 0, 10) . '...'
+        ]);
         
         return hash_hmac('sha256', $message, $this->privateKey);
     }
