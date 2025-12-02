@@ -4,8 +4,8 @@ const WebSocket = require('ws');
 
 
 const server = https.createServer({
-    key: fs.readFileSync('/etc/letsencrypt/live/flashgame.live/privkey.pem', 'utf8'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/flashgame.live/fullchain.pem', 'utf8')
+    key: fs.readFileSync('/etc/letsencrypt/live/betra1.com/privkey.pem', 'utf8'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/betra1.com/fullchain.pem', 'utf8')
 });
 
 

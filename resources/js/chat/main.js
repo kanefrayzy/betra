@@ -10,7 +10,7 @@ if (typeof window.ChatSystem === 'undefined') {
             this.ws = null;
             this.preserveConnection = false; //  флаг для SPA навигации
             this.config = {
-                wsUrl: 'wss://flashgame.live:3000',
+                wsUrl: 'wss://betra1.com:3000',
                 maxMessages: 50,
                 scrollThreshold: 100,
                 messageLimit: 160,
