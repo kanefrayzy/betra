@@ -17,7 +17,7 @@ class WebSocketService
     public function sendData(array $data)
     {
         try {
-            $response = $this->client->post('https://flashgame.live:3000/update-transactions', [
+            $response = $this->client->post('https://betra1.com:3000/update-transactions', [
                 'json' => [
                     'type' => 'updateTable',
                     'data' => $data

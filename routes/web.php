@@ -13,17 +13,14 @@ use App\Http\Controllers\ManualDepositController;
 use App\Http\Controllers\Games\SlotsController;
 use App\Http\Controllers\Games\Tbs2Controller;
 use App\Http\Controllers\Games\UnifiedSlotsController;
-use App\Http\Controllers\Api\JackpotController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\PagesController;
-use App\Http\Controllers\TestController;
 use App\Http\Controllers\AdminPromocodeController;
 use App\Http\Controllers\PromocodeController;
 use App\Http\Controllers\TelegramController;
 use App\Http\Controllers\TelegramBonusController;
 use App\Http\Controllers\PayKassaIPNController;
 use App\Http\Controllers\FreeKassaCallbackController;
-use App\Http\Controllers\PayteezCallbackController;
 use App\Http\Controllers\StreamPayCallbackController;
 use App\Http\Controllers\BetaTransferCallbackController;
 use App\Http\Controllers\Admin\RankController;
@@ -37,18 +34,12 @@ use App\Http\Controllers\DailyBonusController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\DetailedStatisticsController;
 use App\Http\Controllers\AccountDetailedStatisticsController;
-use App\Http\Controllers\SupportTicketController;
-use App\Http\Controllers\SupportMessageController;
-use App\Http\Controllers\AdminTicketController;
-use App\Http\Controllers\Games\PlinkoController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\Admin\TournamentAdminController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\VerificationController;
 
-use App\Http\Controllers\Games\BetvioController;
-use App\Http\Controllers\Games\BetvioCallbackController;
 
 Route::get('/messages', [ChatController::class, 'getMessages']);
 Route::post('/send-message', [ChatController::class, 'sendMessage'])->middleware('auth');
@@ -60,8 +51,6 @@ Route::post('/filter-message', [ChatController::class, 'filterMessage']);
 Route::delete('/delete-message/{id}', [ChatController::class, 'deleteMessage']);
 Route::post('/ban-user/{id}', [ChatController::class, 'banUser']);
 Route::post('/transfer-money/{userId}', [ChatController::class, 'transferMoney']);
-Route::post('/send-rain', [ChatController::class, 'sendRain']);
-Route::post('/rain-from-systembotasdk1pj2e1i2j3kdq', [ChatController::class, 'sendRainFromSystem']);
 
 Route::middleware(['auth'])->group(function () {
 
@@ -70,16 +59,13 @@ Route::middleware(['auth'])->group(function () {
       Route::post('/store', [ManualDepositController::class, 'store'])->name('store');
       Route::get('/my-deposits', [ManualDepositController::class, 'myDeposits'])->name('my-deposits');
   });
-  Route::get('/generate-bonus-linkjdio1j18en18dn1dn12qd', [DailyBonusController::class, 'generateBonusLink'])->name('daily-bonus.generate-link');
   Route::get('/daily-bonus/{token}', [DailyBonusController::class, 'showDailyBonus'])->name('daily-bonus.show');
   Route::post('/claim-daily-bonus', [DailyBonusController::class, 'claimDailyBonus'])->name('daily-bonus.claim');
     Route::post('/collect-rakeback', [AccountController::class, 'collectRakeback'])->name('collect.rakeback');
 });
 Route::get('/', [MainController::class, 'index'])->name('home');
-// Route::get('partnership', [MainController::class, 'partnership'])->name('partnership');
-// Route::get('faq', [MainController::class, 'faq'])->name('faq');
 Route::get('rules', [MainController::class, 'rules'])->name('rules');
-Route::get('contacts', [MainController::class, 'contacts'])->name('contacts');
+// Route::get('contacts', [MainController::class, 'contacts'])->name('contacts');
 
 
 Route::get('r/{affiliate_id?}', [AccountController::class, 'activateReferral'])->name('referral.activate');
@@ -116,26 +102,16 @@ Route::post('/deploy/webhook', [\App\Http\Controllers\DeployController::class, '
 // Telegram WebView API роуты
 Route::get('/api/telegram/user', [TelegramWebViewController::class, 'getCurrentUser'])->name('api.telegram.user');
 
-// Тестовая страница для Telegram WebView
-Route::get('/telegram-webview', function() {
-    return view('telegram-webview');
-})->name('telegram.webview');
-
-// Отладочная страница для Telegram WebView
-Route::get('/telegram-debug', function() {
-    return view('telegram-debug');
-})->name('telegram.debug');
 
 // leaderboard
-Route::get('/tournament', [TournamentController::class, 'index'])->name('tournament.index');
-Route::get('/tournament/show', [TournamentController::class, 'show'])->name('tournament.show');
+// Route::get('/tournament', [TournamentController::class, 'index'])->name('tournament.index');
+// Route::get('/tournament/show', [TournamentController::class, 'show'])->name('tournament.show');
 
-Route::get('/leaderboard', [LeaderboardController::class, 'getDailyLeaderboard'])->name('leaderboard');
-Route::get('/leaderboard/daily', [LeaderboardController::class, 'getDailyLeaderboard']);
+// Route::get('/leaderboard', [LeaderboardController::class, 'getDailyLeaderboard'])->name('leaderboard');
+// Route::get('/leaderboard/daily', [LeaderboardController::class, 'getDailyLeaderboard']);
 Route::get('/auth/check', function () {
     return response()->json(['authenticated' => Auth::check()]);
 });
-Route::post('/games/plinko/init', [PlinkoController::class, 'init']);
 
 Route::middleware('auth')->group(function () {
   Route::post('/promocodes/activate', [PromocodeController::class, 'activate'])
@@ -143,11 +119,6 @@ Route::middleware('auth')->group(function () {
     Route::any('logout', [LoginController::class, 'logout'])->name('auth.logout');
     Route::get('/ref', [PagesController::class, 'ref'])->name('ref');
 
-    // плинко
-    Route::prefix('games/plinko1')->group(function () {
-        // Показ страницы игры
-        Route::get('/', [PlinkoController::class, 'show'])->name('games.plinko.show');
-    });
 
     Route::prefix('account')->group(function () {
         Route::get('', [AccountController::class, 'account'])->name('account');
@@ -176,16 +147,6 @@ Route::middleware('auth')->group(function () {
     // telegram
     Route::get('bonus', [TelegramBonusController::class, 'show'])->name('telegram-bonus.show');
     Route::post('bonus/claim', [TelegramBonusController::class, 'claim'])->name('telegram-bonus.claim');
-
-    Route::post('/account/update-email', [AccountController::class, 'updateEmail'])->name('account.update-email');
-
-    Route::prefix('jackpot')->group(function () {
-        Route::get('/', [JackpotController::class, 'index'])->name('jackpot');
-        Route::get('/room/{room}', [JackpotController::class, 'index'])->name('jackpot.room');
-        Route::get('/history', [JackpotController::class, 'history'])->name('jackpot.history');
-        Route::get('/history/{room}/{id}', [JackpotController::class, 'gameHistory'])->name('jackpot.game.history');
-    });
-
     Route::post('/verification', [VerificationController::class, 'store'])->name('verification.store');
 
 });
@@ -204,7 +165,7 @@ Route::prefix('slots')->group(function () {
     // Dynamic category routes
     Route::get('category/{slug}', \App\Livewire\Game\Category::class)->name('slots.category');
 
-    // УНИВЕРСАЛЬНЫЕ РОУТЫ - автоматически определяют провайдера
+    //  автоматически определяют провайдера
     Route::get('fun/{slug}', [UnifiedSlotsController::class, 'launchDemoGame'])->name('slots.fun');
     Route::post('balance', [SlotsController::class, 'getBalance'])->name('slots.balance');
     Route::get('info-slot', [SlotsController::class, 'infoSlot'])->name('slots.info');
@@ -231,26 +192,16 @@ Route::any('games/tbs2/test', function() {
         ]
     ]);
 });
+
+# Slotegraotr
 Route::post('games/slotegrator/callback', [SlotsController::class, 'callback'])->name('slots.callback');
-// Route::post('games/b2b-slots/callback', [B2bSlotsController::class, 'callback'])->name('b2b-slots.callback');
 
+# B2B
+Route::post('games/b2b-slots/callback', [B2bSlotsController::class, 'callback'])->name('b2b-slots.callback');
 
-
+# TBS 2
 Route::post('games/tbs2/callback', [Tbs2Controller::class, 'callback'])->name('tbs2.callback');
 
-// Betvio Games Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/betvio/game/{game}', [BetvioController::class, 'launchGame'])->name('betvio.game.launch');
-    Route::get('/betvio/game-code/{gameCode}', [BetvioController::class, 'launchGameByCode'])->name('betvio.game.launch.code');
-    Route::get('/betvio/demo/{game}', [BetvioController::class, 'launchDemoGame'])->name('betvio.game.demo');
-    Route::get('/betvio/demo-code/{gameCode}', [BetvioController::class, 'launchDemoGameByCode'])->name('betvio.game.demo.code');
-});
-
-Route::prefix('gold_api')->name('betvio.callback.')->group(function () {
-    Route::post('/user_balance', [BetvioCallbackController::class, 'userBalance'])->name('user.balance');
-    Route::post('/game_callback', [BetvioCallbackController::class, 'gameCallback'])->name('game.callback');
-    Route::post('/money_callback', [BetvioCallbackController::class, 'moneyCallback'])->name('money.callback');
-});
 
 Route::get('/latest-transactions', [TransactionController::class, 'getLatestTransactions']);
 
@@ -268,41 +219,6 @@ Route::get('/fail', function () {
     return redirect('/')->with('error', __('Ошибка при пополнении баланса'));
 })->name('payment.fail');
 
-
-// AES Gaming Routes
-Route::prefix('games/aes')->middleware('auth')->group(function () {
-    // Запуск игры
-    Route::get('/play/{game}', [App\Http\Controllers\Games\AesController::class, 'launchGame'])
-        ->name('aes.play');
-
-    Route::get('/demo/{game}', [App\Http\Controllers\Games\AesController::class, 'launchDemoGame'])
-        ->name('aes.demo');
-
-    // Запуск по коду
-    Route::get('/launch/{gameCode}', [App\Http\Controllers\Games\AesController::class, 'launchGameByCode'])
-        ->name('aes.launch');
-
-    Route::get('/launch-demo/{gameCode}', [App\Http\Controllers\Games\AesController::class, 'launchDemoGameByCode'])
-        ->name('aes.launch.demo');
-
-    // Информация (опционально)
-    Route::get('/agent-info', [App\Http\Controllers\Games\AesController::class, 'getAgentInfo'])
-        ->name('aes.agent.info');
-
-    Route::get('/online-games', [App\Http\Controllers\Games\AesController::class, 'getOnlineGames'])
-        ->name('aes.online.games');
-});
-
-
-// Тикеты
-Route::get('/support-tickets', [SupportTicketController::class, 'index'])->name('support.ticket.index');
-Route::get('/support-tickets/create', [SupportTicketController::class, 'create'])->name('support.ticket.create');
-Route::post('/support-tickets', [SupportTicketController::class, 'store'])->name('support.ticket.store');
-Route::get('/support-tickets/{ticketId}', [SupportTicketController::class, 'show'])->name('support.ticket.show');
-
-// Сообщения в тикетах
-Route::get('/support-tickets/{ticketId}/messages', [SupportMessageController::class, 'index'])->name('support.ticket.message.index');
-Route::post('/support-tickets/{ticketId}/messages', [SupportMessageController::class, 'store'])->name('support.ticket.message.store');
 
 Route::middleware(['auth', 'access:Admin'])->group(function () {
     $base = 'qwdkox1i20';
@@ -569,6 +485,3 @@ Route::get('setlocale/{locale}', function ($locale) {
     return redirect()->back();
 })->name('setlocale');
 
-Route::post('/share-winning', [ChatController::class, 'shareWinning'])->middleware('auth');
-Route::get('/winning-info/{id}', [ChatController::class, 'getWinningInfo'])->middleware('auth');
-// Route::get('/logout-all', [LoginController::class, 'logoutAll'])->name('logout.all');
