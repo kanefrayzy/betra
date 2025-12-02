@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\DepositBonus;
 use App\Models\UserDepositBonus;
 use App\Services\RankService;
-use App\Services\UserShareDataService;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Collection;
@@ -35,14 +34,12 @@ class AppInitializeMiddleware
             [$matchingHandlers, $otherHandlers] = $this->handlersFilter($payment_handlers, $user);
             [$matchingSystems, $otherSystems] = $this->systemFilter($payment_handlers, $user);
             $availableBonuses = $this->getBonusesForUser($user);
-            View::share('ref', UserShareDataService::getRef($user));
             View::share(RankService::progress($user));
             View::share('matchingHandlers', $matchingHandlers);
             View::share('otherHandlers', $otherHandlers);
             View::share('matchingSystems', $matchingSystems);
             View::share('otherSystems', $otherSystems);
             View::share('rakeback_balance', moneyFormat(toUSD($user->rakeback, $user->currency->symbol)));
-            View::share('availableBonuses', $availableBonuses);
 
             if (strpos($request->getPathInfo(), '/games/') === 0) {
               return $next($request);
@@ -92,45 +89,4 @@ class AppInitializeMiddleware
         return [$matchingSystems, $otherSystems];
     }
 
-    protected function getBonusesForUser(User $user): array
-    {
-        try {
-            // Получаем все бонусы для валюты пользователя
-            $bonuses = Cache::remember("deposit_bonuses:{$user->currency_id}", now(), function () use ($user) {
-                return DepositBonus::where('currency_id', $user->currency_id)
-                    ->orderBy('required_amount')
-                    ->get()
-                    ->toArray(); // Преобразуем коллекцию в массив сразу
-            });
-
-            // Получаем использованные бонусы
-            $usedBonuses = Cache::remember("used_bonuses:{$user->id}", now(), function () use ($user) {
-                return UserDepositBonus::where('user_id', $user->id)
-                    ->pluck('deposit_bonus_id')
-                    ->toArray();
-            });
-
-            // Теперь работаем с массивом, а не с коллекцией
-            return array_map(function ($bonus) use ($usedBonuses) {
-                return [
-                    'id' => $bonus['id'],
-                    'required_amount' => $bonus['required_amount'],
-                    'bonus_amount' => $bonus['bonus_amount'],
-                    'currency_id' => $bonus['currency_id'],
-                    'used' => in_array($bonus['id'], $usedBonuses),
-                    'first_time' => $bonus['required_amount'] <= 5,
-                    'requirements' => [
-                        'wagering' => __('Отыграть сумму депозита'),
-                        'verification' => $bonus['required_amount'] <= 5
-                            ? __('Подтвердить Telegram для вывода')
-                            : __('Необходима верификация профиля для вывода')
-                    ]
-                ];
-            }, $bonuses);
-
-        } catch (\Exception $e) {
-            \Log::error('Error getting bonuses: ' . $e->getMessage());
-            return [];
-        }
-    }
 }
