@@ -24,12 +24,12 @@ class WestWalletService
     /**
      * Генерация HMAC подписи для запроса
      * Формат согласно документации: HMAC-SHA256(timestamp + json_dumps(data), private_key)
-     * ensure_ascii=False в Python = JSON_UNESCAPED_UNICODE в PHP
+     * ensure_ascii=False в Python = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES в PHP
      */
     private function generateSignature(int $timestamp, array $data = []): string
     {
         if (!empty($data)) {
-            $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
+            $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } else {
             $jsonData = '';
         }
