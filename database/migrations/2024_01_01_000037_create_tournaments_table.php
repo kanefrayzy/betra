@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('prize_pool', 20, 2);
             $table->json('prize_distribution')->nullable();
             $table->timestamp('start_date')->useCurrent();
-            $table->timestamp('end_date')->default('0000-00-00 00:00:00');
+            $table->timestamp('end_date')->nullable();
             $table->string('status')->default('upcoming');
             $table->decimal('min_turnover', 20, 2)->default(0.00);
             $table->timestamps();
