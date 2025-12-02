@@ -1,0 +1,71 @@
+<?php
+
+return [
+	//reg
+	'min' => 'Le nom dutilisateur ne peut pas être inférieur à 5 caractères',
+	'nmspt' => 'Le nom dutilisateur ne peut pas être vide',
+	'inem' => 'Spécifiez le-mail',
+	'badem' => 'Mauvaise valeur pour le-mail',
+	'uem' => 'Cet e-mail est déjà enregistré dans le système',
+	'inpass' => 'Entrer un mot de passe',
+	'minpass' => 'Le mot de passe ne peut pas contenir moins de 6 caractères',
+	'nesov' => 'Le mot de passe ne correspond pas à la confirmation',
+	'sucreg' => 'Compte créé avec succès',
+	'sucauth' => 'Bienvenue!',
+
+	//login
+	'baddata' => 'Mauvais email ou mot de passe',
+	'noem' => 'L e-mail spécifié n est pas enregistré dans le système',
+	'vost' => 'Récupération de mot de passe',
+	'er' => 'Une erreur inconnue s est produite',
+	'nocod' => 'Le code de confirmation ne peut pas être vide',
+	'mincod' => 'Le code de vérification n a pas assez de caractères',
+	'istek' => 'Les données spécifiées ne correspondent pas, mauvais e-mail, code ou le code a expiré',
+	'sucpas' => 'Le mot de passe a été changé avec succès',
+	'sencod' => 'Le code de confirmation a été envoyé avec succès à votre adresse e-mail',
+
+	//profile
+	'tekpass' => 'Entrez le mot de passe actuel',
+	'newpass' => 'entrer un nouveau mot de passe',
+	'netot' => 'Le mot de passe actuel est incorrect',
+	'errav' => 'Une erreur s est produite lors du chargement de l avatar',
+	'sucav' => 'Avatar téléchargé avec succès',
+	'sucinsert' => 'Votre solde a été rechargé avec succès!',
+	'errinsert' => 'Erreur lors du rechargement du solde',
+	'wait' => 'S il vous plaît, attendez',
+	'minsumv' => 'Montant minimum de retrait:',
+	'allstrok' => 'Remplissez tous les champs',
+	'balno' => 'Pas assez d argent pour retirer ce montant',
+	'onemore' => 'Vous avez une candidature en attente, veuillez patienter',
+	'codeact' => 'Code activé avec succès',
+	'uzcode' => 'Vous avez déjà utilisé le code',
+	'badcode' => 'Le code est invalide ou invalide',
+	'mycode' => 'Vous ne pouvez pas utiliser votre code',
+	'vvcode' => 'Entrez un code',
+
+	//games
+	'chasto' => 'Tu paries trop souvent!',
+	'minst' => 'Montant minimum de la mise',
+	'maxst' => 'Montant maximum de la mise',
+	'uze' => 'Le jeu a déjà commencé ou s est terminé',
+	'3st' => 'Seulement 3 paris autorisés',
+	'otherc' => 'Vous avez déjà enchéri sur une autre couleur',
+	'betsuc' => 'Votre enchère a été acceptée!',
+	'badsum' => 'Vous avez saisi le mauvais montant',
+	'badcolor' => 'Couleur introuvable',
+	'nocoins' => 'Pas assez d argent pour parier',
+	'closed' => 'Les paris sur ce jeu sont déjà fermés',
+	'badclr' => 'Vous ne pouvez pas parier sur cette couleur',
+	'maxjc' => 'Nombre maximum de paris par match:',
+	'maxjcmoney' => 'Montant maximum par jeu:',
+
+	//real-time
+	'errchat' => 'Le message ne peut pas être vide',
+	'stringchat' => 'Le message doit être une chaîne',
+	'maxchat' => 'Nombre maximal de caractères 255',
+	'chatch' => 'Vous envoyez un message trop souvent',
+	'block' => 'Vous êtes enfermé:',
+	'errlink' => 'L envoi de liens est interdit!',
+	'errpromo' => 'L envoi de codes promotionnels est interdit!',
+	'chatsuc' => 'Votre message a été envoyé avec succès!',
+];

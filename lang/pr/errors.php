@@ -1,0 +1,71 @@
+<?php
+
+return [
+	//reg
+	'min' => 'Nome de usuário não pode ter menos de 5 caracteres',
+'nmspt' => 'Nome de usuário não pode estar vazio',
+'inem' => 'Digite o e-mail',
+'badem' => 'Valor incorreto para E-mail',
+'uem' => 'Este e-mail já está cadastrado no sistema',
+'inpass' => 'Digite a senha',
+'minpass' => 'A senha não pode ter menos de 6 caracteres',
+'nesov' => 'A senha não corresponde à confirmação',
+'sucreg' => 'Conta criada com sucesso',
+'sucauth' => 'Bem-vindo de volta!',
+
+//Conecte-se
+'baddata' => 'E-mail ou senha inválida',
+'noem' => 'O E-mail informado não está cadastrado no sistema',
+'vost' => 'Recuperação de senha',
+'er' => 'Ocorreu um erro desconhecido',
+'nocod' => 'Código de confirmação não pode estar vazio',
+'mincod' => 'O código de confirmação não possui caracteres suficientes',
+'istek' => 'Os dados especificados não correspondem, e-mail errado, código ou código expirado',
+'sucpas' => 'Senha alterada com sucesso',
+'sencod' => 'O código de confirmação foi enviado com sucesso para o seu e-mail',
+
+//perfil
+'tekpass' => 'Digite sua senha atual',
+'newpass' => 'Digite uma nova senha',
+'netot' => 'A senha atual está incorreta',
+'errav' => 'Ocorreu um erro ao carregar o avatar',
+'sucav' => 'Avatar enviado com sucesso',
+'sucinsert' => 'Seu saldo foi recarregado com sucesso!',
+'errinsert' => 'Erro ao repor saldo',
+'wait' => 'Por favor, aguarde',
+'minsumv' => 'Valor mínimo de retirada:',
+'allstrok' => 'Preencher todos os campos',
+'balno' => 'Não há dinheiro suficiente para retirar este valor',
+'onemore' => 'Você tem um pedido pendente, por favor aguarde',
+'codeact' => 'Código ativado com sucesso',
+'uzcode' => 'Você já ativou o código',
+'badcode' => 'O código é inválido ou inválido',
+'mycode' => 'Você não pode resgatar seu código',
+'vvcode' => 'Digite o código',
+
+//jogos
+'chasto' => 'Você aposta com muita frequência!',
+'minst' => 'Aposta mínima',
+'maxst' => 'Aposta máxima',
+'uze' => 'O jogo já começou ou terminou',
+'3st' => 'Apenas 3 apostas permitidas',
+'otherc' => 'Você já deu lance para outra cor',
+'betsuc' => 'Sua aposta foi aceita!',
+'badsum' => 'Você digitou o valor errado',
+'badcolor' => 'Cor não encontrada',
+'nocoins' => 'Não há dinheiro suficiente para apostar',
+'closed' => 'As apostas neste jogo já estão fechadas',
+'badclr' => 'Você não pode apostar nesta cor',
+'maxjc' => 'Aposta máxima por jogo:',
+'maxjcmoney' => 'Valor máximo por jogo:',
+
+//bater papo
+'errchat' => 'A mensagem não pode estar vazia',
+'stringchat' => 'A mensagem deve ser uma string',
+'maxchat' => 'Máximo de caracteres 255',
+'chatch' => 'Você está postando com muita frequência',
+'block' => 'Você está bloqueado até:',
+'errlink' => 'É proibido enviar links!',
+'errpromo' => 'Não é permitido enviar códigos promocionais!',
+'chatsuc' => 'Sua mensagem foi enviada com sucesso!',
+];

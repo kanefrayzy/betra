@@ -1,0 +1,51 @@
+.jb-emoji {
+    background: #0e131c;
+    border: 1px solid #000;
+    border-radius: 6px;
+    padding: 8px;
+    box-sizing: border-box;
+    width: 369px;
+    height: 225px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.jb-emoji-search {
+    font: inherit;
+    font-size: 14px;
+    line-height: 14px;
+    border: 0;
+    -webkit-appearance: none;
+    outline: none;
+    resize: none;
+    color: inherit;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.jb-emoji-grid {
+    width: 100%;
+    overflow: hidden;
+}
+
+.jb-emoji-btn {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+    box-sizing: border-box;
+    font-size: 20px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.jb-emoji-btn:hover,
+.jb-emoji-btn.jb-active-emoji {
+    background: #f0f0f0;
+}

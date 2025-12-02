@@ -1,0 +1,72 @@
+<?php
+
+return [
+	//reg
+	'min' => 'Der Benutzername darf nicht weniger als 5 Zeichen lang sein',
+	'nmspt' => 'Benutzername darf nicht leer sein',
+	'inem' => 'E-Mail angeben',
+	'badem' => 'Falscher Wert für E-Mail',
+	'uem' => 'Diese E-Mail ist bereits im System registriert',
+	'inpass' => 'Geben Sie ein Passwort ein',
+	'minpass' => 'Das Passwort darf nicht weniger als 6 Zeichen lang sein',
+	'nesov' => 'Passwort stimmt nicht mit Bestätigung überein',
+	'sucreg' => 'Konto erfolgreich erstellt',
+	'sucauth' => 'Willkommen zurück!',
+
+	//login
+	'baddata' => 'falsche Email oder Passwort',
+	'noem' => 'Die angegebene E-Mail-Adresse ist nicht im System registriert',
+	'vost' => 'Passwort Wiederherstellung',
+	'er' => 'Ein unbekannter Fehler ist aufgetreten',
+	'nocod' => 'Der Bestätigungscode darf nicht leer sein',
+	'mincod' => 'Der Bestätigungscode hat nicht genügend Zeichen',
+	'istek' => 'Die angegebenen Daten stimmen nicht überein, falsche E-Mail, Code oder der Code ist abgelaufen',
+	'sucpas' => 'das Passwort wurde erfolgreich geändert',
+	'sencod' => 'Der Bestätigungscode wurde erfolgreich an Ihre E-Mail gesendet',
+
+	//profile
+	'tekpass' => 'Geben Sie das aktuelle Passwort ein',
+	'newpass' => 'Geben Sie ein neues Kennwort ein',
+	'netot' => 'Das aktuelle Passwort ist falsch',
+	'errav' => 'Beim Laden des Avatars ist ein Fehler aufgetreten',
+	'sucav' => 'Avatar erfolgreich hochgeladen',
+	'sucinsert' => 'Ihr Guthaben wurde erfolgreich aufgeladen!',
+	'errinsert' => 'Fehler beim Aufladen des Guthabens',
+	'wait' => 'Bitte warten Sie',
+	'minsumv' => 'Mindestauszahlungsbetrag:',
+	'allstrok' => 'Füllen Sie alle Felder aus',
+	'balno' => 'Nicht genug Geld, um diesen Betrag abzuheben',
+	'onemore' => 'Sie haben eine ausstehende Bewerbung, bitte warten Sie',
+	'codeact' => 'Code erfolgreich aktiviert',
+	'uzcode' => 'Sie haben den Code bereits eingelöst',
+	'badcode' => 'Code ist ungültig oder ungültig',
+	'mycode' => 'Sie können Ihren Code nicht einlösen',
+	'vvcode' => 'Geben Sie einen Code ein',
+	'sucwith' => 'Auszahlungsantrag akzeptiert, bitte warten',
+
+	//games
+	'chasto' => 'Sie wetten zu oft!',
+	'minst' => 'Mindesteinsatzbetrag',
+	'maxst' => 'Maximaler Einsatzbetrag',
+	'uze' => 'Das Spiel hat bereits begonnen oder ist beendet',
+	'3st' => 'Nur 3 Wetten erlaubt',
+	'otherc' => 'Sie haben bereits auf eine andere Farbe geboten',
+	'betsuc' => 'Ihr Gebot wurde akzeptiert!',
+	'badsum' => 'Sie haben den falschen Betrag eingegeben',
+	'badcolor' => 'Farbe nicht gefunden',
+	'nocoins' => 'Nicht genug Geld zum Wetten',
+	'closed' => 'Wetten auf dieses Spiel sind bereits geschlossen',
+	'badclr' => 'Auf diese Farbe können Sie nicht setzen',
+	'maxjc' => 'Maximale Anzahl an Wetten pro Spiel:',
+	'maxjcmoney' => 'Höchstbetrag pro Spiel:',
+
+	//real-time
+	'errchat' => 'Nachricht darf nicht leer sein',
+	'stringchat' => 'Die Nachricht muss eine Zeichenfolge sein',
+	'maxchat' => 'Maximale Zeichenanzahl 255',
+	'chatch' => 'Sie senden zu oft eine Nachricht',
+	'block' => 'Du bist eingesperrt:',
+	'errlink' => 'Das Versenden von Links ist untersagt!',
+	'errpromo' => 'Das Versenden von Aktionscodes ist verboten!',
+	'chatsuc' => 'Ihre Nachricht wurde erfolgreich gesendet!',
+];

@@ -1,0 +1,128 @@
+# Dependencies
+/node_modules
+/vendor
+composer.lock
+package-lock.json
+yarn.lock
+
+# Build outputs
+/public/hot
+/public/storage
+/public/build/*
+/public/mix-manifest.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+.env.backup
+.env.production
+.env.local
+.env.example.backup
+.env.save
+.env.save.*
+
+# Laravel specific
+/bootstrap/compiled.php
+/bootstrap/cache/*.php
+/bootstrap/cache/config.php
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+!/storage/app/public/.gitignore
+!/storage/app/public/banners/
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/debugbar/*
+
+# Cache and temporary files
+.phpunit.result.cache
+artisan.optimize
+.php_cs.cache
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# Deployment
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE and editors
+/.idea
+/.vscode
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Coverage reports
+/coverage
+/.nyc_output
+
+# Payment systems and sensitive data
+/libraries/*/config.php
+app.config.js
+!app.config.example.js
+
+# Database
+*.sqlite
+*.sqlite3
+/database/*.sqlite
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Compiled assets (if using Mix/Vite)
+/public/css/app.css
+/public/js/app.js
+/public/js/manifest.js
+/public/js/vendor.js
+
+# Local configuration
+php.xml
+laravel-idea.xml
+material_theme_project_new.xml
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.#*
+#*#
+
+# Additional Laravel cache files
+bootstrap/cache/compiled.php
+bootstrap/cache/config.php
+bootstrap/cache/packages.php
+bootstrap/cache/services.php
+
+# Redis configuration (if contains sensitive data)
+redis.conf

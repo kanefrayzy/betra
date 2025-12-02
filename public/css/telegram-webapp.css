@@ -1,0 +1,40 @@
+/**
+ * Стили для Telegram WebApp
+ */
+
+body.telegram-webapp,
+html.telegram-webapp {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Контейнер для скролла */
+body.telegram-webapp #app,
+body.telegram-webapp main,
+body.telegram-webapp .main-content {
+    min-height: 100vh;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Отступ  */
+.bg-customHeader {
+    padding-top: 85px;
+}
+
+.chat-open #right-sidebar {
+    padding-top: 100px;
+}
+.sidebar-wrapper {
+    padding-top: 85px;
+}
+.modaler {
+    padding-top: 20px;
+}
+#noty_layout__topRight {
+    top: 90px;
+}
+.game-back-button {
+    top: 115px!important;
+ }

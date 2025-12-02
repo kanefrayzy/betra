@@ -1,0 +1,39 @@
+{
+    "name": "bigcrash",
+    "version": "0.1.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "wstest": "jest",
+        "tailwind:init": "tailwindcss init -p"
+    },
+    "dependencies": {
+        "alpinejs": "^3.14.1",
+        "body-parser": "^1.20.2",
+        "express": "^4.19.2",
+        "ioredis": "^5.4.1",
+        "jquery": "^3.7.1",
+        "laravel-echo": "^1.16.1",
+        "livewire": "^0.6.1",
+        "mysql2": "^3.10.0",
+        "noty": "^3.2.0-beta",
+        "pusher-js": "^8.4.0-rc2",
+        "socket.io": "^4.7.5",
+        "socket.io-client": "^2.4.0",
+        "swiper": "^11.1.12",
+        "uuid": "^8.3.2"
+    },
+    "devDependencies": {
+        "autoprefixer": "^10.4.21",
+        "axios": "^1.6.4",
+        "jest": "^29.7.0",
+        "laravel-vite-plugin": "^1.0.4",
+        "lodash": "^4.17.19",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.18",
+        "vite": "^5.3.1",
+        "ws": "^8.17.1"
+    }
+}
