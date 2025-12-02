@@ -225,10 +225,15 @@ class User extends Authenticatable
           return $this->hasMany(CoinFlipGame::class);
       }
 
-      public function depositBonuses()
-      {
-          return $this->hasMany(UserDepositBonus::class, 'user_id');
-      }
+    public function depositBonuses()
+    {
+        return $this->hasMany(UserDepositBonus::class, 'user_id');
+    }
+
+    public function cryptoWallets(): HasMany
+    {
+        return $this->hasMany(UserCryptoWallet::class);
+    }
 
 
 }

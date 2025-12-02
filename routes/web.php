@@ -210,6 +210,10 @@ Route::post('pay/freekassa', [FreeKassaCallbackController::class, 'handle']);
 Route::post('pay/payteez', [PayteezCallbackController::class, 'handle']);
 Route::post('pay/streampay', [StreamPayCallbackController::class, 'handle']);
 Route::post('pay/betatransfer', [BetaTransferCallbackController::class, 'handle'])->name('betatransfer.callback');
+Route::post('pay/westwallet', [App\Http\Controllers\WestWalletCallbackController::class, 'handle'])->name('westwallet.callback');
+
+// Crypto wallet address endpoint
+Route::middleware('auth')->post('/crypto/get-address', [CashController::class, 'getCryptoAddress'])->name('crypto.get-address');
 
 Route::get('/success', function () {
     return redirect('/')->with('success', __('Вы успешно пополнили баланс'));

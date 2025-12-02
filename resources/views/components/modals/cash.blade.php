@@ -89,7 +89,113 @@
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 transform translate-x-4"
                      x-transition:enter-end="opacity-100 transform translate-x-0">
-                    <form @submit.prevent="submitDeposit" class="space-y-6">
+                    
+                    <!-- Crypto Address Display -->
+                    <div x-show="showCryptoAddress" class="space-y-6">
+                        <!-- Back Button -->
+                        <button @click="backToSelection()" type="button"
+                                class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <span>{{__('Назад к выбору')}}</span>
+                        </button>
+
+                        <!-- Loading -->
+                        <div x-show="loadingCryptoAddress" class="flex flex-col items-center justify-center py-12">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ffb300] mb-4"></div>
+                            <p class="text-gray-400">{{__('Загрузка адреса...')}}</p>
+                        </div>
+
+                        <!-- Crypto Address Card -->
+                        <div x-show="!loadingCryptoAddress && cryptoAddressData" class="bg-[#252a32] rounded-xl p-6 border border-gray-800">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-bold text-white">{{__('Адрес для пополнения')}}</h3>
+                                <span class="px-3 py-1 bg-[#ffb300]/20 text-[#ffb300] text-sm font-semibold rounded-lg" 
+                                      x-text="cryptoAddressData?.currency"></span>
+                            </div>
+
+                            <!-- QR Code -->
+                            <div class="flex justify-center mb-6">
+                                <div class="bg-white p-4 rounded-xl" x-show="cryptoAddressData?.address">
+                                    <div id="qrcode"></div>
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-gray-400 text-sm mb-2">{{__('Адрес кошелька')}}</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" 
+                                               :value="cryptoAddressData?.address" 
+                                               readonly
+                                               class="flex-1 px-4 py-3 bg-[#1e2329] border border-gray-800 rounded-lg text-white text-sm focus:outline-none focus:border-[#ffb300] font-mono">
+                                        <button @click="copyAddress()" type="button"
+                                                class="px-4 py-3 bg-[#ffb300] hover:bg-[#e6a000] text-black font-semibold rounded-lg transition-colors flex-shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Dest Tag (if required) -->
+                                <div x-show="cryptoAddressData?.dest_tag">
+                                    <label class="block text-gray-400 text-sm mb-2">{{__('Тег назначения (обязательно!)')}}</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" 
+                                               :value="cryptoAddressData?.dest_tag" 
+                                               readonly
+                                               class="flex-1 px-4 py-3 bg-[#1e2329] border border-gray-800 rounded-lg text-white text-sm focus:outline-none focus:border-[#ffb300] font-mono">
+                                        <button @click="navigator.clipboard.writeText(cryptoAddressData?.dest_tag)" type="button"
+                                                class="px-4 py-3 bg-[#ffb300] hover:bg-[#e6a000] text-black font-semibold rounded-lg transition-colors flex-shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                                <div class="flex gap-3">
+                                    <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="text-sm text-blue-300">
+                                        <p class="font-semibold mb-1">{{__('Важная информация:')}}</p>
+                                        <ul class="list-disc list-inside space-y-1 text-xs">
+                                            <li>{{__('Отправляйте только указанную криптовалюту на этот адрес')}}</li>
+                                            <li>{{__('После подтверждения в блокчейне средства автоматически зачислятся')}}</li>
+                                            <li>{{__('Время зачисления: обычно 1-30 минут в зависимости от сети')}}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto Selection -->
+                    <div x-show="!showCryptoAddress && selectedSystem && isCryptoSystem(selectedSystem)" class="space-y-4">
+                        <h3 class="text-white font-semibold text-lg">{{__('Выберите криптовалюту')}}</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <template x-for="crypto in cryptoCurrencies" :key="crypto.code">
+                                <button @click="selectCrypto(crypto.code)" type="button"
+                                        class="p-4 bg-[#252a32] hover:bg-[#2c3340] border border-gray-800 hover:border-[#ffb300] rounded-xl transition-all duration-200 group">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <div class="text-3xl" x-text="crypto.icon" :style="{ color: crypto.color }"></div>
+                                        <div class="text-white font-semibold text-sm" x-text="crypto.code"></div>
+                                        <div class="text-gray-400 text-xs" x-text="crypto.name"></div>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Standard Deposit Form -->
+                    <form @submit.prevent="submitDeposit" class="space-y-6" x-show="!showCryptoAddress && (!selectedSystem || !isCryptoSystem(selectedSystem))">
                         @csrf
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <!-- Payment Methods -->
@@ -491,19 +597,33 @@ function cashModalData() {
         amount: 0,
         commission: 5,
         selectedSystem: '',
+        selectedCrypto: '',
         details: '',
         loading: false,
+        loadingCryptoAddress: false,
+        showCryptoAddress: false,
+        cryptoAddressData: null,
         errors: {},
         successMessage: '',
         errorMessage: '',
         
+        // Список криптовалют
+        cryptoCurrencies: [
+            { code: 'BTC', name: 'Bitcoin', icon: '₿', color: '#F7931A' },
+            { code: 'ETH', name: 'Ethereum', icon: 'Ξ', color: '#627EEA' },
+            { code: 'USDT', name: 'Tether (USDT)', icon: '₮', color: '#26A17B' },
+            { code: 'TRX', name: 'TRON', icon: 'TRX', color: '#EF0027' },
+            { code: 'LTC', name: 'Litecoin', icon: 'Ł', color: '#345D9D' },
+            { code: 'XRP', name: 'Ripple', icon: 'XRP', color: '#23292F' },
+        ],
+        
         // Данные платёжных систем
         paymentHandlers: {
             @foreach($matchingHandlers as $handler)
-            '{{ $handler->id }}': { name: '{{ $handler->name }}', icon: '{{ asset('storage/' . $handler->icon) }}' },
+            '{{ $handler->id }}': { name: '{{ $handler->name }}', icon: '{{ asset('storage/' . $handler->icon) }}', currency: '{{ $handler->currency }}' },
             @endforeach
             @foreach($otherHandlers as $handler)
-            '{{ $handler->id }}': { name: '{{ $handler->name }}', icon: '{{ asset('storage/' . $handler->icon) }}' },
+            '{{ $handler->id }}': { name: '{{ $handler->name }}', icon: '{{ asset('storage/' . $handler->icon) }}', currency: '{{ $handler->currency }}' },
             @endforeach
         },
         
@@ -530,6 +650,115 @@ function cashModalData() {
             } else {
                 return this.withdrawalSystems[systemId]?.icon || '';
             }
+        },
+        
+        isCryptoSystem(systemId) {
+            const handler = this.paymentHandlers[systemId];
+            if (!handler) return false;
+            const cryptoCodes = ['BTC', 'ETH', 'USDT', 'TRX', 'LTC', 'XRP', 'DOGE'];
+            return cryptoCodes.includes(handler.currency);
+        },
+
+        async selectCrypto(cryptoCode) {
+            this.selectedCrypto = cryptoCode;
+            this.showCryptoAddress = true;
+            await this.loadCryptoAddress(cryptoCode);
+        },
+
+        async loadCryptoAddress(currency) {
+            this.loadingCryptoAddress = true;
+            this.errorMessage = '';
+
+            try {
+                const response = await fetch('{{ route("crypto.get-address") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ currency })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    this.cryptoAddressData = data.data;
+                    
+                    // Генерируем QR код
+                    this.$nextTick(() => {
+                        const qrElement = document.getElementById('qrcode');
+                        if (qrElement && window.QRCode) {
+                            // Очищаем предыдущий QR код
+                            qrElement.innerHTML = '';
+                            
+                            new QRCode(qrElement, {
+                                text: data.data.qr_data || data.data.address,
+                                width: 200,
+                                height: 200,
+                                colorDark: '#000000',
+                                colorLight: '#ffffff',
+                                correctLevel: QRCode.CorrectLevel.H
+                            });
+                        }
+                    });
+                } else {
+                    this.errorMessage = data.message || '{{__('Ошибка при получении адреса')}}';
+                    this.showCryptoAddress = false;
+                    
+                    if (window.Noty) {
+                        new Noty({
+                            type: 'error',
+                            text: this.errorMessage,
+                            theme: 'mint',
+                            layout: 'topRight',
+                            timeout: 3000,
+                            progressBar: true
+                        }).show();
+                    }
+                }
+            } catch (error) {
+                console.error('Load crypto address error:', error);
+                this.errorMessage = '{{__('Ошибка соединения с сервером')}}';
+                this.showCryptoAddress = false;
+                
+                if (window.Noty) {
+                    new Noty({
+                        type: 'error',
+                        text: this.errorMessage,
+                        theme: 'mint',
+                        layout: 'topRight',
+                        timeout: 3000,
+                        progressBar: true
+                    }).show();
+                }
+            } finally {
+                this.loadingCryptoAddress = false;
+            }
+        },
+
+        copyAddress() {
+            if (!this.cryptoAddressData?.address) return;
+            
+            navigator.clipboard.writeText(this.cryptoAddressData.address).then(() => {
+                if (window.Noty) {
+                    new Noty({
+                        type: 'success',
+                        text: '{{__('Адрес скопирован!')}}',
+                        theme: 'mint',
+                        layout: 'topRight',
+                        timeout: 2000,
+                        progressBar: true
+                    }).show();
+                }
+            });
+        },
+
+        backToSelection() {
+            this.showCryptoAddress = false;
+            this.selectedCrypto = '';
+            this.cryptoAddressData = null;
         },
 
         get commissionAmount() {
@@ -754,3 +983,6 @@ function closeCashModal() {
     window.dispatchEvent(new CustomEvent('close-cash-modal'));
 }
 </script>
+
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

@@ -12,10 +12,6 @@ return [
         'secret_key' => env('FREEKASSA_SECRET_KEY'),
     ],
 
-    'payteez' => [
-        'shop_id' => env('PAYTEEZ_SHOP_ID'),
-        'secret_key' => env('PAYTEEZ_SECRET_KEY'),
-    ],
 
     'streampay' => [
         'base_url' => env('STREAMPAY_BASE_URL', 'https://api.streampay.org'),
@@ -27,5 +23,13 @@ return [
     'betatransfer' => [
         'public_key' => env('BETATRANSFER_PUBLIC_KEY'),
         'secret_key' => env('BETATRANSFER_SECRET_KEY'),
-    ]
+    ],
+
+    'westwallet' => [
+        'api_url' => env('WESTWALLET_API_URL', 'https://api.westwallet.io'),
+        'public_key' => env('WESTWALLET_PUBLIC_KEY'),
+        'private_key' => env('WESTWALLET_PRIVATE_KEY'),
+        'trusted_ips' => explode(',', env('WESTWALLET_TRUSTED_IPS', '5.188.51.47')),
+        'skip_ip_check' => env('WESTWALLET_SKIP_IP_CHECK', false),
+    ],
 ];
