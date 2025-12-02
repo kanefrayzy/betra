@@ -33,7 +33,6 @@ class AppInitializeMiddleware
             // Логика для обычных пользователей
             [$matchingHandlers, $otherHandlers] = $this->handlersFilter($payment_handlers, $user);
             [$matchingSystems, $otherSystems] = $this->systemFilter($payment_handlers, $user);
-            $availableBonuses = $this->getBonusesForUser($user);
             View::share(RankService::progress($user));
             View::share('matchingHandlers', $matchingHandlers);
             View::share('otherHandlers', $otherHandlers);
