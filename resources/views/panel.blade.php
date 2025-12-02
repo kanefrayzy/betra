@@ -1,4 +1,4 @@
-@php $baseUrl = 'qwdkox1i20'; @endphp
+@php $baseUrl = 'betrika'; @endphp
 <!DOCTYPE html>
 <html lang="ru">
 <head>

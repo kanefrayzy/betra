@@ -1,5 +1,5 @@
 @extends('panel')
-@php $baseUrl = 'qwdkox1i20'; @endphp
+@php $baseUrl = 'betrika'; @endphp
 
 @section('content')
 

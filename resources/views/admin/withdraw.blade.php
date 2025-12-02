@@ -1,6 +1,6 @@
 @extends('panel')
 @php
-    $baseUrl = 'qwdkox1i20';
+    $baseUrl = 'betrika';
     use App\Enums\PaymentStatus;
 @endphp
 
@@ -965,7 +965,7 @@ function showLinkedAccounts(accounts) {
                          class="w-10 h-10 rounded-lg object-cover"
                          alt="${account.username}">
                     <div class="flex-1">
-                        <a href="/qwdkox1i20/user/${account.user_id}"
+                        <a href="/betrika/user/${account.user_id}"
                            class="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
                            target="_blank">
                             ${account.username}

@@ -213,7 +213,7 @@
         const startDate = document.getElementById('start_date').value;
         const endDate = document.getElementById('end_date').value;
 
-        fetch(`/qwdkox1i20/detailed-statistics/data?start_date=${startDate}&end_date=${endDate}`)
+        fetch(`/betrika/detailed-statistics/data?start_date=${startDate}&end_date=${endDate}`)
             .then(response => response.json())
             .then(data => {
                 displayStatistics(data.statistics);

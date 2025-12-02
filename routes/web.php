@@ -221,7 +221,7 @@ Route::get('/fail', function () {
 
 
 Route::middleware(['auth', 'access:Admin'])->group(function () {
-    $base = 'qwdkox1i20';
+    $base = 'betrika';
     Route::get('/' . $base, [AdminController::class, 'index'])->name('Admin');
     Route::get('/' . $base . '/stats', [AdminController::class, 'stats'])->name('adminStats');
     Route::get('/' . $base . '/statscategory', [AdminController::class, 'statsCategory'])->name('statsCategory');
@@ -421,7 +421,7 @@ Route::middleware(['auth', 'access:Admin'])->group(function () {
 
 
 Route::middleware(['auth', 'moder:Moder'])->group(function () {
-    $base = 'qwdkox1i20';
+    $base = 'betrika';
     Route::get('/' . $base, [AdminController::class, 'index'])->name('Admin');
     Route::get('/' . $base . '/stats', [AdminController::class, 'stats'])->name('adminStats');
     //Route::get('/' . $base . '/statscategory', [AdminController::class, 'statsCategory'])->name('statsCategory');
@@ -466,7 +466,7 @@ Route::middleware(['auth', 'moder:Moder'])->group(function () {
 });
 
 Route::middleware(['auth', 'withdrawModer:WithdrawModer'])->group(function () {
-    $base = 'qwdkox1i20';
+    $base = 'betrika';
 
     Route::get('/' . $base . '/withdraw', [AdminController::class, 'withdraw'])->name('adminWithdraw');
     Route::get('/' . $base . '/withdraw/{id}', [AdminController::class, 'withdrawSend']);

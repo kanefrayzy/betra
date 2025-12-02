@@ -327,7 +327,7 @@ function gameSearch(categoryId) {
             this.loading = true;
             
             try {
-                const response = await fetch(`/qwdkox1i20/categories/${this.categoryId}/search-games?search=${encodeURIComponent(this.searchQuery)}&page=${this.page}`);
+                const response = await fetch(`/betrika/categories/${this.categoryId}/search-games?search=${encodeURIComponent(this.searchQuery)}&page=${this.page}`);
                 const data = await response.json();
                 
                 this.games = [...this.games, ...data.games];

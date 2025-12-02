@@ -383,7 +383,7 @@ function closeModal(modalId) {
 }
 
 function approveVerification(id) {
-    fetch(`/qwdkox1i20/verifications/${id}/update`, {
+    fetch(`/betrika/verifications/${id}/update`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ function rejectVerification() {
         return;
     }
 
-    fetch(`/qwdkox1i20/verifications/${currentVerificationId}/update`, {
+    fetch(`/betrika/verifications/${currentVerificationId}/update`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
