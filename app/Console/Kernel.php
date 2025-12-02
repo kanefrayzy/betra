@@ -6,7 +6,6 @@ use App\Console\Commands\AffiliateAction;
 use App\Console\Commands\GetCurrencyRates;
 use App\Console\Commands\ImportSlotegratorGames;
 use App\Console\Commands\UpdateUserOborot;
-use App\Console\Commands\WebSocketServer;
 use App\Console\Commands\SendDailyBonusLink;
 use App\Console\Commands\TestLogCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -23,7 +22,6 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         GetCurrencyRates::class,
         ImportSlotegratorGames::class,
-        WebSocketServer::class,
         UpdateUserOborot::class,
         AffiliateAction::class,
         SendDailyBonusLink::class,
