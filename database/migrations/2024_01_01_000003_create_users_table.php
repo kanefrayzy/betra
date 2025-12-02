@@ -64,6 +64,7 @@ return new class extends Migration
             $table->index('created_at');
             $table->index('aes_user_code');
             $table->index(['username', 'id']);
+            $table->index('user_id'); // Индекс для внешнего ключа referred_by
             
             $table->foreign('referred_by')
                   ->references('user_id')
