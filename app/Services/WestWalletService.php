@@ -145,7 +145,7 @@ class WestWalletService
 
         $response = $this->makeRequest('/address/generate', 'POST', $data);
 
-        if (!isset($response['error']) || $response['error'] !== 'ok' || !isset($response['data'])) {
+        if (!isset($response['error']) || $response['error'] !== 'ok') {
             Log::error('WestWallet Address Generation Failed', [
                 'user_id' => $user->id,
                 'currency' => $currency,
@@ -163,13 +163,27 @@ class WestWalletService
             ];
         }
 
+        // WestWallet возвращает данные напрямую в ответе, а не в поле 'data'
+        if (!isset($response['address'])) {
+            Log::error('WestWallet Address Missing', [
+                'user_id' => $user->id,
+                'currency' => $currency,
+                'response' => $response
+            ]);
+
+            return [
+                'error' => true,
+                'message' => 'Адрес не найден в ответе API'
+            ];
+        }
+
         // Сохраняем адрес в БД
         try {
             $wallet = UserCryptoWallet::create([
                 'user_id' => $user->id,
                 'currency' => strtoupper($currency),
-                'address' => $response['data']['address'],
-                'dest_tag' => $response['data']['dest_tag'] ?? null,
+                'address' => $response['address'],
+                'dest_tag' => $response['dest_tag'] ?? null,
                 'label' => $label,
                 'network' => $network,
             ]);
