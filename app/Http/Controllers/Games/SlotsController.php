@@ -173,44 +173,16 @@ class SlotsController extends Controller
                 };
 
                 if ($result instanceof \Illuminate\Http\JsonResponse && $result->getStatusCode() == 200) {
-                    // $this->logger->info("Action processed successfully", [
-                    //     'action' => $action,
-                    //     'attempt' => $i + 1,
-                    //     'result' => $result->getContent()
-                    // ]);
                     return $result;
                 }
-
-
-                // $this->logger->warning("Unexpected result", [
-                //     'action' => $action,
-                //     'attempt' => $i + 1,
-                //     'result' => $result instanceof \Illuminate\Http\JsonResponse ? $result->getContent() : 'Not a JSON response'
-                // ]);
             } catch (Exception $e) {
-                $this->logger->warning("Attempt failed", [
-                    'action' => $action,
-                    'attempt' => $i + 1,
-                    'error' => $e->getMessage()
-                ]);
 
                 if ($i == $attempts - 1) {
-                    $this->logger->error("All attempts failed", [
-                        'action' => $action,
-                        'attempts' => $attempts,
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
-                    ]);
                     throw $e;
                 }
                 sleep(1);
             }
         }
-
-        $this->logger->error("Failed to process after multiple attempts", [
-            'action' => $action,
-            'attempts' => $attempts
-        ]);
         return $this->errorResponse("Failed to process after {$attempts} attempts");
     }
 
@@ -244,32 +216,12 @@ class SlotsController extends Controller
                 ]);
                 return $this->errorResponse('Currency mismatch');
             }
-            // Проверка минимальной ставки для TRY
-            if ($type === 'bet' && $user->currency_id === 4 && $amount < 1) {
-                $this->logger->warning('Bet amount below minimum for TRY', [
-                    'user_id' => $user->id,
-                    'amount' => $amount,
-                    'currency_id' => $user->currency_id
-                ]);
-                return response()->json([
-                    'error_code' => 'INVALID_BET_AMOUNT',
-                    'error_description' => 'Minimum bet amount is 10 TRY'
-                ]);
-            }
-            // $this->logger->info('Processing transaction', [
-            //     'type' => $type,
-            //     'amount' => $amount,
-            //     'user_id' => $user->id,
-            //     'transaction_id' => $data['transaction_id']
-            // ]);
 
             if ($this->isExistingTransaction($data['transaction_id'])) {
-                // $this->logger->info('Existing transaction found', ['transaction_id' => $data['transaction_id']]);
                 return $this->getExistingTransactionResponse($user, $data['transaction_id']);
             }
 
             if ($errorDescription = $this->checkTokenValidity($user, $data)) {
-                // $this->logger->warning('Invalid token', ['user_id' => $user->id, 'error' => $errorDescription]);
                 return $this->errorResponse("Token fail: {$errorDescription}");
             }
 
@@ -286,41 +238,6 @@ class SlotsController extends Controller
             $this->storeTransactionInRedis($transaction, $user, $data);
 
             $endTime = microtime(true);
-            // $this->logger->info('Transaction processed successfully', [
-            //     'type' => $type,
-            //     'amount' => $amount,
-            //     'user_id' => $user->id,
-            //     'balance_before' => $originalBalance,
-            //     'balance_after' => $user->balance,
-            //     'execution_time' => $endTime - $startTime
-            // ]);
-
-            if ($type === 'bet') {
-                $betAmount = round($data['amount'], 2);
-
-                // Если у пользователя есть активный отыгрыш
-                if ($user->hasActiveWagering()) {
-                  // $this->logger->info('Transaction processed successfully', [
-                  //     'type' => $type,
-                  //     'amount' => $amount,
-                  //     'user_id' => $user->id,
-                  //     'balance_before' => $originalBalance,
-                  //     'balance_after' => $user->balance,
-                  //     ]);
-                    $exchangeService = new ExchangeService();
-
-                    // Конвертируем сумму ставки в AZN если нужно
-                    if ($user->currency->symbol !== 'AZN') {
-                        $betAmount = $exchangeService->convert(
-                            $betAmount,
-                            $user->currency->symbol,
-                            'AZN'
-                        );
-                    }
-
-                    $user->addToWageringAmount($betAmount);
-                }
-            }
 
             return $this->getTransactionResponse($user, $transaction);
         }, $this->transactionTimeout);
@@ -341,11 +258,7 @@ class SlotsController extends Controller
 
             // Если транзакция ставки не найдена
             if (!$betTransaction) {
-                // Возвращаем ошибку или регистрируем событие
-                // $this->logger->warning('Refund requested for non-existent bet', [
-                //     'user_id' => $user->id,
-                //     'bet_transaction_id' => $data['bet_transaction_id']
-                // ]);
+
 
                 return $this->errorResponse('Bet transaction not found for refund');
             }
@@ -405,12 +318,6 @@ class SlotsController extends Controller
         $user->balance += $balanceChange;
         $user->save();
 
-        // $this->logger->info('User balance updated', [
-        //     'user_id' => $user->id,
-        //     'type' => $type,
-        //     'amount' => $amount,
-        //     'new_balance' => $user->balance
-        // ]);
     }
 
     private function getTransactionResponse($user, $transaction)
@@ -550,10 +457,6 @@ class SlotsController extends Controller
                 'amount' => 0,
             ]),
         ]);
-        // $this->logger->info('Rollback transaction created for non-existent bet', [
-        //     'user_id' => $playerId,
-        //     'transaction_id' => $transactionData['transaction_id']
-        // ]);
     }
 
     protected function processRollbackForTransaction($user, $transaction)
@@ -574,12 +477,6 @@ class SlotsController extends Controller
                 ['log' => 'rollback']
             )),
         ]);
-        // $this->logger->info('Transaction rolled back', [
-        //     'user_id' => $user->id,
-        //     'transaction_id' => $transaction->id,
-        //     'type' => $transaction->type,
-        //     'amount' => $amount
-        // ]);
     }
 
     protected function createFinalRollbackTransaction($user, $data, $balance_before, $answerArrRollbackTransactions)

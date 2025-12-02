@@ -6,14 +6,14 @@
             <!-- Логотип (десктоп) -->
             <div class="hidden lg:flex">
                 <a href="/" wire:navigate class="mr-8">
-                    <img src="/assets/images/logo.png" alt="Flash" class="h-10">
+                    <img src="/assets/images/logo.png?v1" alt="Flash" class="h-10">
                 </a>
             </div>
 
             <!-- Логотип (мобильный) -->
             <div class="lg:hidden">
                 <a href="/" wire:navigate>
-                    <img src="/assets/images/logo-mobile.png" alt="Flash" class="h-8">
+                    <img src="/assets/images/logo-mobile.png?v1" alt="Flash" class="h-8">
                 </a>
             </div>
         </div>
