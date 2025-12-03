@@ -615,7 +615,7 @@ function cashModalData() {
         // Данные платёжных систем
         paymentHandlers: {
             @foreach($matchingHandlers as $handler)
-            'handler_{{ $handler->id }}': { 
+            {{ $handler->id }}: { 
                 id: {{ $handler->id }},
                 name: '{{ $handler->name }}', 
                 icon: '{{ $handler->icon ? asset('storage/' . $handler->icon) : '' }}', 
@@ -625,7 +625,7 @@ function cashModalData() {
             },
             @endforeach
             @foreach($otherHandlers as $handler)
-            'handler_{{ $handler->id }}': { 
+            {{ $handler->id }}: { 
                 id: {{ $handler->id }},
                 name: '{{ $handler->name }}', 
                 icon: '{{ $handler->icon ? asset('storage/' . $handler->icon) : '' }}', 
