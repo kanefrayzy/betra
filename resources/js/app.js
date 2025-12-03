@@ -5,6 +5,10 @@ import 'noty/lib/noty.css';
 // Import Swiper
 import 'swiper/swiper-bundle.css';
 
+// Import QRCode
+import QRCode from 'qrcodejs';
+window.QRCode = QRCode;
+
 window.Noty = Noty;
 
 import { initNotyTailwindTheme } from './noty-tailwind-theme';
