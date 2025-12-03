@@ -68,9 +68,20 @@ if (typeof window.ChatSystem === 'undefined') {
      * Настройка слушателей Livewire Navigate
      */
     setupNavigationListeners() {
+        // Закрытие WebSocket при выгрузке страницы
+        window.addEventListener('beforeunload', () => {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.close(1000, 'Page unload');
+            }
+        });
+        
         // Перед навигацией - сохраняем состояние
         document.addEventListener('livewire:navigating', () => {
             this.state.isNavigating = true;
+            // Не закрываем WebSocket при SPA навигации
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.preserveConnection = true;
+            }
         });
 
         // После навигации - проверяем WebSocket
@@ -458,8 +469,13 @@ if (typeof window.ChatSystem === 'undefined') {
             };
         }
 
-        if (typeof chatEmojis !== 'undefined') {
+        // Используем Alpine.store если доступен, иначе fallback на window.chatEmojis
+        if (typeof Alpine !== 'undefined' && Alpine.store && Alpine.store('chat')) {
+            this.state.emojiObj = Alpine.store('chat').emojis;
+        } else if (typeof chatEmojis !== 'undefined') {
             this.state.emojiObj = chatEmojis;
+        } else if (typeof window.chatEmojis !== 'undefined') {
+            this.state.emojiObj = window.chatEmojis;
         }
     }
 

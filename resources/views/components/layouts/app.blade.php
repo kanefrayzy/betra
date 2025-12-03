@@ -491,6 +491,16 @@
 
 
     <script data-navigate-once>
+        // Используем Alpine.store для управления состоянием
+        document.addEventListener('alpine:init', () => {
+            if (typeof Alpine !== 'undefined' && Alpine.store) {
+                Alpine.store('chat', {
+                    emojis: {!! $chat_emoj !!}
+                });
+            }
+        });
+        
+        // Обратная совместимость
         if (typeof window.chatEmojis === 'undefined') {
             window.chatEmojis = {!! $chat_emoj !!};
             window.isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
@@ -501,6 +511,11 @@
             window.isModerator = {{ (Auth::user()->is_moder || Auth::user()->is_admin || Auth::user()->is_chat_moder) ? 'true' : 'false' }};
             @endauth
         }
+        
+        // Очистка при навигации для ресинхронизации (Alpine.store сохраняется автоматически)
+        document.addEventListener('livewire:navigating', () => {
+            // State управляется через Alpine.store
+        });
     </script>
 
     <script data-navigate-once>
@@ -735,10 +750,27 @@
                 token: '',
                 deepLink: '',
                 checkInterval: null,
+                checkAttempts: 0,
+                maxAttempts: 300,
                 
                 init() {
                     // Генерируем ссылку сразу при инициализации
                     this.generateDeepLink();
+                    
+                    // Очистка при навигации
+                    const navigatingHandler = () => this.stopChecking();
+                    document.addEventListener('livewire:navigating', navigatingHandler);
+                    
+                    // Сохраняем ссылку на обработчик для очистки
+                    this._navigatingHandler = navigatingHandler;
+                },
+                
+                destroy() {
+                    // Очистка при уничтожении компонента
+                    this.stopChecking();
+                    if (this._navigatingHandler) {
+                        document.removeEventListener('livewire:navigating', this._navigatingHandler);
+                    }
                 },
                 
                 async generateDeepLink() {
@@ -783,14 +815,33 @@
                 },
                 
                 startChecking() {
-                    this.checkInterval = setInterval(async () => {
-                        await this.checkStatus();
-                    }, 2000);
-                    
-                    // Автоматически останавливаем проверку через 10 минут
-                    setTimeout(() => {
+                    this.checkAttempts = 0;
+                    this.scheduleNextCheck();
+                },
+                
+                scheduleNextCheck() {
+                    if (this.checkAttempts >= this.maxAttempts) {
                         this.stopChecking();
-                    }, 600000);
+                        return;
+                    }
+                    
+                    // Exponential backoff: 2s → 4s → 8s → 15s (cap)
+                    let delay;
+                    if (this.checkAttempts < 5) {
+                        delay = 2000; // Первые 5 попыток: 2s
+                    } else if (this.checkAttempts < 15) {
+                        delay = 4000; // Следующие 10 попыток: 4s
+                    } else if (this.checkAttempts < 30) {
+                        delay = 8000; // Следующие 15 попыток: 8s
+                    } else {
+                        delay = 15000; // Остальное: 15s
+                    }
+                    
+                    this.checkInterval = setTimeout(async () => {
+                        await this.checkStatus();
+                        this.checkAttempts++;
+                        this.scheduleNextCheck();
+                    }, delay);
                 },
                 
                 async checkStatus() {
@@ -830,10 +881,11 @@
                 
                 stopChecking() {
                     if (this.checkInterval) {
-                        clearInterval(this.checkInterval);
+                        clearTimeout(this.checkInterval);
                         this.checkInterval = null;
                     }
                     this.loading = false;
+                    this.checkAttempts = 0;
                 }
             }
         }

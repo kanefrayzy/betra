@@ -19,6 +19,14 @@ document.addEventListener('livewire:navigated', () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
 });
 
+// Заглушка для loadRecaptcha если не определена
+if (typeof window.loadRecaptcha === 'undefined') {
+    window.loadRecaptcha = function() {
+        // Заглушка - реализация должна быть добавлена отдельно
+        console.warn('loadRecaptcha called but not implemented');
+    };
+}
+
 // Notifications from meta tags
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof window.showSuccessNotification === 'undefined') {
@@ -53,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Suppress known errors
+// Suppress known errors (with logging in development)
 window.addEventListener('error', function(event) {
     const ignoreMessages = [
         "Cannot read properties of null",
@@ -61,8 +69,14 @@ window.addEventListener('error', function(event) {
         "Cannot redefine property: $persist"
     ];
 
-    if (ignoreMessages.some(msg => event.message.includes(msg)) &&
-        (event.filename.includes("livewire") || event.filename.includes("alpine"))) {
+    const shouldSuppress = ignoreMessages.some(msg => event.message.includes(msg)) &&
+        (event.filename.includes("livewire") || event.filename.includes("alpine"));
+
+    if (shouldSuppress) {
+        // Логируем в консоль для отладки, но не показываем пользователю
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.warn('[Suppressed Error]:', event.message, event.filename);
+        }
         event.preventDefault();
     }
 });
