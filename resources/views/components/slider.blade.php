@@ -219,11 +219,32 @@
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js"></script>
 
 <script>
 // Хранилище для экземпляров Swiper
 window.swiperInstances = window.swiperInstances || {};
+window.swiperLoaded = false;
+
+// Lazy load Swiper script
+function loadSwiperScript() {
+    if (window.swiperLoaded) return Promise.resolve();
+    
+    return new Promise((resolve) => {
+        if (window.Swiper) {
+            window.swiperLoaded = true;
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js';
+        script.onload = () => {
+            window.swiperLoaded = true;
+            resolve();
+        };
+        document.head.appendChild(script);
+    });
+}
 
 function initSwipers() {
     // Уничтожаем старые экземпляры
@@ -234,77 +255,80 @@ function initSwipers() {
     });
     window.swiperInstances = {};
 
-    // Main Slider Desktop
-    const mainDesktopEl = document.getElementById('main-slider-container');
-    if (mainDesktopEl) {
-        const slides = mainDesktopEl.querySelectorAll('.swiper-slide');
-        if (slides.length > 0) {
-            window.swiperInstances.mainDesktop = new Swiper('#main-slider-container', {
-                effect: 'fade',
-                fadeEffect: { crossFade: true },
-                autoplay: { delay: 5000, disableOnInteraction: false },
-                loop: slides.length > 1,
-                navigation: {
-                    nextEl: '#main-next',
-                    prevEl: '#main-prev',
-                },
-                pagination: {
-                    el: '#main-pagination',
-                    clickable: true,
-                },
-            });
+    // Загружаем Swiper и инициализируем слайдеры
+    loadSwiperScript().then(() => {
+        // Main Slider Desktop
+        const mainDesktopEl = document.getElementById('main-slider-container');
+        if (mainDesktopEl) {
+            const slides = mainDesktopEl.querySelectorAll('.swiper-slide');
+            if (slides.length > 0) {
+                window.swiperInstances.mainDesktop = new Swiper('#main-slider-container', {
+                    effect: 'fade',
+                    fadeEffect: { crossFade: true },
+                    autoplay: { delay: 5000, disableOnInteraction: false },
+                    loop: slides.length > 1,
+                    navigation: {
+                        nextEl: '#main-next',
+                        prevEl: '#main-prev',
+                    },
+                    pagination: {
+                        el: '#main-pagination',
+                        clickable: true,
+                    },
+                });
+            }
         }
-    }
 
-    // Main Slider Mobile
-    const mainMobileEl = document.getElementById('main-slider-mobile');
-    if (mainMobileEl) {
-        const slides = mainMobileEl.querySelectorAll('.swiper-slide');
-        if (slides.length > 0) {
-            window.swiperInstances.mainMobile = new Swiper('#main-slider-mobile', {
-                effect: 'fade',
-                fadeEffect: { crossFade: true },
-                autoplay: { delay: 5000, disableOnInteraction: false },
-                loop: slides.length > 1,
-                pagination: {
-                    el: '#main-pagination-mobile',
-                    clickable: true,
-                },
-            });
+        // Main Slider Mobile
+        const mainMobileEl = document.getElementById('main-slider-mobile');
+        if (mainMobileEl) {
+            const slides = mainMobileEl.querySelectorAll('.swiper-slide');
+            if (slides.length > 0) {
+                window.swiperInstances.mainMobile = new Swiper('#main-slider-mobile', {
+                    effect: 'fade',
+                    fadeEffect: { crossFade: true },
+                    autoplay: { delay: 5000, disableOnInteraction: false },
+                    loop: slides.length > 1,
+                    pagination: {
+                        el: '#main-pagination-mobile',
+                        clickable: true,
+                    },
+                });
+            }
         }
-    }
 
-    // Small Slider 1
-    const small1El = document.getElementById('small-slider-1');
-    if (small1El) {
-        const slides = small1El.querySelectorAll('.swiper-slide');
-        if (slides.length > 0) {
-            window.swiperInstances.small1 = new Swiper('#small-slider-1', {
-                autoplay: { delay: 6000, disableOnInteraction: false },
-                loop: slides.length > 1,
-                pagination: {
-                    el: '#small-pagination-1',
-                    clickable: true,
-                },
-            });
+        // Small Slider 1
+        const small1El = document.getElementById('small-slider-1');
+        if (small1El) {
+            const slides = small1El.querySelectorAll('.swiper-slide');
+            if (slides.length > 0) {
+                window.swiperInstances.small1 = new Swiper('#small-slider-1', {
+                    autoplay: { delay: 6000, disableOnInteraction: false },
+                    loop: slides.length > 1,
+                    pagination: {
+                        el: '#small-pagination-1',
+                        clickable: true,
+                    },
+                });
+            }
         }
-    }
 
-    // Small Slider 2
-    const small2El = document.getElementById('small-slider-2');
-    if (small2El) {
-        const slides = small2El.querySelectorAll('.swiper-slide');
-        if (slides.length > 0) {
-            window.swiperInstances.small2 = new Swiper('#small-slider-2', {
-                autoplay: { delay: 7000, disableOnInteraction: false },
-                loop: slides.length > 1,
-                pagination: {
-                    el: '#small-pagination-2',
-                    clickable: true,
-                },
-            });
+        // Small Slider 2
+        const small2El = document.getElementById('small-slider-2');
+        if (small2El) {
+            const slides = small2El.querySelectorAll('.swiper-slide');
+            if (slides.length > 0) {
+                window.swiperInstances.small2 = new Swiper('#small-slider-2', {
+                    autoplay: { delay: 7000, disableOnInteraction: false },
+                    loop: slides.length > 1,
+                    pagination: {
+                        el: '#small-pagination-2',
+                        clickable: true,
+                    },
+                });
+            }
         }
-    }
+    });
 }
 
 // Инициализация при загрузке и при навигации Livewire

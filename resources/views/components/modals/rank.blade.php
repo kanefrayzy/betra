@@ -50,7 +50,7 @@
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-800">
                             @if($u->avatar)
-                                <img src="{{ $u->avatar }}" alt="{{ $u->username }}" class="w-full h-full object-cover">
+                                <img src="{{ $u->avatar }}" alt="{{ $u->username }}" class="w-full h-full object-cover" loading="lazy">
                             @else
                                 <div class="w-full h-full flex items-center justify-center bg-[#ffb300]">
                                     <svg class="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 20 20">
@@ -70,7 +70,7 @@
                     @if ($current_rank)
                     <div class="flex flex-col items-center">
                         <div class="w-12 h-12 rounded-lg bg-gray-800 border-2 border-[#ffb300] flex items-center justify-center mb-1">
-                            <img src="{{ asset('storage/' . $current_rank->picture) }}" alt="{{ $current_rank->name }}" class="w-8 h-8">
+                            <img src="{{ asset('storage/' . $current_rank->picture) }}" alt="{{ $current_rank->name }}" class="w-8 h-8" loading="lazy">
                         </div>
                         <span class="text-[#ffb300] font-bold text-sm">LVL {{ $current_rank->id }}</span>
                     </div>
@@ -116,7 +116,7 @@
                             <div class="flex justify-between my-4">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-lg bg-[#ffb300] flex items-center justify-center">
-                                        <img src="{{ asset('storage/' . $current_rank->picture) }}" alt="{{ $current_rank->name }}" class="w-5 h-5">
+                                        <img src="{{ asset('storage/' . $current_rank->picture) }}" alt="{{ $current_rank->name }}" class="w-5 h-5" loading="lazy">
                                     </div>
                                     <span class="text-xs text-gray-400">LVL {{ $current_rank->id }}</span>
                                 </div>
@@ -130,7 +130,7 @@
                                     </span>
                                     <div class="w-8 h-8 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center">
                                         @if ($next_rank)
-                                            <img src="{{ asset('storage/' . $next_rank->picture) }}" alt="{{ $next_rank->name }}" class="w-5 h-5">
+                                            <img src="{{ asset('storage/' . $next_rank->picture) }}" alt="{{ $next_rank->name }}" class="w-5 h-5" loading="lazy">
                                         @else
                                             <span class="text-[#ffb300] text-xs font-bold">★</span>
                                         @endif
@@ -196,7 +196,7 @@
                         <div @click="open = !open" class="flex items-center justify-between p-4 cursor-pointer">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
-                                    <img src="{{ asset('storage/' . $rank->picture) }}" alt="{{ $rank->name }}" class="w-6 h-6">
+                                    <img src="{{ asset('storage/' . $rank->picture) }}" alt="{{ $rank->name }}" class="w-6 h-6" loading="lazy">
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-2">

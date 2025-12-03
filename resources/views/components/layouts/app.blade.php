@@ -38,14 +38,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://kit.fontawesome.com">
     <link rel="dns-prefetch" href="https://telegram.org">
-    <link rel="dns-prefetch" href="https://kit.fontawesome.com">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=REM:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Icons -->
-    <script src="https://kit.fontawesome.com/5bc1c1da4e.js" crossorigin="anonymous" defer></script>
+    <script src="https://kit.fontawesome.com/5bc1c1da4e.js" crossorigin="anonymous" async></script>
 
     <!-- reCAPTCHA - Отложенная загрузка -->
     <script>
