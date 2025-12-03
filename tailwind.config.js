@@ -12,6 +12,11 @@ module.exports = {
       pattern: /^(bg|text|border)-(primary|success|warning|danger|dark)(-\d+)?$/,
       variants: ['hover', 'focus'],
     },
+    // Добавить используемые динамические классы из категорий
+    'bg-[#ffb300]',
+    'text-[#ffb300]',
+    'bg-[#8b5cf6]',
+    'text-[#8b5cf6]',
   ],
   theme: {
     extend: {

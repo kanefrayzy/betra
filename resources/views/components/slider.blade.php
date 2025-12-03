@@ -27,11 +27,19 @@
                         <div class="swiper-slide">
                             @if($banner->link)
                                 <a href="{{ $banner->link }}" class="block relative h-full rounded-2xl overflow-hidden border border-gray-800">
-                                    <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                    <img src="{{ $banner->image_url }}" 
+                                         alt="{{ $banner->title }}" 
+                                         loading="lazy" 
+                                         decoding="async" 
+                                         class="w-full h-full object-cover">
                                 </a>
                             @else
                                 <div class="relative h-full rounded-2xl overflow-hidden border border-gray-800">
-                                    <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                    <img src="{{ $banner->image_url }}" 
+                                         alt="{{ $banner->title }}" 
+                                         loading="lazy" 
+                                         decoding="async" 
+                                         class="w-full h-full object-cover">
                                 </div>
                             @endif
                         </div>
@@ -39,7 +47,11 @@
                         <!-- Fallback banners если нет в БД -->
                         <div class="swiper-slide">
                             <div class="relative h-full rounded-2xl overflow-hidden border border-gray-800">
-                                <img src="https://jetvora.life/_next/image?url=https%3A%2F%2Fgames.cloudfire.app%2Fimages%2Ftournaments%2Fd21ba6fb-2a77-4d27-b8f2-f6951f29368a.png&w=1920&q=75" alt="Banner" class="w-full h-full object-cover">
+                                <img src="https://jetvora.life/_next/image?url=https%3A%2F%2Fgames.cloudfire.app%2Fimages%2Ftournaments%2Fd21ba6fb-2a77-4d27-b8f2-f6951f29368a.png&w=1920&q=75" 
+                                     alt="Banner" 
+                                     loading="lazy" 
+                                     decoding="async" 
+                                     class="w-full h-full object-cover">
                             </div>
                         </div>
                     @endforelse
@@ -80,11 +92,19 @@
                             <div class="swiper-slide h-full">
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($banner->image) }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
                                     </a>
                                 @else
                                     <div class="h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($banner->image) }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
                                     </div>
                                 @endif
                             </div>
@@ -104,11 +124,19 @@
                             <div class="swiper-slide h-full">
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($banner->image) }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
                                     </a>
                                 @else
                                     <div class="h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($banner->image) }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
                                     </div>
                                 @endif
                             </div>
@@ -128,18 +156,30 @@
                             <div class="swiper-slide h-full">
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block h-full rounded-2xl overflow-hidden border border-gray-800 hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($banner->image) }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
                                     </a>
                                 @else
                                     <div class="h-full rounded-2xl overflow-hidden border border-gray-800 hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($banner->image) }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
                                     </div>
                                 @endif
                             </div>
                         @empty
                             <div class="swiper-slide h-full">
                                 <div class="h-full rounded-2xl overflow-hidden border border-gray-800 hover:-translate-y-2 transition-transform duration-300">
-                                    <img src="https://jetvora.life/_next/image?url=https%3A%2F%2Fgames.cloudfire.app%2Fimages%2Ftournaments%2F6e868950-0f4d-4e18-a176-c80160e259c7.webp&w=640&q=75" alt="Small Banner" class="w-full h-full object-cover">
+                                    <img src="https://jetvora.life/_next/image?url=https%3A%2F%2Fgames.cloudfire.app%2Fimages%2Ftournaments%2F6e868950-0f4d-4e18-a176-c80160e259c7.webp&w=640&q=75" 
+                                         alt="Small Banner" 
+                                         loading="lazy" 
+                                         decoding="async" 
+                                         class="w-full h-full object-cover">
                                 </div>
                             </div>
                         @endforelse
@@ -155,7 +195,11 @@
                     <div class="swiper-wrapper h-full">
                         <div class="swiper-slide h-full">
                             <div class="h-full rounded-2xl overflow-hidden border border-gray-800 hover:-translate-y-2 transition-transform duration-300">
-                                <img src="https://picsum.photos/seed/small3/400/533" alt="Small Banner" class="w-full h-full object-cover">
+                                <img src="https://picsum.photos/seed/small3/400/533" 
+                                     alt="Small Banner" 
+                                     loading="lazy" 
+                                     decoding="async" 
+                                     class="w-full h-full object-cover">
                             </div>
                         </div>
                     </div>
@@ -173,11 +217,19 @@
                 <div class="flex-shrink-0 w-40 snap-start">
                     @if($banner->link)
                         <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                            <img src="{{ $banner->mobile_image_url }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                            <img src="{{ $banner->mobile_image_url }}" 
+                                 alt="{{ $banner->title }}" 
+                                 loading="lazy" 
+                                 decoding="async" 
+                                 class="w-full h-full object-cover">
                         </a>
                     @else
                         <div class="relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                            <img src="{{ $banner->mobile_image_url }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
+                            <img src="{{ $banner->mobile_image_url }}" 
+                                 alt="{{ $banner->title }}" 
+                                 loading="lazy" 
+                                 decoding="async" 
+                                 class="w-full h-full object-cover">
                         </div>
                     @endif
                 </div>
@@ -185,17 +237,29 @@
                 <!-- Fallback мобильные баннеры -->
                 <div class="flex-shrink-0 w-40 snap-start">
                     <div class="relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                        <img src="https://picsum.photos/seed/mobile1/400/533" alt="Small Banner" class="w-full h-full object-cover">
+                        <img src="https://picsum.photos/seed/mobile1/400/533" 
+                             alt="Small Banner" 
+                             loading="lazy" 
+                             decoding="async" 
+                             class="w-full h-full object-cover">
                     </div>
                 </div>
                 <div class="flex-shrink-0 w-40 snap-start">
                     <div class="relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                        <img src="https://picsum.photos/seed/mobile2/400/533" alt="Small Banner" class="w-full h-full object-cover">
+                        <img src="https://picsum.photos/seed/mobile2/400/533" 
+                             alt="Small Banner" 
+                             loading="lazy" 
+                             decoding="async" 
+                             class="w-full h-full object-cover">
                     </div>
                 </div>
                 <div class="flex-shrink-0 w-40 snap-start">
                     <div class="relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                        <img src="https://picsum.photos/seed/mobile3/400/533" alt="Small Banner" class="w-full h-full object-cover">
+                        <img src="https://picsum.photos/seed/mobile3/400/533" 
+                             alt="Small Banner" 
+                             loading="lazy" 
+                             decoding="async" 
+                             class="w-full h-full object-cover">
                     </div>
                 </div>
             @endforelse
@@ -218,7 +282,10 @@
     }
 </style>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css" media="print" onload="this.media='all'">
+<noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css">
+</noscript>
 
 <script>
 // Хранилище для экземпляров Swiper

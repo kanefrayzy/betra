@@ -34,98 +34,23 @@
     <link rel="apple-touch-icon" href="{{ asset('assets/images/favicons/apple-touch-icon.png') }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicons/favicon.ico') }}">
 
-    <!-- Preconnect для внешних ресурсов -->
+    <!-- Preconnect для критичных CDN -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://telegram.org">
 
-    <!-- Fonts - оптимизированная загрузка -->
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Icons - отложенная загрузка Font Awesome -->
-    <script>
-        // Загружаем Font Awesome только после загрузки страницы
-        window.addEventListener('load', function() {
-            const faScript = document.createElement('script');
-            faScript.src = 'https://kit.fontawesome.com/5bc1c1da4e.js';
-            faScript.crossOrigin = 'anonymous';
-            faScript.defer = true;
-            document.head.appendChild(faScript);
-        });
-    </script>
-
-    <!-- Swiper -->
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-
-    <!-- reCAPTCHA - Отложенная загрузка -->
-    <script>        
-        // Загружаем при взаимодействии пользователя
-        ['mousedown', 'touchstart', 'keydown'].forEach(function(event) {
-            document.addEventListener(event, window.loadRecaptcha, { once: true, passive: true });
-        });
-    </script>
-
+    <!-- Шрифты с async загрузкой через media="print" -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" 
+          rel="stylesheet" 
+          media="print" 
+          onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    </noscript>
 
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    {{-- Подключение стилей для Telegram WebApp --}}
-    <script>
-        // Функция проверки Telegram WebApp
-        function checkAndLoadTelegramStyles() {
-            // Используем функцию isTelegramWebApp если она уже определена
-            const isTelegram = (typeof window.isTelegramWebApp === 'function') 
-                ? window.isTelegramWebApp() 
-                : false;
-            
-            if (isTelegram) {
-                // Проверяем, не подключены ли уже стили
-                if (!document.getElementById('telegram-webapp-styles')) {
-                    const link = document.createElement('link');
-                    link.id = 'telegram-webapp-styles';
-                    link.rel = 'stylesheet';
-                    link.href = '{{ asset('css/telegram-webapp.css') }}?v=1.0';
-                    document.head.appendChild(link);
-                    console.log('Telegram WebApp styles loaded');
-                }
-            }
-        }
-        
-        // Загружаем немедленно без задержки для игровых страниц
-        let isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-        
-        if (isGamePage) {
-            // На игровых страницах загружаем стили без задержки
-            document.addEventListener('DOMContentLoaded', checkAndLoadTelegramStyles);
-        } else {
-            // На остальных страницах используем минимальную задержку
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(checkAndLoadTelegramStyles, 50);
-            });
-        }
-        
-        // И при каждой навигации Livewire
-        document.addEventListener('livewire:navigated', function() {
-            const isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-            
-            if (isGamePage) {
-                checkAndLoadTelegramStyles();
-                
-                // Применяем настройки WebApp без задержки
-                if (typeof window.applyTelegramWebAppSettings === 'function') {
-                    window.applyTelegramWebAppSettings();
-                }
-            } else {
-                setTimeout(checkAndLoadTelegramStyles, 50);
-                
-                if (typeof window.applyTelegramWebAppSettings === 'function') {
-                    setTimeout(() => {
-                        window.applyTelegramWebAppSettings();
-                    }, 150);
-                }
-            }
-        });
-    </script>
 
     <style type="text/tailwindcss">
         @layer base {
@@ -890,6 +815,64 @@
             }
         }
     </script>
+
+    <!-- reCAPTCHA - Отложенная загрузка -->
+    <script>
+        // Загружаем при взаимодействии пользователя
+        ['mousedown', 'touchstart', 'keydown'].forEach(function(event) {
+            document.addEventListener(event, window.loadRecaptcha, { once: true, passive: true });
+        });
+    </script>
+
+    <!-- Telegram WebApp - только если открыто в TG -->
+    @if(request()->header('User-Agent') && (str_contains(request()->header('User-Agent'), 'Telegram') || str_contains(request()->header('User-Agent'), 'TelegramBot')))
+    <script defer>
+        // Функция проверки Telegram WebApp
+        function checkAndLoadTelegramStyles() {
+            const isTelegram = (typeof window.isTelegramWebApp === 'function') 
+                ? window.isTelegramWebApp() 
+                : false;
+            
+            if (isTelegram) {
+                if (!document.getElementById('telegram-webapp-styles')) {
+                    const link = document.createElement('link');
+                    link.id = 'telegram-webapp-styles';
+                    link.rel = 'stylesheet';
+                    link.href = '{{ asset('css/telegram-webapp.css') }}?v=1.0';
+                    document.head.appendChild(link);
+                }
+            }
+        }
+        
+        let isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
+        
+        if (isGamePage) {
+            document.addEventListener('DOMContentLoaded', checkAndLoadTelegramStyles);
+        } else {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(checkAndLoadTelegramStyles, 50);
+            });
+        }
+        
+        document.addEventListener('livewire:navigated', function() {
+            const isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
+            
+            if (isGamePage) {
+                checkAndLoadTelegramStyles();
+                if (typeof window.applyTelegramWebAppSettings === 'function') {
+                    window.applyTelegramWebAppSettings();
+                }
+            } else {
+                setTimeout(checkAndLoadTelegramStyles, 50);
+                if (typeof window.applyTelegramWebAppSettings === 'function') {
+                    setTimeout(() => {
+                        window.applyTelegramWebAppSettings();
+                    }, 150);
+                }
+            }
+        });
+    </script>
+    @endif
  
 </body>
 </html>

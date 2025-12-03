@@ -8,11 +8,7 @@ export default defineConfig({
             refresh: true,
         }),
     ],
-    optimizeDeps: {
-        include: ['livewire', 'alpinejs'],
-    },
     build: {
-        // Минификация с terser для лучшего результата
         minify: 'terser',
         terserOptions: {
             compress: {
@@ -21,50 +17,26 @@ export default defineConfig({
                 pure_funcs: ['console.log', 'console.info', 'console.debug']
             }
         },
-        // Разделение кода на оптимальные чанки
         rollupOptions: {
             output: {
-                manualChunks: (id) => {
-                    // Livewire и Alpine
-                    if (id.includes('livewire') || id.includes('alpinejs')) {
-                        return 'alpine-livewire';
-                    }
-                    // Vendor библиотеки
-                    if (id.includes('noty') || id.includes('swiper')) {
-                        return 'vendor';
-                    }
-                    // Socket.io только если реально используется
-                    if (id.includes('socket.io')) {
-                        return 'websocket';
-                    }
-                }
+                manualChunks: {
+                    'vendor': ['noty'],
+                    'alpine-livewire': ['livewire', 'alpinejs']
+                },
+                chunkFileNames: 'js/[name]-[hash].js',
+                entryFileNames: 'js/[name]-[hash].js',
+                assetFileNames: 'assets/[name]-[hash].[ext]'
             }
         },
-        // Увеличиваем лимит для предупреждений о размере
-        chunkSizeWarningLimit: 1000,
-        // CSS code splitting
+        chunkSizeWarningLimit: 700,
         cssCodeSplit: true,
-        // Оптимизация ассетов
-        assetsInlineLimit: 4096,
-        // Опция для совместимости с браузером
-        commonjsOptions: {
-            transformMixedEsModules: true,
-        }
+        assetsInlineLimit: 4096
     },
-    // Алиасы для более удобного импорта
-    resolve: {
-        alias: {
-            '@': '/resources/js',
-            '@css': '/resources/css',
-            // Полифилы для Node.js модулей в браузере
-            'util': 'util/',
-            'events': 'events/',
-        }
+    optimizeDeps: {
+        include: ['livewire', 'alpinejs', 'noty'],
+        exclude: ['socket.io-client']
     },
-    // Оптимизация dev-сервера
     server: {
-        hmr: {
-            overlay: false
-        }
+        hmr: { overlay: false }
     }
 });
