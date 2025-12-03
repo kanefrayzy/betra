@@ -181,13 +181,13 @@
                     <div x-show="!showCryptoAddress && selectedSystem && isCryptoSystem(selectedSystem)" class="space-y-4">
                         <h3 class="text-white font-semibold text-lg">{{__('Выберите криптовалюту')}}</h3>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <template x-for="crypto in cryptoCurrencies" :key="crypto.code">
-                                <button @click="selectCrypto(crypto.code)" type="button"
+                            <template x-for="handler in getCryptoHandlers()" :key="handler.id">
+                                <button @click="selectCrypto(handler)" type="button"
                                         class="p-4 bg-[#252a32] hover:bg-[#2c3340] border border-gray-800 hover:border-[#ffb300] rounded-xl transition-all duration-200 group">
                                     <div class="flex flex-col items-center gap-2">
-                                        <div class="text-3xl" x-text="crypto.icon" :style="{ color: crypto.color }"></div>
-                                        <div class="text-white font-semibold text-sm" x-text="crypto.code"></div>
-                                        <div class="text-gray-400 text-xs" x-text="crypto.name"></div>
+                                        <img :src="handler.icon" :alt="handler.name" class="w-16 h-16 object-contain">
+                                        <div class="text-white font-semibold text-sm" x-text="handler.name"></div>
+                                        <div class="text-gray-400 text-xs" x-text="handler.network ? handler.network : handler.currency"></div>
                                     </div>
                                 </button>
                             </template>
@@ -607,23 +607,25 @@ function cashModalData() {
         successMessage: '',
         errorMessage: '',
         
-        // Список криптовалют
-        cryptoCurrencies: [
-            { code: 'BTC', name: 'Bitcoin', icon: '₿', color: '#F7931A' },
-            { code: 'ETH', name: 'Ethereum', icon: 'Ξ', color: '#627EEA' },
-            { code: 'USDT', name: 'Tether (USDT)', icon: '₮', color: '#26A17B' },
-            { code: 'TRX', name: 'TRON', icon: 'TRX', color: '#EF0027' },
-            { code: 'LTC', name: 'Litecoin', icon: 'Ł', color: '#345D9D' },
-            { code: 'XRP', name: 'Ripple', icon: 'XRP', color: '#23292F' },
-        ],
-        
         // Данные платёжных систем
         paymentHandlers: {
             @foreach($matchingHandlers as $handler)
-            '{{ $handler->id }}': { name: '{{ $handler->name }}', icon: '{{ asset('storage/' . $handler->icon) }}', currency: '{{ $handler->currency }}' },
+            '{{ $handler->id }}': { 
+                name: '{{ $handler->name }}', 
+                icon: '{{ asset('storage/' . $handler->icon) }}', 
+                currency: '{{ $handler->currency }}',
+                network: '{{ $handler->network }}',
+                payment_system_id: {{ $handler->payment_system_id }}
+            },
             @endforeach
             @foreach($otherHandlers as $handler)
-            '{{ $handler->id }}': { name: '{{ $handler->name }}', icon: '{{ asset('storage/' . $handler->icon) }}', currency: '{{ $handler->currency }}' },
+            '{{ $handler->id }}': { 
+                name: '{{ $handler->name }}', 
+                icon: '{{ asset('storage/' . $handler->icon) }}', 
+                currency: '{{ $handler->currency }}',
+                network: '{{ $handler->network }}',
+                payment_system_id: {{ $handler->payment_system_id }}
+            },
             @endforeach
         },
         
@@ -655,21 +657,37 @@ function cashModalData() {
         isCryptoSystem(systemId) {
             const handler = this.paymentHandlers[systemId];
             if (!handler) return false;
-            const cryptoCodes = ['BTC', 'ETH', 'USDT', 'TRX', 'LTC', 'XRP', 'DOGE'];
-            return cryptoCodes.includes(handler.currency);
+            
+            // Проверяем по payment_system_id - WestWallet
+            const westWalletSystemId = {{ \App\Models\PaymentSystem::where('name', 'WestWallet')->value('id') ?? 'null' }};
+            return handler.payment_system_id === westWalletSystemId;
+        },
+        
+        getCryptoHandlers() {
+            const westWalletSystemId = {{ \App\Models\PaymentSystem::where('name', 'WestWallet')->value('id') ?? 'null' }};
+            return Object.values(this.paymentHandlers).filter(h => h.payment_system_id === westWalletSystemId);
         },
 
-        async selectCrypto(cryptoCode) {
-            this.selectedCrypto = cryptoCode;
+        async selectCrypto(handler) {
+            this.selectedCrypto = {
+                currency: handler.currency,
+                network: handler.network,
+                name: handler.name
+            };
             this.showCryptoAddress = true;
-            await this.loadCryptoAddress(cryptoCode);
+            await this.loadCryptoAddress(handler.currency, handler.network);
         },
 
-        async loadCryptoAddress(currency) {
+        async loadCryptoAddress(currency, network = null) {
             this.loadingCryptoAddress = true;
             this.errorMessage = '';
 
             try {
+                const body = { currency };
+                if (network) {
+                    body.network = network;
+                }
+                
                 const response = await fetch('{{ route("crypto.get-address") }}', {
                     method: 'POST',
                     headers: {
@@ -678,7 +696,7 @@ function cashModalData() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({ currency })
+                    body: JSON.stringify(body)
                 });
 
                 const data = await response.json();

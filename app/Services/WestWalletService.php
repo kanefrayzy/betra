@@ -22,6 +22,38 @@ class WestWalletService
     }
 
     /**
+     * Маппинг валюты + сети в тикер WestWallet API
+     */
+    private function getCurrencyTicker(string $currency, ?string $network = null): string
+    {
+        $currency = strtoupper($currency);
+        
+        if ($currency === 'USDT') {
+            if ($network === 'TRC20') return 'USDTTRC';
+            if ($network === 'ERC20') return 'USDT';
+            if ($network === 'BEP20' || $network === 'BSC') return 'USDTBEP20';
+            if ($network === 'SOL') return 'USDTSOL';
+            if ($network === 'TON') return 'USDTTON';
+            return 'USDT'; // По умолчанию ERC20
+        }
+        
+        if ($currency === 'USDC') {
+            if ($network === 'ERC20') return 'USDC';
+            if ($network === 'BEP20' || $network === 'BSC') return 'USDCBEP20';
+            if ($network === 'SOL') return 'USDCSOL';
+            return 'USDC'; // По умолчанию ERC20
+        }
+        
+        if ($currency === 'ETH') {
+            if ($network === 'BEP20' || $network === 'BSC') return 'ETHBEP20';
+            return 'ETH';
+        }
+        
+        // Для остальных валют возвращаем как есть
+        return $currency;
+    }
+
+    /**
      * Генерация HMAC подписи для запроса
      * Формат согласно документации: HMAC-SHA256(timestamp + json_dumps(data), private_key)
      * ensure_ascii=False в Python = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES в PHP
@@ -136,12 +168,22 @@ class WestWalletService
     {
         $label = UserCryptoWallet::generateLabel($user->id, $currency, $network);
         $ipnUrl = route('westwallet.callback');
+        
+        // Получаем правильный тикер для WestWallet API
+        $ticker = $this->getCurrencyTicker($currency, $network);
 
         $data = [
-            'currency' => strtoupper($currency),
+            'currency' => $ticker,
             'ipn_url' => $ipnUrl,
             'label' => $label,
         ];
+        
+        Log::info('WestWallet Address Generation Request', [
+            'user_id' => $user->id,
+            'currency' => $currency,
+            'network' => $network,
+            'ticker' => $ticker,
+        ]);
 
         $response = $this->makeRequest('/address/generate', 'POST', $data);
 
