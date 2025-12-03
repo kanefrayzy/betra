@@ -4,6 +4,14 @@ module.exports = {
     "./resources/**/*.blade.php",
     "./resources/**/*.js",
     "./resources/**/*.vue",
+    "./app/Livewire/**/*.php",
+  ],
+  safelist: [
+    // Только критичные динамические классы
+    {
+      pattern: /^(bg|text|border)-(primary|success|warning|danger|dark)(-\d+)?$/,
+      variants: ['hover', 'focus'],
+    },
   ],
   theme: {
     extend: {
@@ -34,9 +42,8 @@ module.exports = {
         'customHeader': '#0f1419',
       },
       fontFamily: {
-        'sans': ['Inter', 'sans-serif'],
+        'sans': ['Manrope', 'sans-serif'],
         'manrope': ['Manrope', 'sans-serif'],
-        'rem': ['REM', 'sans-serif'],
       },
       boxShadow: {
         'glow': '0 0 15px rgba(0, 168, 255, 0.5)',

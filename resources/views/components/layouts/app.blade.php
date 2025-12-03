@@ -37,48 +37,34 @@
     <!-- Preconnect для внешних ресурсов -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://telegram.org">
-    <link rel="dns-prefetch" href="https://kit.fontawesome.com">
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=REM:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Fonts - оптимизированная загрузка -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
-    <script src="https://kit.fontawesome.com/5bc1c1da4e.js" crossorigin="anonymous" defer></script>
+    <!-- Icons - отложенная загрузка Font Awesome -->
+    <script>
+        // Загружаем Font Awesome только после загрузки страницы
+        window.addEventListener('load', function() {
+            const faScript = document.createElement('script');
+            faScript.src = 'https://kit.fontawesome.com/5bc1c1da4e.js';
+            faScript.crossOrigin = 'anonymous';
+            faScript.defer = true;
+            document.head.appendChild(faScript);
+        });
+    </script>
 
     <!-- Swiper -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 
     <!-- reCAPTCHA - Отложенная загрузка -->
-    <script>
-        // Загружаем reCAPTCHA только когда это необходимо
-        window.loadRecaptcha = function() {
-            if (!document.querySelector('script[src*="recaptcha"]')) {
-                const script = document.createElement('script');
-                script.src = 'https://www.google.com/recaptcha/api.js';
-                script.async = true;
-                script.defer = true;
-                document.head.appendChild(script);
-            }
-        };
-        
+    <script>        
         // Загружаем при взаимодействии пользователя
         ['mousedown', 'touchstart', 'keydown'].forEach(function(event) {
             document.addEventListener(event, window.loadRecaptcha, { once: true, passive: true });
         });
     </script>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MC1F6SYFFH"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-MC1F6SYFFH');
-    </script>
 
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -500,11 +486,6 @@
     @guest
         <script src="//ulogin.ru/js/ulogin.js"></script>
     @endguest
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" data-navigate-once></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" data-navigate-once></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" data-navigate-once></script>
 
 
 

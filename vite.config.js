@@ -11,22 +11,47 @@ export default defineConfig({
     optimizeDeps: {
         include: ['livewire'],
     },
-    // Добавим дедупликацию для предотвращения дублирования модулей
     build: {
+        // Минификация с terser для лучшего результата
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: true, // Удаляем console.log в production
+                drop_debugger: true,
+                pure_funcs: ['console.log', 'console.info', 'console.debug']
+            }
+        },
+        // Разделение кода на оптимальные чанки
         rollupOptions: {
             output: {
                 manualChunks: {
-                    // Выделяем Livewire и Alpine в отдельные чанки
-                    'livewire': ['livewire'],
-                    'vendors': ['noty']
+                    // Livewire и Alpine в отдельный чанк
+                    'alpine-livewire': ['livewire', 'alpinejs'],
+                    // Chat система отдельно
+                    'chat': ['socket.io-client'],
+                    // Vendor библиотеки
+                    'vendor': ['noty', 'swiper']
                 }
             }
-        }
+        },
+        // Увеличиваем лимит для предупреждений о размере
+        chunkSizeWarningLimit: 1000,
+        // CSS code splitting
+        cssCodeSplit: true,
+        // Оптимизация ассетов
+        assetsInlineLimit: 4096, // 4kb
     },
-    // Добавляем алиасы для более удобного импорта
+    // Алиасы для более удобного импорта
     resolve: {
         alias: {
-            '@': '/resources/js'
+            '@': '/resources/js',
+            '@css': '/resources/css'
+        }
+    },
+    // Оптимизация dev-сервера
+    server: {
+        hmr: {
+            overlay: false // Отключаем оверлей ошибок для лучшей производительности
         }
     }
 });
