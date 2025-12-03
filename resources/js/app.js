@@ -13,26 +13,58 @@ import './chat/main.js';
 // Import Telegram auth
 import './telegram-auth-global.js';
 
-// Livewire SPA Navigation - Optimized
+// Livewire SPA Navigation with lightning preloader
+let navigationStartTime = 0;
+
 document.addEventListener('livewire:navigating', () => {
+    navigationStartTime = Date.now();
     const mainContent = document.getElementById('main-content-wrapper');
+    const preloader = document.getElementById('preloader');
     
-    // Плавное скрытие контента при навигации
+    // Очищаем консоль при навигации
+    console.clear();
+    
+    // Полностью скрываем контент
     if (mainContent) {
         mainContent.style.opacity = '0';
+        mainContent.style.visibility = 'hidden';
+    }
+    
+    // Показываем прелоадер
+    if (preloader) {
+        preloader.classList.remove('fade-out');
+        preloader.style.opacity = '1';
+        preloader.style.pointerEvents = 'auto';
+        preloader.style.display = 'flex';
     }
 });
 
 document.addEventListener('livewire:navigated', () => {
     const mainContent = document.getElementById('main-content-wrapper');
+    const preloader = document.getElementById('preloader');
     
-    // Показываем новый контент
-    if (mainContent) {
-        mainContent.style.opacity = '1';
-    }
+    const minLoaderTime = 400; // Minimum 400ms display time
+    const elapsed = Date.now() - navigationStartTime;
+    const remainingTime = Math.max(0, minLoaderTime - elapsed);
     
-    initNotyTailwindTheme();
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    setTimeout(() => {
+        // Скрываем прелоадер
+        if (preloader) {
+            preloader.classList.add('fade-out');
+            setTimeout(() => {
+                preloader.style.display = 'none';
+            }, 300); // Wait for fade-out transition
+        }
+        
+        // Показываем новый контент
+        if (mainContent) {
+            mainContent.style.visibility = 'visible';
+            mainContent.style.opacity = '1';
+        }
+        
+        initNotyTailwindTheme();
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, remainingTime);
 });
 
 // Notifications from meta tags

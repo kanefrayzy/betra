@@ -45,6 +45,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=REM:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Icons -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
     <script src="https://kit.fontawesome.com/5bc1c1da4e.js" crossorigin="anonymous" defer></script>
 
     <!-- Swiper -->
@@ -414,10 +415,10 @@
             <div class="border-t border-gray-800 pt-8">
                 <!-- Payment Methods -->
                 <div class="flex flex-wrap items-center justify-center gap-4 mb-6 opacity-80">
-                    <img src="/assets/images/payments/visa.webp" alt="Visa" class="h-6 hover:grayscale-1 transition" loading="lazy">
-                    <img src="/assets/images/payments/mastercard.png" alt="Mastercard" class="h-6 hover:grayscale-1 transition" loading="lazy">
-                    <img src="/assets/images/payments/btc.png" alt="Bitcoin" class="h-6 hover:grayscale-1 transition" loading="lazy">
-                    <img src="/assets/images/payments/usdt.png" alt="USDT" class="h-6 hover:grayscale-1 transition" loading="lazy">
+                    <img src="/assets/images/payments/visa.webp" alt="Visa" class="h-6 hover:grayscale-1 transition">
+                    <img src="/assets/images/payments/mastercard.png" alt="Mastercard" class="h-6 hover:grayscale-1 transition">
+                    <img src="/assets/images/payments/btc.png" alt="Bitcoin" class="h-6 hover:grayscale-1 transition">
+                    <img src="/assets/images/payments/usdt.png" alt="USDT" class="h-6 hover:grayscale-1 transition">
                 </div>
 
                 <!-- Warning -->
@@ -500,8 +501,10 @@
         <script src="//ulogin.ru/js/ulogin.js"></script>
     @endguest
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" data-navigate-once async></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" data-navigate-once async></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" data-navigate-once></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" data-navigate-once></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" data-navigate-once></script>
 
 
 

@@ -11,34 +11,19 @@ export default defineConfig({
     optimizeDeps: {
         include: ['livewire'],
     },
+    // Добавим дедупликацию для предотвращения дублирования модулей
     build: {
-        cssCodeSplit: true,
-        minify: 'terser',
         rollupOptions: {
             output: {
-                manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        if (id.includes('alpinejs')) {
-                            return 'alpine';
-                        }
-                        if (id.includes('livewire')) {
-                            return 'livewire';
-                        }
-                        if (id.includes('noty')) {
-                            return 'noty';
-                        }
-                        return 'vendor';
-                    }
+                manualChunks: {
+                    // Выделяем Livewire и Alpine в отдельные чанки
+                    'livewire': ['livewire'],
+                    'vendors': ['noty']
                 }
-            }
-        },
-        terserOptions: {
-            compress: {
-                drop_console: true,
-                drop_debugger: true
             }
         }
     },
+    // Добавляем алиасы для более удобного импорта
     resolve: {
         alias: {
             '@': '/resources/js'
