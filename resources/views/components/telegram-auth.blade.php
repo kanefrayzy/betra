@@ -1,18 +1,32 @@
 {{-- Компонент для интеграции Telegram WebView авторизации --}}
 
-{{-- Подключаем скрипт Telegram WebApp --}}
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+{{-- Подключаем скрипт Telegram WebApp ТОЛЬКО если мы в Telegram --}}
+<script>
+    // Проверяем, открыт ли сайт в Telegram WebApp
+    const isTelegramWebApp = window.location.search.includes('tgWebAppPlatform') 
+        || window.location.hash.includes('tgWebAppData')
+        || (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
+    
+    if (isTelegramWebApp) {
+        // Динамически загружаем скрипт Telegram только если нужно
+        const script = document.createElement('script');
+        script.src = 'https://telegram.org/js/telegram-web-app.js';
+        script.async = true;
+        document.head.appendChild(script);
+    }
+</script>
 
 {{-- Инициализация Telegram WebApp СРАЗУ после загрузки --}}
 <script>
     // Функция для настройки Telegram WebApp
     window.initTelegramWebApp = function() {
+        // Пропускаем если не в Telegram
+        if (!window.Telegram || !window.Telegram.WebApp || !window.Telegram.WebApp.initData) {
+            return false;
+        }
+        
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
-            
-            // ⚠️ НЕ ИСПОЛЬЗУЕМ disableVerticalSwipes() - он блокирует обычный скролл!
-            // Вместо этого используем CSS overscroll-behavior
-            
             // Разворачиваем на весь экран
             if (typeof tg.expand === 'function') {
                 tg.expand();
@@ -46,6 +60,14 @@
     
     // КРИТИЧНО: Инициализируем ДО события load для первого открытия
     (function() {
+        // Пропускаем инициализацию если не в Telegram
+        const isTelegramContext = window.location.search.includes('tgWebAppPlatform') 
+            || window.location.hash.includes('tgWebAppData');
+        
+        if (!isTelegramContext) {
+            return;
+        }
+        
         // Проверяем каждые 50ms до загрузки API
         let initAttempts = 0;
         const maxInitAttempts = 40; // 2 секунды максимум
