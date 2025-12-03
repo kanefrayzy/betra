@@ -27,7 +27,7 @@
          x-transition:leave-start="opacity-100 scale-100"
          x-transition:leave-end="opacity-0 scale-95"
          class="relative z-10 w-full max-w-[600px] overflow-hidden max-h-[720px] flex flex-col h-[calc(100dvh_-_32px)] bg-[#1e2329] rounded-2xl m-4"
-         @click.stop>
+         @click.stop>>
 
         <!-- Header -->
         <div class="relative p-4 desktop:p-6">
@@ -195,8 +195,95 @@
                     </div>
                 </div>
 
+                <!-- Bank Payment Form -->
+                <div x-show="showBankPayment">
+                    <!-- Back Button -->
+                    <button @click="backToSelection()" type="button"
+                            class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        <span class="text-sm">{{__('Назад')}}</span>
+                    </button>
+
+                    <h3 class="text-lg font-bold text-white mb-4">{{__('Банковский платеж')}}</h3>
+
+                    <!-- Selected Method -->
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">{{__('Способ оплаты')}}</label>
+                        <div class="flex items-center w-full p-3 bg-[#252a32] border border-gray-800 rounded-xl">
+                            <img :src="selectedHandler?.icon"
+                                 :alt="selectedHandler?.name"
+                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
+                            <span class="text-white text-sm font-medium flex-1" x-text="selectedHandler?.name"></span>
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Amount Input -->
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">{{__('Сумма пополнения')}}</label>
+                        <div class="relative">
+                            <input type="number"
+                                   class="w-full bg-[#252a32] border border-gray-800 focus:border-[#ffb300] focus:ring-1 focus:ring-[#ffb300] rounded-xl py-4 px-4 pr-16 text-white text-2xl font-bold placeholder-gray-500 focus:outline-none transition-all duration-200 text-center"
+                                   x-model.number="amount"
+                                   @focus="if(amount === 0) amount = ''"
+                                   placeholder="0"
+                                   required
+                                   min="1">
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#ffb300] font-bold text-xl">
+                                {{$u->currency->symbol}}
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-2">{{__('Мин. сумма ')}}{{ moneyFormat(toUSD(5, $u->currency->symbol))}} {{$u->currency->symbol}}</p>
+                    </div>
+
+                    <!-- Quick Amounts -->
+                    <div class="mb-6">
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                                $quickAmounts = [
+                                    toUSD(100, $u->currency->symbol),
+                                    toUSD(200, $u->currency->symbol),
+                                    toUSD(500, $u->currency->symbol),
+                                    toUSD(1000, $u->currency->symbol),
+                                    toUSD(2000, $u->currency->symbol),
+                                    toUSD(5000, $u->currency->symbol),
+                                    toUSD(10000, $u->currency->symbol),
+                                    toUSD(20000, $u->currency->symbol)
+                                ];
+                            @endphp
+                            @foreach($quickAmounts as $quickAmount)
+                            <button type="button"
+                                    @click="amount = {{ $quickAmount }}"
+                                    class="py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200"
+                                    :class="amount === {{ $quickAmount }} ? 'bg-[#ffb300] text-black' : 'bg-[#252a32] text-white hover:bg-gray-800 border border-gray-800'">
+                                {{ moneyFormat($quickAmount) }} {{$u->currency->symbol}}
+                            </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="flex items-center justify-between mb-4 p-4 bg-[#252a32] rounded-xl border border-gray-800">
+                        <span class="text-gray-400">{{__('К пополнению')}}</span>
+                        <span class="text-white font-bold text-xl" x-text="amount + ' {{$u->currency->symbol}}'"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button @click="submitDeposit()"
+                            type="button"
+                            class="w-full h-14 bg-[#ffb300] hover:bg-[#e6a000] text-black font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                            :disabled="amount < 5 || loading">
+                        <span x-show="!loading">{{__('Продолжить')}}</span>
+                        <span x-show="loading">{{__('Загрузка...')}}</span>
+                    </button>
+                </div>
+
                 <!-- Payment Methods List -->
-                <div x-show="!showCryptoAddress">
+                <div x-show="!showCryptoAddress && !showBankPayment">
                     <!-- Banner -->
                     <div class="relative my-4">
                         <div @click="openCryptoGuide()" 
@@ -278,118 +365,144 @@
 
             <!-- Withdrawal Tab -->
             <div x-show="operation === 'withdrawal'" class="grow pb-4">
-                <form @submit.prevent="submitWithdrawal" class="space-y-6">
-                    @csrf
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- Withdrawal Methods -->
-                        <div class="space-y-4">
-                            <label class="block text-gray-400 text-sm mb-3 font-medium">{{__('Способ вывода')}}</label>
-                            <div class="space-y-2 max-h-96 overflow-y-auto">
-                                @foreach($matchingSystems as $system)
-                                <div>
-                                    <input type="radio"
-                                           name="system"
-                                           value="{{ $system->id }}"
-                                           id="system_{{ $system->id }}"
-                                           class="hidden peer"
-                                           x-model="selectedSystem"
-                                           @change="commission = {{ $system->commission ?? 5 }}">
-                                    <label for="system_{{ $system->id }}"
-                                           class="flex items-center w-full p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 peer-checked:border-[#ffb300] peer-checked:bg-[#ffb300]/10 rounded-lg cursor-pointer transition-all duration-200">
-                                        <img src="{{ asset('storage/' . $system->icon) }}"
-                                             alt="{{ $system->name }}"
-                                             class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                        <span class="text-white text-sm font-medium flex-1">{{ $system->name }}</span>
-                                        <svg class="w-5 h-5 text-[#ffb300] opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                    </label>
-                                </div>
-                                @endforeach
+                
+                <!-- Withdrawal Form -->
+                <div x-show="showWithdrawalForm">
+                    <!-- Back Button -->
+                    <button @click="backToSelection()" type="button"
+                            class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        <span class="text-sm">{{__('Назад')}}</span>
+                    </button>
 
-                                @foreach($otherSystems as $system)
-                                <div>
-                                    <input type="radio"
-                                           name="system"
-                                           value="{{ $system->id }}"
-                                           id="system_{{ $system->id }}"
-                                           class="hidden peer"
-                                           x-model="selectedSystem"
-                                           @change="commission = {{ $system->commission ?? 5 }}">
-                                    <label for="system_{{ $system->id }}"
-                                           class="flex items-center w-full p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 peer-checked:border-[#ffb300] peer-checked:bg-[#ffb300]/10 rounded-lg cursor-pointer transition-all duration-200">
-                                        <img src="{{ asset('storage/' . $system->icon) }}"
-                                             alt="{{ $system->name }}"
-                                             class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                        <span class="text-white text-sm font-medium flex-1">{{ $system->name }}</span>
-                                        <svg class="w-5 h-5 text-[#ffb300] opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                    </label>
-                                </div>
-                                @endforeach
+                    <h3 class="text-lg font-bold text-white mb-4">{{__('Вывод средств')}}</h3>
+
+                    <!-- Selected Method -->
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">{{__('Способ вывода')}}</label>
+                        <div class="flex items-center w-full p-3 bg-[#252a32] border border-gray-800 rounded-xl">
+                            <img :src="selectedWithdrawalSystem?.icon"
+                                 :alt="selectedWithdrawalSystem?.name"
+                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
+                            <span class="text-white text-sm font-medium flex-1" x-text="selectedWithdrawalSystem?.name"></span>
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Details Input -->
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">{{__('Реквизиты')}}</label>
+                        <input type="text"
+                               class="w-full bg-[#252a32] border border-gray-800 focus:border-[#ffb300] focus:ring-1 focus:ring-[#ffb300] rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:outline-none transition-all duration-200"
+                               x-model="details"
+                               placeholder="{{__('Введите номер карты или кошелька')}}"
+                               required>
+                    </div>
+
+                    <!-- Amount Input -->
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">{{__('Сумма вывода')}}</label>
+                        <div class="relative">
+                            <input type="number"
+                                   class="w-full bg-[#252a32] border border-gray-800 focus:border-[#ffb300] focus:ring-1 focus:ring-[#ffb300] rounded-xl py-4 px-4 pr-16 text-white text-2xl font-bold placeholder-gray-500 focus:outline-none transition-all duration-200 text-center"
+                                   x-model.number="amount"
+                                   @focus="if(amount === 0) amount = ''"
+                                   placeholder="0"
+                                   required
+                                   min="1">
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#ffb300] font-bold text-xl">
+                                {{$u->currency->symbol}}
                             </div>
                         </div>
+                        <p class="text-gray-500 text-xs mt-2">{{__('Мин. сумма ')}}{{ moneyFormat(toUSD(5, $u->currency->symbol))}} {{$u->currency->symbol}}</p>
+                    </div>
 
-                        <!-- Withdrawal Details -->
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-gray-400 text-sm mb-3 font-medium">{{__('Реквизиты')}}</label>
-                                <input type="text"
-                                       class="w-full bg-[#252a32] border border-gray-800 focus:border-[#ffb300] focus:ring-1 focus:ring-[#ffb300] rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none transition-all duration-200"
-                                       name="details"
-                                       x-model="details"
-                                       placeholder="{{__('Введите реквизиты')}}"
-                                       required>
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-400 text-sm mb-3 font-medium">{{__('Сумма вывода')}}</label>
-                                <div class="relative">
-                                    <input type="number"
-                                           class="w-full bg-[#252a32] border border-gray-800 focus:border-[#ffb300] focus:ring-1 focus:ring-[#ffb300] rounded-lg py-4 px-4 pr-16 text-white text-xl font-bold placeholder-gray-500 focus:outline-none transition-all duration-200 text-center"
-                                           name="amount"
-                                           x-model.number="amount"
-                                           @focus="if(amount === 0) amount = ''"
-                                           placeholder="0"
-                                           required
-                                           min="1">
-                                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#ffb300] font-bold text-lg">
-                                        {{$u->currency->symbol}}
-                                    </div>
-                                </div>
-                                <p class="text-gray-500 text-xs mt-2">{{__('Минимум: ')}}{{ moneyFormat(toUSD(5, $u->currency->symbol))}} {{$u->currency->symbol}}</p>
-                            </div>
+                    <!-- Quick Amounts -->
+                    <div class="mb-6">
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                                $quickAmounts = [
+                                    toUSD(100, $u->currency->symbol),
+                                    toUSD(200, $u->currency->symbol),
+                                    toUSD(500, $u->currency->symbol),
+                                    toUSD(1000, $u->currency->symbol),
+                                    toUSD(2000, $u->currency->symbol),
+                                    toUSD(5000, $u->currency->symbol),
+                                    toUSD(10000, $u->currency->symbol),
+                                    toUSD(20000, $u->currency->symbol)
+                                ];
+                            @endphp
+                            @foreach($quickAmounts as $quickAmount)
+                            <button type="button"
+                                    @click="amount = {{ $quickAmount }}"
+                                    class="py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200"
+                                    :class="amount === {{ $quickAmount }} ? 'bg-[#ffb300] text-black' : 'bg-[#252a32] text-white hover:bg-gray-800 border border-gray-800'">
+                                {{ moneyFormat($quickAmount) }} {{$u->currency->symbol}}
+                            </button>
+                            @endforeach
                         </div>
                     </div>
 
                     <!-- Commission Info -->
-                    <div x-show="amount > 0"
-                         x-transition
-                         class="bg-[#252a32] rounded-lg p-4 border border-gray-800">
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">{{__('К списанию')}}:</span>
-                                <span class="text-white font-medium" x-text="amount + ' {{$u->currency->symbol}}'"></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">{{__('Комиссия')}} (<span x-text="commission"></span>%):</span>
-                                <span class="text-orange-400 font-medium" x-text="commissionAmount.toFixed(2) + ' {{$u->currency->symbol}}'"></span>
-                            </div>
-                            <div class="flex justify-between pt-2 border-t border-gray-800">
-                                <span class="text-white font-semibold">{{__('К получению')}}:</span>
-                                <span class="text-[#ffb300] font-bold text-lg" x-text="actualAmount.toFixed(2) + ' {{$u->currency->symbol}}'"></span>
+                    <div x-show="amount > 0" class="mb-4">
+                        <div class="bg-[#252a32] rounded-xl p-4 border border-gray-800">
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">{{__('К списанию')}}:</span>
+                                    <span class="text-white font-medium" x-text="amount + ' {{$u->currency->symbol}}'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">{{__('Комиссия')}} (<span x-text="commission"></span>%):</span>
+                                    <span class="text-orange-400 font-medium" x-text="commissionAmount.toFixed(2) + ' {{$u->currency->symbol}}'"></span>
+                                </div>
+                                <div class="flex justify-between pt-2 border-t border-gray-800">
+                                    <span class="text-white font-semibold">{{__('К получению')}}:</span>
+                                    <span class="text-[#ffb300] font-bold text-xl" x-text="actualAmount.toFixed(2) + ' {{$u->currency->symbol}}'"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit"
-                            class="w-full h-12 bg-[#ffb300] hover:bg-[#e6a000] text-black font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-                            :disabled="!selectedSystem || !details || amount < 5 || loading">
-                        <span x-show="!loading">{{__('Подать заявку на вывод')}}</span>
+                    <!-- Submit Button -->
+                    <button @click="submitWithdrawal()"
+                            type="button"
+                            class="w-full h-14 bg-[#ffb300] hover:bg-[#e6a000] text-black font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                            :disabled="!details || amount < 5 || loading">
+                        <span x-show="!loading">{{__('Подать заявку')}}</span>
                         <span x-show="loading">{{__('Обработка...')}}</span>
                     </button>
-                </form>
+                </div>
+
+                <!-- Withdrawal Methods List -->
+                <div x-show="!showWithdrawalForm">
+                    <!-- Methods Cards -->
+                    <p class="text-base font-semibold tracking-[-0.12px] leading-6 mb-3 mt-4 text-white">{{__('Способы вывода')}}</p>
+                    <div class="flex flex-wrap gap-3">
+                        @foreach($matchingSystems as $system)
+                        <button type="button"
+                                @click="selectWithdrawalMethod({{ $system->id }})"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#252a32] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-gray-800 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffb300] active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                style="background-image: url('{{ asset('storage/' . $system->icon) }}');">
+                            <p class="text-sm font-semibold tracking-[-0.12px] leading-5 line-clamp-2 max-w-[96px] text-left text-white">{{ $system->name }}</p>
+                            <p class="text-xs tracking-[-0.04px] leading-4 mt-auto flex max-w-[calc(100%-50px)] flex-wrap text-left text-gray-400">{{__('комиссия')}} {{ $system->commission ?? 5 }}%</p>
+                        </button>
+                        @endforeach
+                        
+                        @foreach($otherSystems as $system)
+                        <button type="button"
+                                @click="selectWithdrawalMethod({{ $system->id }})"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#252a32] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-gray-800 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffb300] active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                style="background-image: url('{{ asset('storage/' . $system->icon) }}');">
+                            <p class="text-sm font-semibold tracking-[-0.12px] leading-5 line-clamp-2 max-w-[96px] text-left text-white">{{ $system->name }}</p>
+                            <p class="text-xs tracking-[-0.04px] leading-4 mt-auto flex max-w-[calc(100%-50px)] flex-wrap text-left text-gray-400">{{__('комиссия')}} {{ $system->commission ?? 5 }}%</p>
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -409,6 +522,10 @@ function cashModalData() {
         loading: false,
         loadingCryptoAddress: false,
         showCryptoAddress: false,
+        showBankPayment: false,
+        showWithdrawalForm: false,
+        selectedHandler: null,
+        selectedWithdrawalSystem: null,
         cryptoAddressData: null,
         bonusEnabled: false,
         
@@ -431,13 +548,34 @@ function cashModalData() {
             @endforeach
         },
 
+        withdrawalSystems: {
+            @foreach($matchingSystems as $system)
+            '{{ $system->id }}': { 
+                name: '{{ $system->name }}', 
+                icon: '{{ asset('storage/' . $system->icon) }}', 
+                commission: {{ $system->commission ?? 5 }} 
+            },
+            @endforeach
+            @foreach($otherSystems as $system)
+            '{{ $system->id }}': { 
+                name: '{{ $system->name }}', 
+                icon: '{{ asset('storage/' . $system->icon) }}', 
+                commission: {{ $system->commission ?? 5 }} 
+            },
+            @endforeach
+        },
+
         closeModal() {
             this.open = false;
             setTimeout(() => {
                 this.showCryptoAddress = false;
+                this.showBankPayment = false;
+                this.showWithdrawalForm = false;
                 this.selectedSystem = '';
                 this.selectedCrypto = '';
                 this.selectedNetwork = '';
+                this.selectedHandler = null;
+                this.selectedWithdrawalSystem = null;
                 this.amount = 0;
                 this.details = '';
                 this.cryptoAddressData = null;
@@ -447,15 +585,29 @@ function cashModalData() {
         switchTab(tab) {
             this.operation = tab;
             this.selectedSystem = '';
+            this.selectedHandler = null;
+            this.selectedWithdrawalSystem = null;
             this.amount = 0;
             this.details = '';
             this.showCryptoAddress = false;
+            this.showBankPayment = false;
+            this.showWithdrawalForm = false;
         },
 
         selectBankMethod(handlerId) {
             this.selectedSystem = handlerId;
-            // TODO: implement bank payment flow
-            console.log('Bank method selected:', handlerId);
+            this.selectedHandler = this.paymentHandlers[handlerId];
+            this.showBankPayment = true;
+            this.amount = 0;
+        },
+
+        selectWithdrawalMethod(systemId) {
+            this.selectedSystem = systemId;
+            this.selectedWithdrawalSystem = this.withdrawalSystems[systemId];
+            this.commission = this.withdrawalSystems[systemId]?.commission || 5;
+            this.showWithdrawalForm = true;
+            this.amount = 0;
+            this.details = '';
         },
 
         async selectCryptoMethod(handlerId, currency, network) {
@@ -567,9 +719,13 @@ function cashModalData() {
 
         backToSelection() {
             this.showCryptoAddress = false;
+            this.showBankPayment = false;
+            this.showWithdrawalForm = false;
             this.selectedSystem = '';
             this.selectedCrypto = '';
             this.selectedNetwork = '';
+            this.selectedHandler = null;
+            this.selectedWithdrawalSystem = null;
             this.cryptoAddressData = null;
         },
 
@@ -579,6 +735,71 @@ function cashModalData() {
 
         get actualAmount() {
             return this.amount > 0 ? this.amount - this.commissionAmount : 0;
+        },
+
+        async submitDeposit() {
+            this.loading = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('amount', this.amount);
+                formData.append('system', this.selectedSystem);
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                const response = await fetch('{{ route("cash.operation", "deposit") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (window.Noty) {
+                        new Noty({
+                            type: 'success',
+                            text: data.message || 'Переход к оплате...',
+                            theme: 'mint',
+                            layout: 'topRight',
+                            timeout: 2000
+                        }).show();
+                    }
+                    
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else if (data.url) {
+                            window.location.href = data.url;
+                        }
+                    }, 500);
+                } else {
+                    if (window.Noty) {
+                        new Noty({
+                            type: 'error',
+                            text: data.message || 'Произошла ошибка',
+                            theme: 'mint',
+                            layout: 'topRight',
+                            timeout: 3000
+                        }).show();
+                    }
+                }
+            } catch (error) {
+                console.error('Deposit error:', error);
+                if (window.Noty) {
+                    new Noty({
+                        type: 'error',
+                        text: 'Ошибка соединения с сервером',
+                        theme: 'mint',
+                        layout: 'topRight',
+                        timeout: 3000
+                    }).show();
+                }
+            } finally {
+                this.loading = false;
+            }
         },
 
         async submitWithdrawal() {
