@@ -1,70 +1,95 @@
 {{-- Компонент для интеграции Telegram WebView авторизации --}}
 
+{{-- Глобальная функция проверки Telegram WebApp --}}
+<script>
+    // КРИТИЧНО: Проверяем реальное окружение Telegram
+    window.isTelegramWebApp = function() {
+        // Проверяем наличие специфичных параметров Telegram
+        const hasParams = window.location.search.includes('tgWebAppPlatform') 
+            || window.location.hash.includes('tgWebAppData')
+            || document.referrer.includes('telegram.org');
+        
+        // Проверяем наличие Telegram API
+        const hasTelegramAPI = window.Telegram && 
+                              window.Telegram.WebApp && 
+                              window.Telegram.WebApp.initData && 
+                              window.Telegram.WebApp.initData.length > 0;
+        
+        return hasParams && hasTelegramAPI;
+    };
+</script>
+
 {{-- Подключаем скрипт Telegram WebApp ТОЛЬКО если мы в Telegram --}}
 <script>
-    // Проверяем, открыт ли сайт в Telegram WebApp
-    const isTelegramWebApp = window.location.search.includes('tgWebAppPlatform') 
+    // Загружаем скрипт только если есть признаки Telegram окружения
+    const needsTelegramScript = window.location.search.includes('tgWebAppPlatform') 
         || window.location.hash.includes('tgWebAppData')
-        || (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
+        || document.referrer.includes('telegram.org');
     
-    if (isTelegramWebApp) {
-        // Динамически загружаем скрипт Telegram только если нужно
+    if (needsTelegramScript) {
         const script = document.createElement('script');
         script.src = 'https://telegram.org/js/telegram-web-app.js';
         script.async = true;
+        script.onload = function() {
+            console.log('✅ Telegram WebApp script loaded');
+        };
         document.head.appendChild(script);
     }
 </script>
 
-{{-- Инициализация Telegram WebApp СРАЗУ после загрузки --}}
+{{-- Инициализация Telegram WebApp ТОЛЬКО в Telegram окружении --}}
 <script>
     // Функция для настройки Telegram WebApp
     window.initTelegramWebApp = function() {
-        // Пропускаем если не в Telegram
-        if (!window.Telegram || !window.Telegram.WebApp || !window.Telegram.WebApp.initData) {
+        // КРИТИЧНО: Пропускаем если не в реальном Telegram окружении
+        if (typeof window.isTelegramWebApp !== 'function' || !window.isTelegramWebApp()) {
             return false;
         }
         
-        if (window.Telegram && window.Telegram.WebApp) {
-            const tg = window.Telegram.WebApp;
-            // Разворачиваем на весь экран
-            if (typeof tg.expand === 'function') {
-                tg.expand();
-                console.log('✅ WebApp развернут');
-            }
-            
-            // Включаем полноэкранный режим если доступно
-            if (typeof tg.requestFullscreen === 'function') {
-                tg.requestFullscreen();
-                console.log('✅ Полноэкранный режим запрошен');
-            }
-            
-            // Применяем ТОЛЬКО contain для предотвращения закрытия (не none!)
-            document.documentElement.style.overscrollBehaviorY = 'contain';
-            document.body.style.overscrollBehaviorY = 'contain';
-            
-            console.log('✅ Overscroll contain применен (скролл работает)');
-            
-            // Делаем WebApp готовым ПОСЛЕ применения стилей
-            if (typeof tg.ready === 'function') {
-                tg.ready();
-                console.log('✅ Telegram WebApp готов');
-            }
-            
-            console.log('✅ Telegram WebApp настроен, скролл работает полностью');
-            
-            return true;
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            return false;
         }
-        return false;
+        
+        const tg = window.Telegram.WebApp;
+        
+        // Разворачиваем на весь экран
+        if (typeof tg.expand === 'function') {
+            tg.expand();
+            console.log('✅ WebApp развернут');
+        }
+        
+        // Включаем полноэкранный режим если доступно
+        if (typeof tg.requestFullscreen === 'function') {
+            tg.requestFullscreen();
+            console.log('✅ Полноэкранный режим запрошен');
+        }
+        
+        // Применяем ТОЛЬКО contain для предотвращения закрытия (не none!)
+        document.documentElement.style.overscrollBehaviorY = 'contain';
+        document.body.style.overscrollBehaviorY = 'contain';
+        
+        console.log('✅ Overscroll contain применен (скролл работает)');
+        
+        // Делаем WebApp готовым ПОСЛЕ применения стилей
+        if (typeof tg.ready === 'function') {
+            tg.ready();
+            console.log('✅ Telegram WebApp готов');
+        }
+        
+        console.log('✅ Telegram WebApp настроен, скролл работает полностью');
+        
+        return true;
     };
     
-    // КРИТИЧНО: Инициализируем ДО события load для первого открытия
+    // КРИТИЧНО: Инициализируем ДО события load ТОЛЬКО если в Telegram
     (function() {
         // Пропускаем инициализацию если не в Telegram
-        const isTelegramContext = window.location.search.includes('tgWebAppPlatform') 
-            || window.location.hash.includes('tgWebAppData');
+        const needsInit = window.location.search.includes('tgWebAppPlatform') 
+            || window.location.hash.includes('tgWebAppData')
+            || document.referrer.includes('telegram.org');
         
-        if (!isTelegramContext) {
+        if (!needsInit) {
+            console.log('ℹ️ Не в Telegram окружении - пропускаем инициализацию');
             return;
         }
         
@@ -73,12 +98,14 @@
         const maxInitAttempts = 40; // 2 секунды максимум
         
         const tryInit = function() {
-            if (window.Telegram && window.Telegram.WebApp) {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
                 window.initTelegramWebApp();
                 console.log('✅ Telegram WebApp инициализирован при первом открытии');
             } else if (initAttempts < maxInitAttempts) {
                 initAttempts++;
                 setTimeout(tryInit, 50);
+            } else {
+                console.warn('⚠️ Timeout при инициализации Telegram WebApp');
             }
         };
         
@@ -88,6 +115,11 @@
     
     // Слушаем событие загрузки скрипта Telegram
     window.addEventListener('load', function() {
+        // Пропускаем если не в Telegram
+        if (typeof window.isTelegramWebApp !== 'function' || !window.isTelegramWebApp()) {
+            return;
+        }
+        
         if (!window.initTelegramWebApp()) {
             // Если не удалось, пробуем через небольшой интервал
             let attempts = 0;
@@ -104,18 +136,22 @@
         }
     });
     
-    // При навигации Livewire
+    // При навигации Livewire - ТОЛЬКО если в Telegram
     document.addEventListener('livewire:navigated', function() {
-        console.log('Livewire навигация - переинициализация Telegram WebApp');
-        window.initTelegramWebApp();
+        if (typeof window.isTelegramWebApp === 'function' && window.isTelegramWebApp()) {
+            console.log('Livewire навигация - переинициализация Telegram WebApp');
+            window.initTelegramWebApp();
+        }
     });
     
-    // При изменении истории (для SPA)
+    // При изменении истории (для SPA) - ТОЛЬКО если в Telegram
     window.addEventListener('popstate', function() {
-        console.log('Popstate - переинициализация Telegram WebApp');
-        setTimeout(function() {
-            window.initTelegramWebApp();
-        }, 100);
+        if (typeof window.isTelegramWebApp === 'function' && window.isTelegramWebApp()) {
+            console.log('Popstate - переинициализация Telegram WebApp');
+            setTimeout(function() {
+                window.initTelegramWebApp();
+            }, 100);
+        }
     });
 </script>
 

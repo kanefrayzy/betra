@@ -255,7 +255,11 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
                                 </div>
-                                <input :type="showPassword ? 'text' : 'password'" id="reg-password" x-model="form.password" required
+                                <input :type="showPassword ? 'text' : 'password'" 
+                                       id="reg-password" 
+                                       x-model="form.password" 
+                                       autocomplete="new-password"
+                                       required
                                     class="w-full h-12 pl-12 pr-12 bg-white/[0.03] border transition-all rounded-xl"
                                     :class="errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-[#4a5568] focus:ring-[#4a5568]'"
                                     class="rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-1"

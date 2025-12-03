@@ -144,15 +144,15 @@
                                 @csrf
                                 <div>
                                     <label class="block text-gray-400 text-sm font-medium mb-2">{{__('Текущий пароль')}}</label>
-                                    <input required type="password" name="curr_password" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" placeholder="••••••••">
+                                    <input required type="password" name="curr_password" autocomplete="current-password" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" placeholder="••••••••">
                                 </div>
                                 <div>
                                     <label class="block text-gray-400 text-sm font-medium mb-2">{{__('Новый пароль')}}</label>
-                                    <input required type="password" name="password" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" placeholder="••••••••">
+                                    <input required type="password" name="password" autocomplete="new-password" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" placeholder="••••••••">
                                 </div>
                                 <div>
                                     <label class="block text-gray-400 text-sm font-medium mb-2">{{__('Повторите пароль')}}</label>
-                                    <input required type="password" name="password_confirmation" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" placeholder="••••••••">
+                                    <input required type="password" name="password_confirmation" autocomplete="new-password" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" placeholder="••••••••">
                                 </div>
                                 <div class="pt-2">
                                     <button type="submit" class="px-8 py-3 bg-[#fbbf24] hover:bg-[#f59e0b] text-black rounded-lg font-bold transition-colors">
