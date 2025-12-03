@@ -27,7 +27,7 @@
          x-transition:leave-start="opacity-100 scale-100"
          x-transition:leave-end="opacity-0 scale-95"
          class="relative z-10 w-full max-w-[600px] overflow-hidden max-h-[720px] flex flex-col h-[calc(100dvh_-_32px)] bg-[#1e2329] rounded-2xl m-4"
-         @click.stop>
+         @click.stop>>
 
         <!-- Header -->
         <div class="relative p-4 desktop:p-6">
@@ -871,9 +871,6 @@ function cashModalData() {
     };
 }
 
-function openCryptoGuide() {
-    console.log('Open crypto guide');
-}
 
 // Глобальные функции для открытия/закрытия модалки
 window.openCashModal = function() {
