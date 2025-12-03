@@ -3,7 +3,6 @@
  *  SPA-Compatible Singleton Pattern
  */
 
-//  ВАЖНО: Проверка на существование, чтобы не создавать повторно при SPA навигации
 if (typeof window.ChatSystem === 'undefined') {
     window.ChatSystem = class ChatSystem {
         constructor() {
@@ -116,6 +115,17 @@ if (typeof window.ChatSystem === 'undefined') {
      * Инициализация элементов DOM
      */
     initElements() {
+        // Если элементы уже закэшированы и существуют - не ищем заново
+        if (this._elementsCache && this._elementsCache.messagesContainer?.isConnected) {
+            this.elements = this._elementsCache;
+            
+            // Восстанавливаем онлайн счёт
+            if (this.state.lastOnlineCount > 0 && this.elements.onlineCountElement) {
+                this.elements.onlineCountElement.textContent = `Online: ${this.state.lastOnlineCount}`;
+            }
+            return;
+        }
+        
         this.elements = {
             messagesContainer: document.getElementById('messages'),
             messageInput: document.getElementById('message-input'),
@@ -131,6 +141,8 @@ if (typeof window.ChatSystem === 'undefined') {
             chatToggleButton: document.querySelector('.chat-toggle-button')
         };
 
+        // Сохраняем кэш
+        this._elementsCache = this.elements;
 
         //  Восстанавливаем онлайн счёт после переинициализации
         if (this.state.lastOnlineCount > 0 && this.elements.onlineCountElement) {
@@ -142,10 +154,16 @@ if (typeof window.ChatSystem === 'undefined') {
      * Инициализация звуков
      */
     initSounds() {
+        // Создаём заглушки - загрузка при первом воспроизведении
         this.sounds = {
-            notification: new Audio('/assets/sounds/new_message_tone.mp3'),
-            moneyReceived: new Audio('/assets/sounds/money_tone.mp3'),
-            rain: new Audio('/assets/sounds/raindrop.mp3')
+            notification: null,
+            moneyReceived: null,
+            rain: null
+        };
+        this.soundPaths = {
+            notification: '/assets/sounds/new_message_tone.mp3',
+            moneyReceived: '/assets/sounds/money_tone.mp3',
+            rain: '/assets/sounds/raindrop.mp3'
         };
     }
 
@@ -188,10 +206,16 @@ if (typeof window.ChatSystem === 'undefined') {
             this.ws = null;
         }
 
+        // Экспоненциальный backoff для переподключения
+        if (!this._reconnectAttempts) {
+            this._reconnectAttempts = 0;
+        }
+
         try {
             this.ws = new WebSocket(this.config.wsUrl);
 
             this.ws.addEventListener('open', () => {
+                this._reconnectAttempts = 0; // Сбрасываем счётчик
             });
 
             this.ws.addEventListener('message', (event) => {
@@ -202,7 +226,14 @@ if (typeof window.ChatSystem === 'undefined') {
                 
                 // Переподключаемся только если НЕ в процессе навигации
                 if (!this.state.isNavigating) {
-                    setTimeout(() => this.initWebSocket(), this.config.reconnectDelay);
+                    // Экспоненциальный backoff: 3s, 6s, 12s, max 30s
+                    const delay = Math.min(
+                        this.config.reconnectDelay * Math.pow(2, this._reconnectAttempts),
+                        30000
+                    );
+                    this._reconnectAttempts++;
+                    
+                    setTimeout(() => this.initWebSocket(), delay);
                 }
             });
 
@@ -371,10 +402,12 @@ if (typeof window.ChatSystem === 'undefined') {
 
         // Прокрутка
         if (this.elements.messagesContainer) {
-            const scrollHandler = this.debounce(() => {
+            const scrollHandler = this.throttle(() => {
                 this.updateScrollButtonVisibility();
-            }, 100);
-            this.elements.messagesContainer.addEventListener('scroll', scrollHandler);
+            }, 150);
+            this.elements.messagesContainer.addEventListener('scroll', scrollHandler, {
+                passive: true // Не блокирует рендеринг
+            });
         }
 
         if (this.elements.scrollToNewButton) {
@@ -624,21 +657,28 @@ if (typeof window.ChatSystem === 'undefined') {
         const wasAtBottom = this.isNearBottom();
         const isSelfMessage = messageData.user_id === this.state.currentUser?.id;
 
-        // Удаляем старые сообщения
+        // Удаляем старые сообщения ПЕРЕД добавлением нового
         if (this.elements.messagesContainer.childElementCount >= this.config.maxMessages) {
-            this.elements.messagesContainer.removeChild(
-                this.elements.messagesContainer.firstElementChild
-            );
+            const firstChild = this.elements.messagesContainer.firstElementChild;
+            if (firstChild) {
+                firstChild.remove();
+            }
         }
 
+        // Используем DocumentFragment для батчинга DOM операций
+        const fragment = document.createDocumentFragment();
         const messageElement = this.createMessageElement(messageData);
-        this.elements.messagesContainer.appendChild(messageElement);
-
+        fragment.appendChild(messageElement);
+        
+        // Одна операция вместо множественных appendChild
+        this.elements.messagesContainer.appendChild(fragment);
 
         // Если это сообщение от текущего пользователя или пользователь был внизу - скроллим
         if (isSelfMessage || forceScroll || wasAtBottom) {
-            // Мгновенная прокрутка для новых сообщений
-            this.scrollToBottom(false);
+            // requestAnimationFrame для плавности
+            requestAnimationFrame(() => {
+                this.scrollToBottom(false);
+            });
         } else {
             // Если пользователь не внизу и это не его сообщение, показываем кнопку
             this.updateScrollButtonVisibility();
@@ -753,11 +793,19 @@ if (typeof window.ChatSystem === 'undefined') {
      * Обработка текста сообщения
      */
     processMessageText(message) {
+        // Кэшируем регулярные выражения
+        if (!this._cachedRegex) {
+            this._cachedRegex = {
+                mention: /@([^,.\n]+?)(?=[,.\n]|$)/g,
+                winning: /#(\d+)/g
+            };
+        }
+        
         let processed = message;
 
         // Замена упоминаний - улучшенная версия для имен с пробелами
         // Ищем паттерн: @ + любые символы до запятой, точки или конца строки
-        processed = processed.replace(/@([^,.\n]+?)(?=[,.\n]|$)/g, (match) => {
+        processed = processed.replace(this._cachedRegex.mention, (match) => {
             const username = match.substring(1).trim(); // Убираем @ и пробелы
 
             if (this.state.currentUser?.username &&
@@ -768,7 +816,7 @@ if (typeof window.ChatSystem === 'undefined') {
         });
 
         // Замена ссылок на выигрыши
-        processed = processed.replace(/#(\d+)/g, (match, winId) => {
+        processed = processed.replace(this._cachedRegex.winning, (match, winId) => {
             return `<a href="#" onclick="openWinningModal(${winId}); return false;" class="winning-link">${match}</a>`;
         });
 
@@ -1109,6 +1157,12 @@ if (typeof window.ChatSystem === 'undefined') {
      * Воспроизведение звука
      */
     playSound(soundName) {
+        // Ленивая загрузка звука
+        if (!this.sounds[soundName] && this.soundPaths[soundName]) {
+            this.sounds[soundName] = new Audio(this.soundPaths[soundName]);
+            this.sounds[soundName].preload = 'none'; // Не загружаем заранее
+        }
+        
         if (this.sounds[soundName]) {
             this.sounds[soundName].play().catch(error => {
                 console.error(`Ошибка при воспроизведении звука ${soundName}:`, error);
@@ -1159,6 +1213,34 @@ if (typeof window.ChatSystem === 'undefined') {
             };
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
+        };
+    }
+
+    /**
+     * Throttle функция (более эффективна для scroll)
+     */
+    throttle(func, wait) {
+        let timeout = null;
+        let previous = 0;
+        
+        return (...args) => {
+            const now = Date.now();
+            const remaining = wait - (now - previous);
+            
+            if (remaining <= 0 || remaining > wait) {
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = null;
+                }
+                previous = now;
+                func.apply(this, args);
+            } else if (!timeout) {
+                timeout = setTimeout(() => {
+                    previous = Date.now();
+                    timeout = null;
+                    func.apply(this, args);
+                }, remaining);
+            }
         };
     }
 
