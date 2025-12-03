@@ -31,8 +31,8 @@
                     <livewire:notifications/>
                 </div>
 
-                <div class="relative hidden md:block" x-data="{ open: false }">
-                  <button @click.stop.prevent="open = !open"
+                <div class="relative hidden md:block" x-data="{ isOpen: false }">
+                  <button @click.stop.prevent="isOpen = !isOpen"
                           type="button"
                           class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-800/50 transition-all duration-200 group">
                         <!-- Avatar with rank indicator -->
@@ -53,7 +53,7 @@
                         </span>
 
                         <!-- Arrow -->
-                        <svg :class="{'rotate-180': open}"
+                        <svg :class="{'rotate-180': isOpen}"
                              class="h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:text-[#ffb300]"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <polyline points="6 9 12 15 18 9"></polyline>
@@ -61,8 +61,8 @@
                     </button>
 
                     <!-- Dropdown -->
-                    <div x-show="open"
-                        @click.away="open = false"
+                    <div x-show="isOpen"
+                        @click.away="isOpen = false"
                         x-transition:enter="transition ease-out duration-200"
                         x-transition:enter-start="opacity-0 scale-95"
                         x-transition:enter-end="opacity-100 scale-100"
@@ -331,8 +331,8 @@
 
         <!-- Профиль -->
         @auth
-            <div class="relative flex flex-col items-center justify-center flex-1" x-data="{ open: false }">
-                <button @click.stop="open = !open"
+            <div class="relative flex flex-col items-center justify-center flex-1" x-data="{ isOpen: false }">
+                <button @click.stop="isOpen = !isOpen"
                        class="flex flex-col items-center justify-center group text-gray-400 hover:text-[#ffb300] transition-all duration-200">
                     <div class="relative">
                         <div class="w-10 h-10 flex items-center justify-center rounded-xl group-hover:bg-gray-800 transition-colors p-1">
@@ -345,8 +345,8 @@
                 </button>
 
                 <!-- Выпадающее меню профиля -->
-                <div x-show="open"
-                     @click.away="open = false"
+                <div x-show="isOpen"
+                     @click.away="isOpen = false"
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 translate-y-2"
                      x-transition:enter-end="opacity-100 translate-y-0"
@@ -410,7 +410,7 @@
 
                         <a href="{{ route('account') }}" 
                            wire:navigate
-                           @click="open = false"
+                           @click="isOpen = false"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
                                 <svg class="w-4 h-4 group-hover:text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -422,7 +422,7 @@
                         </a>
 
                         <a href="#"
-                           @click="open = false"
+                           @click="isOpen = false"
                            onclick="event.preventDefault(); window.openModalWithMyInfo();"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
@@ -435,7 +435,7 @@
                         
                         <a href="{{ route('transaction') }}" 
                            wire:navigate
-                           @click="open = false"
+                           @click="isOpen = false"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
                                 <svg class="w-4 h-4 group-hover:text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,7 +446,7 @@
                         </a>
 
                         <a href="#"
-                           @click="open = false"
+                           @click="isOpen = false"
                            onclick="event.preventDefault(); openRankModal();"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
@@ -461,7 +461,7 @@
                     <!-- Выход -->
                     <div class="border-t border-gray-800 p-2">
                         <a href="{{ route('auth.logout') }}" 
-                           @click="open = false"
+                           @click="isOpen = false"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
