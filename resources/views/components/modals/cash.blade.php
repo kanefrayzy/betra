@@ -181,11 +181,16 @@
                     <div x-show="!showCryptoAddress && selectedSystem && isCryptoSystem(selectedSystem)" class="space-y-4">
                         <h3 class="text-white font-semibold text-lg">{{__('Выберите криптовалюту')}}</h3>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <template x-for="handler in getCryptoHandlers()" :key="handler.id">
+                            <template x-for="handler in getCryptoHandlers()" :key="'crypto_' + handler.id">
                                 <button @click="selectCrypto(handler)" type="button"
                                         class="p-4 bg-[#252a32] hover:bg-[#2c3340] border border-gray-800 hover:border-[#ffb300] rounded-xl transition-all duration-200 group">
                                     <div class="flex flex-col items-center gap-2">
-                                        <img :src="handler.icon" :alt="handler.name" class="w-16 h-16 object-contain">
+                                        <template x-if="handler.icon">
+                                            <img :src="handler.icon" :alt="handler.name" class="w-16 h-16 object-contain">
+                                        </template>
+                                        <template x-if="!handler.icon">
+                                            <div class="w-16 h-16 flex items-center justify-center text-4xl" x-text="getCryptoIcon(handler.currency)"></div>
+                                        </template>
                                         <div class="text-white font-semibold text-sm" x-text="handler.name"></div>
                                         <div class="text-gray-400 text-xs" x-text="handler.network ? handler.network : handler.currency"></div>
                                     </div>
@@ -610,20 +615,22 @@ function cashModalData() {
         // Данные платёжных систем
         paymentHandlers: {
             @foreach($matchingHandlers as $handler)
-            '{{ $handler->id }}': { 
+            'handler_{{ $handler->id }}': { 
+                id: {{ $handler->id }},
                 name: '{{ $handler->name }}', 
-                icon: '{{ asset('storage/' . $handler->icon) }}', 
+                icon: '{{ $handler->icon ? asset('storage/' . $handler->icon) : '' }}', 
                 currency: '{{ $handler->currency }}',
-                network: '{{ $handler->network }}',
+                network: {{ $handler->network ? "'" . $handler->network . "'" : 'null' }},
                 payment_system_id: {{ $handler->payment_system_id }}
             },
             @endforeach
             @foreach($otherHandlers as $handler)
-            '{{ $handler->id }}': { 
+            'handler_{{ $handler->id }}': { 
+                id: {{ $handler->id }},
                 name: '{{ $handler->name }}', 
-                icon: '{{ asset('storage/' . $handler->icon) }}', 
+                icon: '{{ $handler->icon ? asset('storage/' . $handler->icon) : '' }}', 
                 currency: '{{ $handler->currency }}',
-                network: '{{ $handler->network }}',
+                network: {{ $handler->network ? "'" . $handler->network . "'" : 'null' }},
                 payment_system_id: {{ $handler->payment_system_id }}
             },
             @endforeach
@@ -666,6 +673,19 @@ function cashModalData() {
         getCryptoHandlers() {
             const westWalletSystemId = {{ \App\Models\PaymentSystem::where('name', 'WestWallet')->value('id') ?? 'null' }};
             return Object.values(this.paymentHandlers).filter(h => h.payment_system_id === westWalletSystemId);
+        },
+
+        getCryptoIcon(currency) {
+            const iconMap = {
+                'BTC': '₿',
+                'ETH': 'Ξ',
+                'USDT': '₮',
+                'TRX': 'T',
+                'LTC': 'Ł',
+                'XRP': 'X',
+                'TON': '💎'
+            };
+            return iconMap[currency] || '🪙';
         },
 
         async selectCrypto(handler) {
