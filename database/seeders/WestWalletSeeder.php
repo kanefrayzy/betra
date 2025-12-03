@@ -27,84 +27,43 @@ class WestWalletSeeder extends Seeder
             ]
         );
 
-        // Список криптовалют для добавления с учетом сетей
+        // Список криптовалют для добавления
         $cryptoCurrencies = [
-            // Bitcoin
             [
-                'name' => 'BTC (Bitcoin)',
+                'name' => 'Bitcoin (BTC)',
                 'currency' => 'BTC',
-                'network' => null,
                 'min_deposit' => 0.0001,
                 'min_withdrawal' => 0.001,
             ],
-            // Ethereum
             [
-                'name' => 'ETH (Ethereum)',
+                'name' => 'Ethereum (ETH)',
                 'currency' => 'ETH',
-                'network' => null,
                 'min_deposit' => 0.001,
                 'min_withdrawal' => 0.01,
             ],
-            // USDT - разные сети
             [
-                'name' => 'USDT (TRC20)',
+                'name' => 'Tether USDT (TRC20)',
                 'currency' => 'USDT',
-                'network' => 'TRC20',
                 'min_deposit' => 1,
                 'min_withdrawal' => 5,
             ],
             [
-                'name' => 'USDT (ERC20)',
-                'currency' => 'USDT',
-                'network' => 'ERC20',
-                'min_deposit' => 10,
-                'min_withdrawal' => 20,
-            ],
-            [
-                'name' => 'USDT (BEP20)',
-                'currency' => 'USDT',
-                'network' => 'BEP20',
-                'min_deposit' => 1,
-                'min_withdrawal' => 5,
-            ],
-            [
-                'name' => 'USDT (TON)',
-                'currency' => 'USDT',
-                'network' => 'TON',
-                'min_deposit' => 1,
-                'min_withdrawal' => 5,
-            ],
-            // TRON
-            [
-                'name' => 'TRX (Tron)',
+                'name' => 'TRON (TRX)',
                 'currency' => 'TRX',
-                'network' => null,
                 'min_deposit' => 10,
                 'min_withdrawal' => 50,
             ],
-            // Litecoin
             [
-                'name' => 'LTC (Litecoin)',
+                'name' => 'Litecoin (LTC)',
                 'currency' => 'LTC',
-                'network' => null,
                 'min_deposit' => 0.01,
                 'min_withdrawal' => 0.05,
             ],
-            // Ripple
             [
-                'name' => 'XRP (Ripple)',
+                'name' => 'Ripple (XRP)',
                 'currency' => 'XRP',
-                'network' => null,
                 'min_deposit' => 1,
                 'min_withdrawal' => 10,
-            ],
-            // TON
-            [
-                'name' => 'TON (Toncoin)',
-                'currency' => 'TON',
-                'network' => null,
-                'min_deposit' => 1,
-                'min_withdrawal' => 5,
             ],
         ];
 
@@ -113,7 +72,6 @@ class WestWalletSeeder extends Seeder
                 [
                     'payment_system_id' => $westWallet->id,
                     'currency' => $crypto['currency'],
-                    'network' => $crypto['network'],
                 ],
                 [
                     'name' => $crypto['name'],
@@ -124,7 +82,7 @@ class WestWalletSeeder extends Seeder
                     'min_deposit_limit' => $crypto['min_deposit'],
                     'max_deposit_limit' => 50000.00,
                     'active' => true,
-                    'withdrawal_mode' => 'manual',
+                    'withdrawal_mode' => 'manual', // Пока выводы вручную
                     'auto_withdrawal_enabled' => false,
                     'require_admin_approval' => true,
                 ]

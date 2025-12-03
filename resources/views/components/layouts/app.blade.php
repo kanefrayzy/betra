@@ -45,7 +45,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=REM:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Icons -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
     <script src="https://kit.fontawesome.com/5bc1c1da4e.js" crossorigin="anonymous" defer></script>
 
     <!-- Swiper -->
@@ -196,187 +195,6 @@
             margin-top: 100px;
         } */
     </style>
-    <!-- Preloader Styles -->
-    <style>
-        .preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0e1116 0%, #1a1d26 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            transition: opacity 0.3s ease-out;
-        }
-
-        .preloader.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .preloader-content {
-            position: relative;
-            text-align: center;
-        }
-
-        .lightning-bolt {
-            width: 80px;
-            height: 120px;
-            position: relative;
-            margin: 0 auto 30px;
-        }
-
-        .lightning-bolt svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 20px rgba(255, 179, 0, 0.8));
-        }
-
-        .lightning-path {
-            fill: #ffb300;
-            animation: lightning-pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes lightning-pulse {
-            0%, 100% {
-                opacity: 1;
-                filter: brightness(1);
-            }
-            50% {
-                opacity: 0.7;
-                filter: brightness(1.5);
-            }
-        }
-
-        .spark {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #ffb300;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #ffb300;
-            animation: spark-fly 1s ease-out infinite;
-        }
-
-        .spark:nth-child(1) {
-            top: 20%;
-            left: -10px;
-            animation-delay: 0s;
-        }
-
-        .spark:nth-child(2) {
-            top: 40%;
-            right: -10px;
-            animation-delay: 0.3s;
-        }
-
-        .spark:nth-child(3) {
-            top: 60%;
-            left: -15px;
-            animation-delay: 0.6s;
-        }
-
-        .spark:nth-child(4) {
-            top: 80%;
-            right: -15px;
-            animation-delay: 0.9s;
-        }
-
-        @keyframes spark-fly {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx, 20px), var(--ty, -20px)) scale(0);
-                opacity: 0;
-            }
-        }
-
-        .spark:nth-child(1) { --tx: -30px; --ty: -30px; }
-        .spark:nth-child(2) { --tx: 30px; --ty: -25px; }
-        .spark:nth-child(3) { --tx: -25px; --ty: -35px; }
-        .spark:nth-child(4) { --tx: 25px; --ty: -30px; }
-
-        .preloader-text {
-            font-size: 14px;
-            font-weight: 600;
-            color: #ffb300;
-            letter-spacing: 3px;
-            animation: text-glow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes text-glow {
-            0%, 100% {
-                text-shadow: 0 0 10px rgba(255, 179, 0, 0.5);
-            }
-            50% {
-                text-shadow: 0 0 20px rgba(255, 179, 0, 0.8);
-            }
-        }
-
-        .progress-bar {
-            width: 200px;
-            height: 3px;
-            background: rgba(255, 179, 0, 0.2);
-            border-radius: 10px;
-            margin: 20px auto 0;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-bar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, transparent, #ffb300, transparent);
-            animation: progress-slide 1.5s ease-in-out infinite;
-        }
-
-        @keyframes progress-slide {
-            0% {
-                transform: translateX(-100%);
-            }
-            100% {
-                transform: translateX(100%);
-            }
-        }
-    .lightning-image {
-        width: 100%;
-        height: 100%;
-        animation: lightning-animate 2s ease-in-out infinite;
-        filter: drop-shadow(0 0 20px rgba(255, 179, 0, 0.8));
-    }
-
-    @keyframes lightning-animate {
-        0%, 100% {
-            transform: scale(1) rotate(0deg);
-            filter: drop-shadow(0 0 20px rgba(255, 179, 0, 0.8)) brightness(1);
-            opacity: 1;
-        }
-        25% {
-            transform: scale(1.05) rotate(-2deg);
-            filter: drop-shadow(0 0 30px rgba(255, 179, 0, 1)) brightness(1.3);
-            opacity: 0.9;
-        }
-        50% {
-            transform: scale(1.1) rotate(2deg);
-            filter: drop-shadow(0 0 35px rgba(255, 179, 0, 1)) brightness(1.5);
-            opacity: 0.8;
-        }
-        75% {
-            transform: scale(1.05) rotate(-1deg);
-            filter: drop-shadow(0 0 30px rgba(255, 179, 0, 1)) brightness(1.2);
-            opacity: 0.9;
-        }
-}        
-    </style>
     
     {{-- Подключение Telegram WebView авторизации --}}
     @include('components.telegram-auth')
@@ -438,20 +256,6 @@
             }
         })();
     </script>
-
-    <!-- Navigation Loader with Lightning Animation -->
-    <div class="preloader" id="preloader">
-        <div class="preloader-content">
-            <div class="lightning-bolt">
-                <img src="/assets/images/lightning.png" alt="Lightning" class="lightning-image">
-                <div class="spark"></div>
-                <div class="spark"></div>
-                <div class="spark"></div>
-                <div class="spark"></div>
-            </div>
-            <div class="progress-bar"></div>
-        </div>
-    </div>
 
     <div class="flex h-screen overflow-hidden">
       <div x-show="sidebarOpen"
@@ -610,10 +414,10 @@
             <div class="border-t border-gray-800 pt-8">
                 <!-- Payment Methods -->
                 <div class="flex flex-wrap items-center justify-center gap-4 mb-6 opacity-80">
-                    <img src="/assets/images/payments/visa.webp" alt="Visa" class="h-6 hover:grayscale-1 transition">
-                    <img src="/assets/images/payments/mastercard.png" alt="Mastercard" class="h-6 hover:grayscale-1 transition">
-                    <img src="/assets/images/payments/btc.png" alt="Bitcoin" class="h-6 hover:grayscale-1 transition">
-                    <img src="/assets/images/payments/usdt.png" alt="USDT" class="h-6 hover:grayscale-1 transition">
+                    <img src="/assets/images/payments/visa.webp" alt="Visa" class="h-6 hover:grayscale-1 transition" loading="lazy">
+                    <img src="/assets/images/payments/mastercard.png" alt="Mastercard" class="h-6 hover:grayscale-1 transition" loading="lazy">
+                    <img src="/assets/images/payments/btc.png" alt="Bitcoin" class="h-6 hover:grayscale-1 transition" loading="lazy">
+                    <img src="/assets/images/payments/usdt.png" alt="USDT" class="h-6 hover:grayscale-1 transition" loading="lazy">
                 </div>
 
                 <!-- Warning -->
@@ -696,10 +500,8 @@
         <script src="//ulogin.ru/js/ulogin.js"></script>
     @endguest
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" data-navigate-once></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" data-navigate-once></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" data-navigate-once></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" data-navigate-once async></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" data-navigate-once async></script>
 
 
 
@@ -905,43 +707,6 @@
         window.toggleChat = function() {
             document.body.classList.contains('chat-open') ? window.closeChat() : window.openChat();
         };
-
-        // Preloader
-        window.addEventListener('load', function() {
-            const preloader = document.getElementById('preloader');
-            if (preloader) {
-                const isTelegramWebView = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData;
-                const isGamePageLoad = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-                
-                if (isTelegramWebView && isGamePageLoad) {
-                    preloader.style.display = 'none';
-                } else {
-                    // Для остальных случаев - стандартная анимация
-                    setTimeout(() => {
-                        preloader.classList.add('fade-out');
-                        setTimeout(() => {
-                            preloader.style.display = 'none';
-                        }, 300);
-                    }, 100);
-                }
-            }
-        });
-
-        // Avoid redeclaration if this script runs twice (Safari or duplicate includes)
-        if (typeof window.isGamePageTimeout === 'undefined') {
-            window.isGamePageTimeout = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-        }
-        const maxPreloaderTime = window.isGamePageTimeout ? 3000 : 8000;
-        
-        setTimeout(function() {
-            const preloader = document.getElementById('preloader');
-            if (preloader && !preloader.classList.contains('fade-out')) {
-                preloader.classList.add('fade-out');
-                setTimeout(() => {
-                    preloader.style.display = 'none';
-                }, 300);
-            }
-        }, maxPreloaderTime);
 
         // Sidebar Controller
         document.addEventListener('alpine:init', () => {

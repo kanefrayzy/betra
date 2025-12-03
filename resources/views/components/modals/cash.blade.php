@@ -1,7 +1,7 @@
 <div x-data="cashModalData()"
      @open-cash-modal.window="open = true"
      @close-cash-modal.window="open = false"
-     @keydown.escape.window="open = false"
+     @keydown.escape.window="closeModal()"
      x-show="open"
      x-cloak
      class="fixed inset-0 z-50 overflow-y-auto modaler"
@@ -16,7 +16,7 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-black/60 backdrop-blur-sm"
-         @click="open = false"></div>
+         @click="closeModal()"></div>
 
     <!-- Modal -->
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -27,12 +27,12 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
-             @click.away="open = false"
+             @click.away="closeModal()"
              class="relative w-full max-w-4xl bg-[#1e2329] rounded-2xl shadow-2xl border border-gray-800">
 
             <!-- Header -->
             <div class="relative px-6 py-5 border-b border-gray-800">
-                <button @click="open = false"
+                <button @click="closeModal()"
                         class="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -44,7 +44,7 @@
 
             <!-- Tabs -->
             <div class="flex bg-[#252a32] border-b border-gray-800">
-                <button @click="operation = 'deposit'"
+                <button @click="switchTab('deposit')"
                         class="flex-1 py-4 text-center font-medium transition-all duration-200 relative text-sm"
                         :class="operation === 'deposit' ? 'text-white' : 'text-gray-400 hover:text-white'">
                     <div class="flex items-center justify-center space-x-2">
@@ -55,7 +55,7 @@
                     </div>
                     <div x-show="operation === 'deposit'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#ffb300]"></div>
                 </button>
-                <button @click="operation = 'withdrawal'"
+                <button @click="switchTab('withdrawal')"
                         class="flex-1 py-4 text-center font-medium transition-all duration-200 relative text-sm"
                         :class="operation === 'withdrawal' ? 'text-white' : 'text-gray-400 hover:text-white'">
                     <div class="flex items-center justify-center space-x-2">
@@ -110,9 +110,9 @@
                         <!-- Crypto Address Card -->
                         <div x-show="!loadingCryptoAddress && cryptoAddressData" class="bg-[#252a32] rounded-xl p-6 border border-gray-800">
                             <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-bold text-white">{{__('Адрес для пополнения')}}</h3>
+                                <h3 class="text-lg font-bold text-white">{{__('Криптовалютный платеж')}}</h3>
                                 <span class="px-3 py-1 bg-[#ffb300]/20 text-[#ffb300] text-sm font-semibold rounded-lg" 
-                                      x-text="cryptoAddressData?.currency"></span>
+                                      x-text="cryptoAddressData?.currency + (cryptoAddressData?.network ? ' (' + cryptoAddressData.network + ')' : '')"></span>
                             </div>
 
                             <!-- QR Code -->
@@ -122,15 +122,27 @@
                                 </div>
                             </div>
 
+                            <!-- Minimum Amount -->
+                            <div class="mb-4 p-3 bg-[#1e2329] rounded-lg border border-gray-800">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-[#ffb300]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-gray-400">{{__('Минимальная сумма:')}}</span>
+                                    <span class="text-white font-semibold" x-text="cryptoAddressData?.min_amount || '10.00'"></span>
+                                    <span class="text-gray-400" x-text="cryptoAddressData?.currency"></span>
+                                </div>
+                            </div>
+
                             <!-- Address -->
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-gray-400 text-sm mb-2">{{__('Адрес кошелька')}}</label>
+                                    <label class="block text-gray-400 text-sm mb-2">{{__('Ваш постоянный адрес')}}</label>
                                     <div class="flex gap-2">
                                         <input type="text" 
                                                :value="cryptoAddressData?.address" 
                                                readonly
-                                               class="flex-1 px-4 py-3 bg-[#1e2329] border border-gray-800 rounded-lg text-white text-sm focus:outline-none focus:border-[#ffb300] font-mono">
+                                               class="flex-1 px-4 py-3 bg-[#1e2329] border border-gray-800 rounded-lg text-white text-sm focus:outline-none focus:border-[#ffb300] font-mono break-all">
                                         <button @click="copyAddress()" type="button"
                                                 class="px-4 py-3 bg-[#ffb300] hover:bg-[#e6a000] text-black font-semibold rounded-lg transition-colors flex-shrink-0">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +160,7 @@
                                                :value="cryptoAddressData?.dest_tag" 
                                                readonly
                                                class="flex-1 px-4 py-3 bg-[#1e2329] border border-gray-800 rounded-lg text-white text-sm focus:outline-none focus:border-[#ffb300] font-mono">
-                                        <button @click="navigator.clipboard.writeText(cryptoAddressData?.dest_tag)" type="button"
+                                        <button @click="copyDestTag()" type="button"
                                                 class="px-4 py-3 bg-[#ffb300] hover:bg-[#e6a000] text-black font-semibold rounded-lg transition-colors flex-shrink-0">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -156,181 +168,170 @@
                                         </button>
                                     </div>
                                 </div>
+
+                                <!-- Network -->
+                                <div x-show="cryptoAddressData?.network">
+                                    <label class="block text-gray-400 text-sm mb-2">{{__('Сеть')}}</label>
+                                    <div class="px-4 py-3 bg-[#1e2329] border border-gray-800 rounded-lg text-white text-sm font-semibold">
+                                        <span x-text="cryptoAddressData?.network"></span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Info -->
-                            <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                                <div class="flex gap-3">
-                                    <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                                    </svg>
-                                    <div class="text-sm text-blue-300">
-                                        <p class="font-semibold mb-1">{{__('Важная информация:')}}</p>
-                                        <ul class="list-disc list-inside space-y-1 text-xs">
-                                            <li>{{__('Отправляйте только указанную криптовалюту на этот адрес')}}</li>
-                                            <li>{{__('После подтверждения в блокчейне средства автоматически зачислятся')}}</li>
-                                            <li>{{__('Время зачисления: обычно 1-30 минут в зависимости от сети')}}</li>
-                                        </ul>
+                            <!-- Warnings -->
+                            <div class="mt-6 space-y-3">
+                                <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                                    <div class="flex gap-3">
+                                        <svg class="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <div class="text-sm text-yellow-300">
+                                            <p class="font-semibold mb-1">{{__('Вы переводите валюту')}} <span x-text="cryptoAddressData?.currency"></span> <span x-show="cryptoAddressData?.network">{{__('в сети')}} <span x-text="cryptoAddressData?.network"></span></span>.</p>
+                                            <p class="text-xs">{{__('Использование другой сети приведёт к потере средств.')}}</p>
+                                        </div>
                                     </div>
+                                </div>
+
+                                <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                                    <div class="flex gap-3">
+                                        <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <div class="text-sm text-blue-300">
+                                            <p class="font-semibold mb-1">{{__('Важная информация:')}}</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs">
+                                                <li>{{__('Отправляйте только указанную криптовалюту на этот адрес')}}</li>
+                                                <li>{{__('После подтверждения в блокчейне средства автоматически зачислятся')}}</li>
+                                                <li>{{__('Время зачисления: обычно 1-30 минут в зависимости от сети')}}</li>
+                                                <li x-show="cryptoAddressData?.dest_tag">{{__('Обязательно укажите тег назначения при переводе!')}}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bonus Toggle -->
+                            <div class="mt-6 p-4 bg-gradient-to-r from-[#ffb300]/10 to-transparent border border-[#ffb300]/20 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-white font-semibold">{{__('Бонус 50% на депозит')}}</p>
+                                        <button @click="showBonusConditions = !showBonusConditions" class="text-xs text-gray-400 hover:text-white flex items-center gap-1 mt-1">
+                                            {{__('Условия бонуса')}}
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" x-model="bonusEnabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#ffb300]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ffb300]"></div>
+                                    </label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Crypto Selection -->
-                    <div x-show="!showCryptoAddress && selectedSystem && isCryptoSystem(selectedSystem)" class="space-y-4">
-                        <h3 class="text-white font-semibold text-lg">{{__('Выберите криптовалюту')}}</h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <template x-for="handler in getCryptoHandlers()" :key="handler.id">
-                                <button @click="selectCrypto(handler)" type="button"
-                                        class="p-4 bg-[#252a32] hover:bg-[#2c3340] border border-gray-800 hover:border-[#ffb300] rounded-xl transition-all duration-200 group">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <img :src="handler.icon" :alt="handler.name" class="w-16 h-16 object-contain">
-                                        <div class="text-white font-semibold text-sm" x-text="handler.name"></div>
-                                        <div class="text-gray-400 text-xs" x-text="handler.network ? handler.network : handler.currency"></div>
-                                    </div>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Standard Deposit Form -->
-                    <form @submit.prevent="submitDeposit" class="space-y-6" x-show="!showCryptoAddress && (!selectedSystem || !isCryptoSystem(selectedSystem))">
+                    <!-- Payment Methods Selection -->
+                    <form @submit.prevent="submitDeposit" class="space-y-6" x-show="!showCryptoAddress">
                         @csrf
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <!-- Payment Methods -->
                             <div class="space-y-4">
                                 <label class="block text-gray-400 text-sm mb-3 font-medium">{{__('Способ оплаты')}}</label>
                                 
-                                <!-- Кастомный Dropdown для мобильных -->
-                                <div class="lg:hidden relative" x-data="{ dropdownOpen: false }">
-                                    <!-- Кнопка dropdown -->
-                                    <button type="button"
-                                            @click="dropdownOpen = !dropdownOpen"
-                                            class="flex items-center justify-between w-full p-3 bg-[#252a32] border border-gray-800 rounded-lg cursor-pointer transition-all duration-200"
-                                            :class="selectedSystem ? 'border-[#ffb300]' : ''">
-                                        <div class="flex items-center gap-3 flex-1">
-                                            <template x-if="selectedSystem">
-                                                <img :src="getSystemIcon(selectedSystem, 'deposit')" 
-                                                     :alt="getSystemName(selectedSystem, 'deposit')"
-                                                     class="w-8 h-6 object-contain flex-shrink-0">
-                                            </template>
-                                            <span class="text-white text-sm font-medium" x-text="selectedSystem ? getSystemName(selectedSystem, 'deposit') : '{{__('Выберите способ оплаты')}}'"></span>
+                                <!-- Bank Methods -->
+                                @if($matchingHandlers->where('network', null)->isNotEmpty() || $otherHandlers->where('network', null)->isNotEmpty())
+                                <div class="mb-4">
+                                    <p class="text-white font-semibold text-sm mb-3">{{__('Банковский платеж')}}</p>
+                                    <div class="space-y-2">
+                                        @foreach($matchingHandlers->where('network', null) as $handler)
+                                        <div>
+                                            <input type="radio"
+                                                   name="system"
+                                                   value="{{ $handler->id }}"
+                                                   id="payment_handler_{{ $handler->id }}"
+                                                   class="hidden peer"
+                                                   x-model="selectedSystem">
+                                            <label for="payment_handler_{{ $handler->id }}"
+                                                   class="flex items-center w-full p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 peer-checked:border-[#ffb300] peer-checked:bg-[#ffb300]/10 rounded-lg cursor-pointer transition-all duration-200 group">
+                                                <img src="{{ asset('storage/' . $handler->icon) }}"
+                                                     alt="{{ $handler->name }}"
+                                                     class="w-8 h-6 object-contain mr-3 flex-shrink-0">
+                                                <span class="text-white text-sm font-medium flex-1">{{ $handler->name }}</span>
+                                                <svg class="w-5 h-5 text-[#ffb300] opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </label>
                                         </div>
-                                        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0" 
-                                             :class="dropdownOpen ? 'rotate-180' : ''"
-                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <!-- Выпадающий список -->
-                                    <div x-show="dropdownOpen"
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 transform scale-95"
-                                         x-transition:enter-end="opacity-100 transform scale-100"
-                                         x-transition:leave="transition ease-in duration-150"
-                                         x-transition:leave-start="opacity-100 transform scale-100"
-                                         x-transition:leave-end="opacity-0 transform scale-95"
-                                         @click.away="dropdownOpen = false"
-                                         class="absolute z-50 left-0 right-0 mt-2 bg-[#1e2329] border border-gray-800 rounded-lg shadow-2xl max-h-80 overflow-y-auto custom-scrollbar">
-                                        
-                                        @if($matchingHandlers->isNotEmpty())
-                                        <div class="p-2 border-b border-gray-800">
-                                            <p class="px-2 py-1 text-xs text-gray-500 font-semibold">{{__('Рекомендуемые')}}</p>
-                                        </div>
-                                        @foreach($matchingHandlers as $handler)
-                                        <button type="button"
-                                                @click="selectedSystem = '{{ $handler->id }}'; dropdownOpen = false"
-                                                class="flex items-center w-full p-3 hover:bg-[#252a32] transition-all duration-200"
-                                                :class="selectedSystem === '{{ $handler->id }}' ? 'bg-[#ffb300]/10 border-l-2 border-[#ffb300]' : ''">
-                                            <img src="{{ asset('storage/' . $handler->icon) }}"
-                                                 alt="{{ $handler->name }}"
-                                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                            <span class="text-white text-sm font-medium flex-1 text-left">{{ $handler->name }}</span>
-                                            <svg x-show="selectedSystem === '{{ $handler->id }}'" 
-                                                 class="w-5 h-5 text-[#ffb300]" 
-                                                 fill="currentColor" 
-                                                 viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </button>
                                         @endforeach
-                                        @endif
 
-                                        @if($otherHandlers->isNotEmpty())
-                                        <div class="p-2 border-b border-gray-800">
-                                            <p class="px-2 py-1 text-xs text-gray-500 font-semibold">{{__('Другие методы')}}</p>
+                                        @foreach($otherHandlers->where('network', null) as $handler)
+                                        <div>
+                                            <input type="radio"
+                                                   name="system"
+                                                   value="{{ $handler->id }}"
+                                                   id="payment_handler_{{ $handler->id }}"
+                                                   class="hidden peer"
+                                                   x-model="selectedSystem">
+                                            <label for="payment_handler_{{ $handler->id }}"
+                                                   class="flex items-center w-full p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 peer-checked:border-[#ffb300] peer-checked:bg-[#ffb300]/10 rounded-lg cursor-pointer transition-all duration-200 group">
+                                                <img src="{{ asset('storage/' . $handler->icon) }}"
+                                                     alt="{{ $handler->name }}"
+                                                     class="w-8 h-6 object-contain mr-3 flex-shrink-0">
+                                                <span class="text-white text-sm font-medium flex-1">{{ $handler->name }}</span>
+                                                <svg class="w-5 h-5 text-[#ffb300] opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </label>
                                         </div>
-                                        @foreach($otherHandlers as $handler)
-                                        <button type="button"
-                                                @click="selectedSystem = '{{ $handler->id }}'; dropdownOpen = false"
-                                                class="flex items-center w-full p-3 hover:bg-[#252a32] transition-all duration-200"
-                                                :class="selectedSystem === '{{ $handler->id }}' ? 'bg-[#ffb300]/10 border-l-2 border-[#ffb300]' : ''">
-                                            <img src="{{ asset('storage/' . $handler->icon) }}"
-                                                 alt="{{ $handler->name }}"
-                                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                            <span class="text-white text-sm font-medium flex-1 text-left">{{ $handler->name }}</span>
-                                            <svg x-show="selectedSystem === '{{ $handler->id }}'" 
-                                                 class="w-5 h-5 text-[#ffb300]" 
-                                                 fill="currentColor" 
-                                                 viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </button>
                                         @endforeach
-                                        @endif
                                     </div>
                                 </div>
+                                @endif
 
-                                <!-- Список для десктопа -->
-                                <div class="hidden lg:block space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-                                    @foreach($matchingHandlers as $handler)
-                                    <div>
-                                        <input type="radio"
-                                               name="system"
-                                               value="{{ $handler->id }}"
-                                               id="payment_handler_{{ $handler->id }}"
-                                               class="hidden peer"
-                                               x-model="selectedSystem">
-                                        <label for="payment_handler_{{ $handler->id }}"
-                                               class="flex items-center w-full p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 peer-checked:border-[#ffb300] peer-checked:bg-[#ffb300]/10 rounded-lg cursor-pointer transition-all duration-200 group">
-                                            <img src="{{ asset('storage/' . $handler->icon) }}"
-                                                 alt="{{ $handler->name }}"
-                                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                            <span class="text-white text-sm font-medium flex-1">{{ $handler->name }}</span>
-                                            <svg class="w-5 h-5 text-[#ffb300] opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </label>
-                                    </div>
-                                    @endforeach
+                                <!-- Crypto Methods -->
+                                @if($matchingHandlers->whereNotNull('network')->isNotEmpty() || $otherHandlers->whereNotNull('network')->isNotEmpty())
+                                <div>
+                                    <p class="text-white font-semibold text-sm mb-3">{{__('Криптовалюта')}}</p>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        @foreach($matchingHandlers->whereNotNull('network') as $handler)
+                                        <button type="button"
+                                                @click="selectCryptoMethod({{ $handler->id }}, '{{ $handler->currency }}', '{{ $handler->network }}')"
+                                                class="p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 hover:border-[#ffb300] rounded-lg cursor-pointer transition-all duration-200 group">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <img src="{{ asset('storage/' . $handler->icon) }}"
+                                                     alt="{{ $handler->name }}"
+                                                     class="w-12 h-12 object-contain">
+                                                <span class="text-white text-xs font-medium text-center">{{ $handler->name }}</span>
+                                                @if($handler->deposit_fee == 0)
+                                                <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded">0% fee</span>
+                                                @endif
+                                            </div>
+                                        </button>
+                                        @endforeach
 
-                                    @foreach($otherHandlers as $handler)
-                                    <div>
-                                        <input type="radio"
-                                               name="system"
-                                               value="{{ $handler->id }}"
-                                               id="payment_handler_{{ $handler->id }}"
-                                               class="hidden peer"
-                                               x-model="selectedSystem">
-                                        <label for="payment_handler_{{ $handler->id }}"
-                                               class="flex items-center w-full p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 peer-checked:border-[#ffb300] peer-checked:bg-[#ffb300]/10 rounded-lg cursor-pointer transition-all duration-200 group">
-                                            <img src="{{ asset('storage/' . $handler->icon) }}"
-                                                 alt="{{ $handler->name }}"
-                                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                            <span class="text-white text-sm font-medium flex-1">{{ $handler->name }}</span>
-                                            <svg class="w-5 h-5 text-[#ffb300] opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </label>
+                                        @foreach($otherHandlers->whereNotNull('network') as $handler)
+                                        <button type="button"
+                                                @click="selectCryptoMethod({{ $handler->id }}, '{{ $handler->currency }}', '{{ $handler->network }}')"
+                                                class="p-3 bg-[#252a32] hover:bg-gray-800 border border-gray-800 hover:border-[#ffb300] rounded-lg cursor-pointer transition-all duration-200 group">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <img src="{{ asset('storage/' . $handler->icon) }}"
+                                                     alt="{{ $handler->name }}"
+                                                     class="w-12 h-12 object-contain">
+                                                <span class="text-white text-xs font-medium text-center">{{ $handler->name }}</span>
+                                                @if($handler->deposit_fee == 0)
+                                                <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded">0% fee</span>
+                                                @endif
+                                            </div>
+                                        </button>
+                                        @endforeach
                                     </div>
-                                    @endforeach
                                 </div>
+                                @endif
                             </div>
 
-                            <!-- Amount Input -->
-                            <div class="space-y-4">
+                            <!-- Amount Input (only for non-crypto) -->
+                            <div class="space-y-4" x-show="selectedSystem && !isCryptoHandler(selectedSystem)">
                                 <div>
                                     <label class="block text-gray-400 text-sm mb-3 font-medium">{{__('Сумма пополнения')}}</label>
                                     <div class="relative">
@@ -374,6 +375,7 @@
                         </div>
 
                         <button type="submit"
+                                x-show="selectedSystem && !isCryptoHandler(selectedSystem)"
                                 class="w-full h-12 bg-[#ffb300] hover:bg-[#e6a000] text-black font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                                 :disabled="!selectedSystem || amount < 5 || loading">
                             <span x-show="!loading">{{__('Перейти к оплате')}}</span>
@@ -393,90 +395,7 @@
                             <!-- Withdrawal Methods -->
                             <div class="space-y-4">
                                 <label class="block text-gray-400 text-sm mb-3 font-medium">{{__('Способ вывода')}}</label>
-                                
-                                <!-- Кастомный Dropdown для мобильных -->
-                                <div class="lg:hidden relative" x-data="{ dropdownOpen: false }">
-                                    <!-- Кнопка dropdown -->
-                                    <button type="button"
-                                            @click="dropdownOpen = !dropdownOpen"
-                                            class="flex items-center justify-between w-full p-3 bg-[#252a32] border border-gray-800 rounded-lg cursor-pointer transition-all duration-200"
-                                            :class="selectedSystem ? 'border-[#ffb300]' : ''">
-                                        <div class="flex items-center gap-3 flex-1">
-                                            <template x-if="selectedSystem">
-                                                <img :src="getSystemIcon(selectedSystem, 'withdrawal')" 
-                                                     :alt="getSystemName(selectedSystem, 'withdrawal')"
-                                                     class="w-8 h-6 object-contain flex-shrink-0">
-                                            </template>
-                                            <span class="text-white text-sm font-medium" x-text="selectedSystem ? getSystemName(selectedSystem, 'withdrawal') : '{{__('Выберите способ вывода')}}'"></span>
-                                        </div>
-                                        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0" 
-                                             :class="dropdownOpen ? 'rotate-180' : ''"
-                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <!-- Выпадающий список -->
-                                    <div x-show="dropdownOpen"
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 transform scale-95"
-                                         x-transition:enter-end="opacity-100 transform scale-100"
-                                         x-transition:leave="transition ease-in duration-150"
-                                         x-transition:leave-start="opacity-100 transform scale-100"
-                                         x-transition:leave-end="opacity-0 transform scale-95"
-                                         @click.away="dropdownOpen = false"
-                                         class="absolute z-50 left-0 right-0 mt-2 bg-[#1e2329] border border-gray-800 rounded-lg shadow-2xl max-h-80 overflow-y-auto custom-scrollbar">
-                                        
-                                        @if($matchingSystems->isNotEmpty())
-                                        <div class="p-2 border-b border-gray-800">
-                                            <p class="px-2 py-1 text-xs text-gray-500 font-semibold">{{__('Рекомендуемые')}}</p>
-                                        </div>
-                                        @foreach($matchingSystems as $system)
-                                        <button type="button"
-                                                @click="selectedSystem = '{{ $system->id }}'; commission = {{ $system->commission ?? 5 }}; dropdownOpen = false"
-                                                class="flex items-center w-full p-3 hover:bg-[#252a32] transition-all duration-200"
-                                                :class="selectedSystem === '{{ $system->id }}' ? 'bg-[#ffb300]/10 border-l-2 border-[#ffb300]' : ''">
-                                            <img src="{{ asset('storage/' . $system->icon) }}"
-                                                 alt="{{ $system->name }}"
-                                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                            <span class="text-white text-sm font-medium flex-1 text-left">{{ $system->name }}</span>
-                                            <svg x-show="selectedSystem === '{{ $system->id }}'" 
-                                                 class="w-5 h-5 text-[#ffb300]" 
-                                                 fill="currentColor" 
-                                                 viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </button>
-                                        @endforeach
-                                        @endif
-
-                                        @if($otherSystems->isNotEmpty())
-                                        <div class="p-2 border-b border-gray-800">
-                                            <p class="px-2 py-1 text-xs text-gray-500 font-semibold">{{__('Другие методы')}}</p>
-                                        </div>
-                                        @foreach($otherSystems as $system)
-                                        <button type="button"
-                                                @click="selectedSystem = '{{ $system->id }}'; commission = {{ $system->commission ?? 5 }}; dropdownOpen = false"
-                                                class="flex items-center w-full p-3 hover:bg-[#252a32] transition-all duration-200"
-                                                :class="selectedSystem === '{{ $system->id }}' ? 'bg-[#ffb300]/10 border-l-2 border-[#ffb300]' : ''">
-                                            <img src="{{ asset('storage/' . $system->icon) }}"
-                                                 alt="{{ $system->name }}"
-                                                 class="w-8 h-6 object-contain mr-3 flex-shrink-0">
-                                            <span class="text-white text-sm font-medium flex-1 text-left">{{ $system->name }}</span>
-                                            <svg x-show="selectedSystem === '{{ $system->id }}'" 
-                                                 class="w-5 h-5 text-[#ffb300]" 
-                                                 fill="currentColor" 
-                                                 viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </button>
-                                        @endforeach
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- Список для десктопа -->
-                                <div class="hidden lg:block space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                                <div class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                                     @foreach($matchingSystems as $system)
                                     <div>
                                         <input type="radio"
@@ -598,11 +517,14 @@ function cashModalData() {
         commission: 5,
         selectedSystem: '',
         selectedCrypto: '',
+        selectedNetwork: '',
         details: '',
         loading: false,
         loadingCryptoAddress: false,
         showCryptoAddress: false,
         cryptoAddressData: null,
+        bonusEnabled: false,
+        showBonusConditions: false,
         errors: {},
         successMessage: '',
         errorMessage: '',
@@ -614,8 +536,7 @@ function cashModalData() {
                 name: '{{ $handler->name }}', 
                 icon: '{{ asset('storage/' . $handler->icon) }}', 
                 currency: '{{ $handler->currency }}',
-                network: '{{ $handler->network }}',
-                payment_system_id: {{ $handler->payment_system_id }}
+                network: '{{ $handler->network }}'
             },
             @endforeach
             @foreach($otherHandlers as $handler)
@@ -623,8 +544,7 @@ function cashModalData() {
                 name: '{{ $handler->name }}', 
                 icon: '{{ asset('storage/' . $handler->icon) }}', 
                 currency: '{{ $handler->currency }}',
-                network: '{{ $handler->network }}',
-                payment_system_id: {{ $handler->payment_system_id }}
+                network: '{{ $handler->network }}'
             },
             @endforeach
         },
@@ -637,57 +557,47 @@ function cashModalData() {
             '{{ $system->id }}': { name: '{{ $system->name }}', icon: '{{ asset('storage/' . $system->icon) }}' },
             @endforeach
         },
-        
-        getSystemName(systemId, type) {
-            if (type === 'deposit') {
-                return this.paymentHandlers[systemId]?.name || '{{__('Не выбрано')}}';
-            } else {
-                return this.withdrawalSystems[systemId]?.name || '{{__('Не выбрано')}}';
-            }
-        },
-        
-        getSystemIcon(systemId, type) {
-            if (type === 'deposit') {
-                return this.paymentHandlers[systemId]?.icon || '';
-            } else {
-                return this.withdrawalSystems[systemId]?.icon || '';
-            }
-        },
-        
-        isCryptoSystem(systemId) {
-            const handler = this.paymentHandlers[systemId];
-            if (!handler) return false;
-            
-            // Проверяем по payment_system_id - WestWallet
-            const westWalletSystemId = {{ \App\Models\PaymentSystem::where('name', 'WestWallet')->value('id') ?? 'null' }};
-            return handler.payment_system_id === westWalletSystemId;
-        },
-        
-        getCryptoHandlers() {
-            const westWalletSystemId = {{ \App\Models\PaymentSystem::where('name', 'WestWallet')->value('id') ?? 'null' }};
-            return Object.values(this.paymentHandlers).filter(h => h.payment_system_id === westWalletSystemId);
+
+        closeModal() {
+            this.open = false;
+            // Reset state
+            setTimeout(() => {
+                this.showCryptoAddress = false;
+                this.selectedSystem = '';
+                this.selectedCrypto = '';
+                this.selectedNetwork = '';
+                this.amount = 0;
+                this.details = '';
+                this.cryptoAddressData = null;
+            }, 300);
         },
 
-        async selectCrypto(handler) {
-            this.selectedCrypto = {
-                currency: handler.currency,
-                network: handler.network,
-                name: handler.name
-            };
+        switchTab(tab) {
+            this.operation = tab;
+            this.selectedSystem = '';
+            this.amount = 0;
+            this.details = '';
+            this.showCryptoAddress = false;
+        },
+
+        isCryptoHandler(handlerId) {
+            const handler = this.paymentHandlers[handlerId];
+            return handler && handler.network !== null && handler.network !== '';
+        },
+
+        async selectCryptoMethod(handlerId, currency, network) {
+            this.selectedSystem = handlerId;
+            this.selectedCrypto = currency;
+            this.selectedNetwork = network;
             this.showCryptoAddress = true;
-            await this.loadCryptoAddress(handler.currency, handler.network);
+            await this.loadCryptoAddress(currency, network);
         },
 
-        async loadCryptoAddress(currency, network = null) {
+        async loadCryptoAddress(currency, network) {
             this.loadingCryptoAddress = true;
             this.errorMessage = '';
 
             try {
-                const body = { currency };
-                if (network) {
-                    body.network = network;
-                }
-                
                 const response = await fetch('{{ route("crypto.get-address") }}', {
                     method: 'POST',
                     headers: {
@@ -696,7 +606,10 @@ function cashModalData() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({ 
+                        currency: currency,
+                        network: network 
+                    })
                 });
 
                 const data = await response.json();
@@ -773,9 +686,28 @@ function cashModalData() {
             });
         },
 
+        copyDestTag() {
+            if (!this.cryptoAddressData?.dest_tag) return;
+            
+            navigator.clipboard.writeText(this.cryptoAddressData.dest_tag).then(() => {
+                if (window.Noty) {
+                    new Noty({
+                        type: 'success',
+                        text: '{{__('Тег скопирован!')}}',
+                        theme: 'mint',
+                        layout: 'topRight',
+                        timeout: 2000,
+                        progressBar: true
+                    }).show();
+                }
+            });
+        },
+
         backToSelection() {
             this.showCryptoAddress = false;
+            this.selectedSystem = '';
             this.selectedCrypto = '';
+            this.selectedNetwork = '';
             this.cryptoAddressData = null;
         },
 
@@ -788,6 +720,11 @@ function cashModalData() {
         },
 
         async submitDeposit() {
+            // Для крипто не отправляем форму
+            if (this.isCryptoHandler(this.selectedSystem)) {
+                return;
+            }
+
             this.loading = true;
             this.errors = {};
             this.successMessage = '';
@@ -931,10 +868,7 @@ function cashModalData() {
                         });
                     }
 
-                    this.open = false;
-                    this.amount = 0;
-                    this.details = '';
-                    this.selectedSystem = '';
+                    this.closeModal();
                     
                     if (data.showWithdrawalModal) {
                         setTimeout(() => {
@@ -991,6 +925,11 @@ function cashModalData() {
             }
         }
     };
+}
+
+function openCryptoGuide() {
+    // Логика открытия гайда по крипто
+    console.log('Open crypto guide');
 }
 
 function openCashModal() {

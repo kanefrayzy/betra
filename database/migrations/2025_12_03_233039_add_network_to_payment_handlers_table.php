@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payment_handlers', function (Blueprint $table) {
-            $table->string('network', 50)->nullable()->after('currency')->comment('Сеть для криптовалюты (TRC20, ERC20, BEP20, TON, SOL)');
+            //
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payment_handlers', function (Blueprint $table) {
-            $table->dropColumn('network');
+            //
         });
     }
 };
