@@ -47,9 +47,6 @@
     <!-- Icons -->
     <script src="https://kit.fontawesome.com/5bc1c1da4e.js" crossorigin="anonymous" defer></script>
 
-    <!-- Swiper -->
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-
     <!-- reCAPTCHA - Отложенная загрузка -->
     <script>
         // Загружаем reCAPTCHA только когда это необходимо
@@ -294,7 +291,7 @@
                 <!-- Logo Column -->
                 <div class="lg:col-span-1">
                     <a href="/" class="inline-block mb-4">
-                        <img src="/assets/images/logo.png" alt="Logo" class="h-10">
+                        <img src="/assets/images/logo.png" alt="Logo" class="h-10" loading="lazy">
                     </a>
                     <p class="text-gray-400 text-sm">
                         {{ __('Лучшее онлайн казино с быстрыми выплатами') }}
@@ -360,7 +357,7 @@
                     <!-- Language Switcher -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" type="button" class="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm text-gray-300">
-                            <img src="/assets/images/lang/{{ Config::get('app.locale') }}.png" alt="{{ Config::get('app.locale') }}" class="w-5 h-5 rounded">
+                            <img src="/assets/images/lang/{{ Config::get('app.locale') }}.png" alt="{{ Config::get('app.locale') }}" class="w-5 h-5 rounded" loading="lazy">
                             <span class="uppercase">{{ Config::get('app.locale') }}</span>
                             <svg class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -375,27 +372,27 @@
                              x-cloak
                              class="absolute bottom-full mb-2 left-0 w-full bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden">
                             <a href="/setlocale/ru" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 transition text-sm text-gray-300">
-                                <img src="/assets/images/lang/ru.png" alt="RU" class="w-5 h-5 rounded">
+                                <img src="/assets/images/lang/ru.png" alt="RU" class="w-5 h-5 rounded" loading="lazy">
                                 <span>RU</span>
                             </a>
                             <a href="/setlocale/en" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 transition text-sm text-gray-300">
-                                <img src="/assets/images/lang/en.png" alt="EN" class="w-5 h-5 rounded">
+                                <img src="/assets/images/lang/en.png" alt="EN" class="w-5 h-5 rounded" loading="lazy">
                                 <span>EN</span>
                             </a>
                             <a href="/setlocale/tr" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 transition text-sm text-gray-300">
-                                <img src="/assets/images/lang/tr.png" alt="TR" class="w-5 h-5 rounded">
+                                <img src="/assets/images/lang/tr.png" alt="TR" class="w-5 h-5 rounded" loading="lazy">
                                 <span>TR</span>
                             </a>
                             <a href="/setlocale/az" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 transition text-sm text-gray-300">
-                                <img src="/assets/images/lang/az.png" alt="AZ" class="w-5 h-5 rounded">
+                                <img src="/assets/images/lang/az.png" alt="AZ" class="w-5 h-5 rounded" loading="lazy">
                                 <span>AZ</span>
                             </a>
                             <a href="/setlocale/kz" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 transition text-sm text-gray-300">
-                                <img src="/assets/images/lang/kz.png" alt="KZ" class="w-5 h-5 rounded">
+                                <img src="/assets/images/lang/kz.png" alt="KZ" class="w-5 h-5 rounded" loading="lazy">
                                 <span>KZ</span>
                             </a>
                             <a href="/setlocale/uz" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 transition text-sm text-gray-300">
-                                <img src="/assets/images/lang/uz.png" alt="UZ" class="w-5 h-5 rounded">
+                                <img src="/assets/images/lang/uz.png" alt="UZ" class="w-5 h-5 rounded" loading="lazy">
                                 <span>UZ</span>
                             </a>                        
                         </div>
@@ -403,7 +400,7 @@
                                     <!-- License -->
                 <div class="mt-4">
                     <a class="inline-block opacity-80 hover:opacity-100 transition">
-                        <img src="/assets/images/curacao.png" alt="Curacao License" class="h-16">
+                        <img src="/assets/images/curacao.png" alt="Curacao License" class="h-16" loading="lazy">
                     </a>
                 </div>
 

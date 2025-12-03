@@ -2,6 +2,9 @@
 import Noty from 'noty';
 import 'noty/lib/noty.css';
 
+// Import Swiper
+import 'swiper/swiper-bundle.css';
+
 window.Noty = Noty;
 
 import { initNotyTailwindTheme } from './noty-tailwind-theme';
