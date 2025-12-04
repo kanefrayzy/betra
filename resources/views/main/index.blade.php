@@ -65,11 +65,12 @@
                 </a>
             </div>
 
-            <div id="recent-slider" class="flex gap-2.5 overflow-x-hidden scrollbar-hide snap-x snap-mandatory pt-1 pb-2">
+            <div id="recent-slider" class="flex gap-2.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory pt-1 pb-2" style="-webkit-overflow-scrolling: touch;">
                 @foreach($recentGames as $game)
-                <div class="flex-shrink-0 w-36 sm:w-40 snap-start group" x-data="{ showActions: false }">
+                <div class="flex-shrink-0 w-36 sm:w-40 snap-start group" x-data="{ showActions: false }" style="touch-action: manipulation;">
                     <div class="relative rounded-xl overflow-hidden bg-dark-900 border border-dark-700/50 hover:border-dark-600 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                          @click="showActions = !showActions"
+                         @touchend.prevent="if (window.innerWidth < 768) showActions = !showActions"
                          @mouseenter="window.innerWidth >= 768 && (showActions = true)"
                          @mouseleave="window.innerWidth >= 768 && (showActions = false)">
 
@@ -145,11 +146,12 @@
                 </div>
             </div>
 
-            <div id="{{ $category->slug }}-slider" class="flex gap-2.5 overflow-x-hidden scrollbar-hide snap-x snap-mandatory pt-1 pb-2">
+            <div id="{{ $category->slug }}-slider" class="flex gap-2.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory pt-1 pb-2" style="-webkit-overflow-scrolling: touch;">
                 @foreach($category->activeGames as $game)
-                <div class="flex-shrink-0 w-36 sm:w-40 snap-start group" x-data="{ showActions: false }">
+                <div class="flex-shrink-0 w-36 sm:w-40 snap-start group" x-data="{ showActions: false }" style="touch-action: manipulation;">
                     <div class="relative rounded-xl overflow-hidden bg-dark-900 border border-dark-700/50 hover:border-dark-600 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                          @click="showActions = !showActions"
+                         @touchend.prevent="if (window.innerWidth < 768) showActions = !showActions"
                          @mouseenter="window.innerWidth >= 768 && (showActions = true)"
                          @mouseleave="window.innerWidth >= 768 && (showActions = false)">
 
