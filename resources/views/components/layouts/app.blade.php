@@ -48,7 +48,7 @@
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     </noscript>
-    <<script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -708,19 +708,12 @@
                 maxAttempts: 300,
                 
                 init() {
-                    // Генерируем ссылку сразу при инициализации
-                    this.generateDeepLink();
-                    
-                    // Очистка при навигации
                     const navigatingHandler = () => this.stopChecking();
                     document.addEventListener('livewire:navigating', navigatingHandler);
-                    
-                    // Сохраняем ссылку на обработчик для очистки
                     this._navigatingHandler = navigatingHandler;
                 },
                 
                 destroy() {
-                    // Очистка при уничтожении компонента
                     this.stopChecking();
                     if (this._navigatingHandler) {
                         document.removeEventListener('livewire:navigating', this._navigatingHandler);
@@ -744,27 +737,33 @@
                         if (data.success) {
                             this.token = data.token;
                             this.deepLink = data.deep_link;
+                            return true;
                         }
+                        return false;
                     } catch (error) {
                         console.error('Error generating token:', error);
+                        return false;
                     }
                 },
                 
                 async handleTelegramAuth(event) {
-                    // Если ссылка ещё не готова, предотвращаем переход
-                    if (!this.deepLink || this.deepLink === '#') {
-                        event.preventDefault();
-                        return;
-                    }
+                    event.preventDefault();
                     
-                    if (this.loading) {
-                        event.preventDefault();
-                        return;
-                    }
+                    if (this.loading) return;
                     
                     this.loading = true;
                     
-                    // Начинаем проверять статус
+                    if (!this.deepLink) {
+                        const success = await this.generateDeepLink();
+                        
+                        if (!success || !this.deepLink) {
+                            this.loading = false;
+                            alert('{{ __("Ошибка при генерации ссылки Telegram") }}');
+                            return;
+                        }
+                    }
+                    
+                    window.open(this.deepLink, '_blank');
                     this.startChecking();
                 },
                 
@@ -779,17 +778,9 @@
                         return;
                     }
                     
-                    // Exponential backoff: 2s → 4s → 8s → 15s (cap)
-                    let delay;
-                    if (this.checkAttempts < 5) {
-                        delay = 2000; // Первые 5 попыток: 2s
-                    } else if (this.checkAttempts < 15) {
-                        delay = 4000; // Следующие 10 попыток: 4s
-                    } else if (this.checkAttempts < 30) {
-                        delay = 8000; // Следующие 15 попыток: 8s
-                    } else {
-                        delay = 15000; // Остальное: 15s
-                    }
+                    const delay = this.checkAttempts < 5 ? 2000 : 
+                                  this.checkAttempts < 15 ? 4000 : 
+                                  this.checkAttempts < 30 ? 8000 : 15000;
                     
                     this.checkInterval = setTimeout(async () => {
                         await this.checkStatus();
@@ -816,10 +807,8 @@
                             this.stopChecking();
                             
                             if (data.action === 'login' && data.redirect) {
-                                // Прямой вход
                                 window.location.href = data.redirect;
-                            } else if (data.data && data.data.action === 'register') {
-                                // Регистрация - открываем выбор валюты
+                            } else if (data.data?.action === 'register') {
                                 window.dispatchEvent(new CustomEvent('open-currency-select', {
                                     detail: {
                                         authType: 'telegram-code',

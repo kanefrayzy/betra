@@ -68,7 +68,7 @@ class Balance extends Component
     {
         return Cache::remember('active_currencies', 3600, function () {
             return Currency::select('id', 'name', 'symbol')
-                ->where('is_active', 1)
+                ->where('active', 1)
                 ->orderBy('name')
                 ->get();
         });
