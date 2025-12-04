@@ -5381,13 +5381,13 @@ display: none;
 .message {
     display: flex;
     align-items: flex-start;
-    padding: 8px 12px;
-    margin: 10px 0;
+    padding: 6px 10px;
+    margin: 4px 0;
     background: transparent;
     transition: background .2s ease;
     position: relative;
     background: #213743;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 .message:hover {
     background: rgba(255, 255, 255, 0.02);
@@ -5395,61 +5395,59 @@ display: none;
 
 /* Отправитель */
 .sender {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    display: inline;
     width: 100%;
     position: relative;
 }
 
-/* Аватар */
+/* Аватар - убран */
 .chat-ava {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    cursor: pointer;
-    flex-shrink: 0;
+    display: none;
 }
 
 /* Контейнер информации о пользователе */
 .user-info {
-    flex: 1;
-    min-width: 0;
+    display: inline;
 }
 
-/* Строка с именем и временем */
+/* Строка с именем - компактная, все в одну линию */
 .user-line {
-    display: flex;
+    display: inline;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2px;
 }
 
 /* Имя пользователя */
 .username {
     color: #b1bad3;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 14px;
     cursor: pointer;
+    margin-right: 4px;
 }
 
 .username:hover {
     color: #fff;
 }
 
-/* Время */
-.message-time {
-    color: #888888;
-    font-size: 12px;
-    flex-shrink: 0;
+.username::after {
+    content: ':';
+    margin-left: 2px;
+    color: #888;
 }
 
-/* Контент сообщения */
+/* Время - убрано */
+.message-time {
+    display: none;
+}
+
+/* Контент сообщения - inline */
 .message-content {
+    display: inline;
     color: #fff;
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.5;
     word-wrap: break-word;
+    margin-left: 4px;
 }
 
 /* Контейнер ранга как на скриншоте */
@@ -5576,9 +5574,12 @@ display: none;
     }
 }
 .mod-badge {
-    margin-left: 6px;
-    font-size: 12px;
-    opacity: 0.8;
+    display: inline-block;
+    color: #2196f3;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 0 4px 0 2px;
+    vertical-align: middle;
 }
 @keyframes fade-in {
     from {

@@ -747,17 +747,17 @@ if (typeof window.ChatSystem === 'undefined') {
                 rankImgInline.style.display = 'inline-block';
                 userLine.appendChild(rankImgInline);
             }
-        userLine.appendChild(usernameSpan);
-
-        // Время сообщения удалено по требованию — не отображаем
-
-        // Бейдж модератора
+        // Бейдж модератора - синяя буква М перед username
         if (messageData.is_moder) {
             const modBadge = document.createElement('span');
             modBadge.className = 'mod-badge';
-            modBadge.innerHTML = '🛡️';
-            userLine.appendChild(modBadge);
+            modBadge.textContent = 'М';
+            userLine.insertBefore(modBadge, usernameSpan);
         }
+        
+        userLine.appendChild(usernameSpan);
+
+        // Время сообщения удалено по требованию — не отображаем
 
         userInfo.appendChild(userLine);
 
