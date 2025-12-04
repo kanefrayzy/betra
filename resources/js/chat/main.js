@@ -722,7 +722,6 @@ if (typeof window.ChatSystem === 'undefined') {
         const senderElement = document.createElement('span');
         senderElement.className = 'sender';
 
-        // Убираем аватар и оставляем только иконку ранга
 
         // Информация о пользователе
         const userInfo = document.createElement('div');
@@ -756,7 +755,6 @@ if (typeof window.ChatSystem === 'undefined') {
         if (messageData.is_moder) {
             const modBadge = document.createElement('span');
             modBadge.className = 'mod-badge';
-            modBadge.innerHTML = '🛡️';
             userLine.appendChild(modBadge);
         }
 
@@ -837,7 +835,7 @@ if (typeof window.ChatSystem === 'undefined') {
     createReplyButton(messageData) {
         const button = document.createElement('button');
         button.className = 'reply-button';
-        button.innerHTML = '💬';
+        button.title = 'Ответить';
         button.addEventListener('click', () => {
             // Если в имени есть пробелы, не добавляем запятую сразу после имени
             const username = messageData.username;
@@ -853,7 +851,7 @@ if (typeof window.ChatSystem === 'undefined') {
     createDeleteButton(messageId) {
         const button = document.createElement('button');
         button.className = 'delete-button';
-        button.innerHTML = '🗑️';
+        button.title = 'Удалить';
         button.addEventListener('click', () => this.deleteMessage(messageId));
         return button;
     }

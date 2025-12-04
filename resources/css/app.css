@@ -5377,105 +5377,113 @@ display: none;
 
 /* Стили чата точно как на скриншоте Roobet */
 
-/* Основное сообщение */
+/* Основное сообщение - компактное отображение */
 .message {
     display: flex;
     align-items: flex-start;
-    padding: 8px 12px;
-    margin: 10px 0;
-    background: transparent;
+    padding: 6px 10px;
+    margin: 4px 0;
+    background: #1a2631;
     transition: background .2s ease;
     position: relative;
-    background: #213743;
-    border-radius: 10px;
+    border-radius: 8px;
+    gap: 0;
 }
 .message:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: #1f2d3a;
 }
 
-/* Отправитель */
+/* Отправитель - без аватара, только inline содержимое */
 .sender {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: baseline;
+    gap: 0;
     width: 100%;
     position: relative;
+    flex-wrap: wrap;
 }
 
-/* Аватар */
+/* Аватар убран - не используется */
 .chat-ava {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    cursor: pointer;
-    flex-shrink: 0;
+    display: none;
 }
 
-/* Контейнер информации о пользователе */
+/* Контейнер информации о пользователе - inline */
 .user-info {
     flex: 1;
     min-width: 0;
-}
-
-/* Строка с именем и временем */
-.user-line {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2px;
+    flex-direction: column;
+    gap: 0;
 }
 
-/* Имя пользователя */
+/* Строка с именем - компактная inline */
+.user-line {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    margin: 0;
+}
+
+/* Имя пользователя - inline с двоеточием */
 .username {
     color: #b1bad3;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 14px;
     cursor: pointer;
+    margin-right: 2px;
+}
+
+.username::after {
+    content: ':';
+    margin-left: 1px;
+    margin-right: 4px;
+    color: #888;
 }
 
 .username:hover {
-    color: #4ed930;
-}
-
-/* Время */
-.message-time {
-    color: #888888;
-    font-size: 12px;
-    flex-shrink: 0;
-}
-
-/* Контент сообщения */
-.message-content {
     color: #fff;
+}
+
+/* Время - убрано */
+.message-time {
+    display: none;
+}
+
+/* Контент сообщения - inline на одной строке */
+.message-content {
+    color: #e5e7eb;
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.5;
     word-wrap: break-word;
+    display: inline;
+    margin: 0;
 }
 
-/* Контейнер ранга как на скриншоте */
+/* Контейнер ранга - убран, ранг теперь inline */
 .rank-picture-container-chat {
-    position: absolute;
-    top: 33px;
-    left: 11px;
-    display: flex;
+    display: none;
+}
+
+/* Inline ранг перед именем */
+.rank-inline {
+    display: inline-flex;
     align-items: center;
-    background: #20232900;
-    border-radius: 12px;
-    padding: 2px 6px;
+    margin-right: 4px;
+    vertical-align: middle;
 }
 
-/* Картинка ранга */
-.rank-picture {
-    width: 14px;
-    height: 14px;
-    margin-right: 3px;
+/* Картинка ранга inline */
+.rank-picture.inline {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
-/* Номер ранга */
+/* Номер ранга - не используется в inline */
 .rank-number-header {
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: bold;
+    display: none;
 }
 
 /* Упоминания */
@@ -5485,7 +5493,7 @@ display: none;
 }
 
 .mention-current-user {
-    background: rgb(214 18 208);
+    background: #0f212e;
     color: #ffffff;
     padding: 2px 4px;
     border-radius: 4px;
@@ -5511,24 +5519,39 @@ display: none;
     margin: 0 2px;
 }
 
-/* Кнопки действий */
+/* Кнопки действий - улучшенный дизайн */
 .reply-button,
 .delete-button {
     position: absolute;
-    top: 8px;
+    top: 6px;
     right: 8px;
-    background: rgba(0, 0, 0, 0.6);
-    border: none;
-    padding: 4px 6px;
-    border-radius: 4px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 5px 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 16px;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+
+.reply-button::before {
+    content: '💬';
+    font-size: 14px;
 }
 
 .delete-button {
-    right: 40px;
+    right: 42px;
+}
+
+.delete-button::before {
+    content: '🗑';
+    font-size: 14px;
 }
 
 .message:hover .reply-button,
@@ -5537,11 +5560,15 @@ display: none;
 }
 
 .reply-button:hover {
-    background: rgba(79, 195, 247, 0.2);
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: scale(1.05);
 }
 
 .delete-button:hover {
-    background: rgba(244, 67, 54, 0.2);
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: scale(1.05);
 }
 
 /* Специальные типы сообщений */
@@ -5575,10 +5602,26 @@ display: none;
         transform: translateY(0);
     }
 }
+/* Mod badge - стильный бейдж вместо эмодзи */
 .mod-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 6px;
-    font-size: 12px;
-    opacity: 0.8;
+    padding: 2px 6px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+    vertical-align: middle;
+}
+
+.mod-badge::before {
+    content: 'MOD';
 }
 @keyframes fade-in {
     from {
