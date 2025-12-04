@@ -140,7 +140,7 @@
     </div>
 
 
-    <div class="border-t border-dark-700/50 bg-[#1e2329] p-3 sm:p-4">
+    <div class="border-t border-dark-700/50 bg-[#213743] p-3 sm:p-4">
         @auth
             <div class="relative mb-2 sm:mb-3">
                 <input type="text"
@@ -264,7 +264,7 @@
                     <div id="char-counter" class="text-xs text-gray-400 bg-dark-700 px-1.5 sm:px-2 py-1 rounded-full border border-dark-600" title="{{ __('Осталось символов') }}">160</div>
 
 
-                    <button id="send-message" class="rounded-xl bg-gradient-to-r from-[#ffb300] to-[#ff9500] hover:from-[#ff9500] hover:to-[#ff8000] px-2.5 sm:px-3 py-1.5 text-xs font-medium text-black shadow-sm hover:shadow-[#ffb300]/25 transition-all hover:scale-105">
+                    <button id="send-message" class="rounded-xl bg-[#00e701] px-2.5 sm:px-3 py-1.5 text-xs font-medium text-black shadow-sm hover:shadow-[#ffb300]/25 transition-all hover:scale-105">
                         <span class="hidden sm:inline">{{ __('Отправить') }}</span>
                         <span class="sm:hidden">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
