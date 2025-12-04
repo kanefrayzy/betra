@@ -108,15 +108,52 @@ class WestWalletService
         
         $network = strtoupper($network);
         
+        // Специальные случаи: когда currency и network совпадают или похожи
+        if ($currency === $network || $currency === "{$network}COIN") {
+            return $network;
+        }
+        
         // Маппинг валют и сетей на правильные тикеры WestWallet
         $tickerMap = [
+            // USDT на разных сетях
             'USDT' => [
                 'ERC20' => 'USDTERC20',
                 'TRC20' => 'USDTTRC20',
                 'TRC' => 'USDTTRC20',
+                'BEP20' => 'USDTBEP20',
+                'SOL' => 'USDTSOL',
+                'SOLANA' => 'USDTSOL',
             ],
+            
+            // USDC на разных сетях
             'USDC' => [
                 'ERC20' => 'USDCERC20',
+                'BEP20' => 'USDCBEP20',
+                'SOL' => 'USDCSOL',
+                'SOLANA' => 'USDCSOL',
+                'TRC20' => 'USDCTRC20',
+            ],
+            
+            // Нативные валюты блокчейнов
+            'BITCOIN' => [
+                'BTC' => 'BTC',
+            ],
+            'LITECOIN' => [
+                'LTC' => 'LTC',
+            ],
+            'SOL' => [
+                'SOL' => 'SOL',
+            ],
+            'TONCOIN' => [
+                'TON' => 'TON',
+            ],
+            'BINANCE' => [
+                'BNB' => 'BNB',
+                'BEP20' => 'BNB',
+            ],
+            'BNB' => [
+                'BNB' => 'BNB',
+                'BSC' => 'BNB',
             ],
         ];
         
@@ -126,7 +163,8 @@ class WestWalletService
         
         // Если не нашли в маппинге, пробуем стандартные форматы
         $possibleTickers = [
-            "{$currency}{$network}",   // USDTTRC20
+            $network,                  // Просто сеть (BTC, LTC, SOL, BNB)
+            "{$currency}{$network}",   // USDTTRC20, USDCBEP20
             "{$currency}_{$network}",  // USDT_TRC20
         ];
         
