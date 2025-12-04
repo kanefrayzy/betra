@@ -1,5 +1,5 @@
 <div id="right-sidebar"
-     class="fixed inset-y-0 right-0 z-30 flex h-full w-full sm:w-96 md:w-80 lg:w-80 transform flex-col bg-dark-900 shadow-2xl transition-all duration-500 ease-in-out border-l border-dark-700/50"
+    class="fixed inset-y-0 right-0 z-30 flex h-full w-full sm:w-96 md:w-80 lg:w-80 transform flex-col bg-dark-900 transition-all duration-500 ease-in-out shadow-[_-12px_0_24px_rgba(0,0,0,0.35)]"
      :class="{'translate-x-0 opacity-100': chatOpen, 'translate-x-full opacity-0': !chatOpen}"
      x-cloak
      @auth
@@ -13,15 +13,10 @@
      @endauth>
 
 
-    <div class="flex h-16 sm:h-20 items-center justify-between border-b border-dark-700/50 bg-[#242932] px-3 sm:px-4">
+    <div class="flex h-16 sm:h-16 items-center justify-between bg-customBoldDark px-3 sm:px-4 shadow-[0_2px_6px_rgba(0,0,0,0.20)] z-10 relative">
         <div class="flex items-center">
-            <div class="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#ffb300] to-[#ff9500] mr-2 sm:mr-3 shadow-lg shadow-[#ffb300]/25">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                </svg>
-            </div>
             <div>
-                <span class="text-base sm:text-lg font-bold text-white">{{ __('Чат') }}</span>
+                <!-- <span class="text-base sm:text-lg font-bold text-white">{{ __('Чат') }}</span> -->
                 <div class="flex items-center mt-0.5">
                     <div class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500 mr-1 sm:mr-1.5 animate-pulse"></div>
                     <span id="online-count" class="text-xs sm:text-sm text-gray-400">{{ __('Онлайн: 0') }}</span>
@@ -33,7 +28,7 @@
             <button
                 @click="chatOpen = false"
                 type="button"
-                class="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-dark-700 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-all duration-200 border border-dark-600 hover:border-red-500/50">
+                class="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-xl text-gray-400 hover:text-red-400 transition-all duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -42,8 +37,8 @@
         </div>
     </div>
 
-    <div class="relative flex-1 overflow-hidden" wire:ignore>
-        <div id="messages" class="h-full overflow-y-auto bg-[#1c2028] p-3 sm:p-4 scrollbar-thin scrollbar-track-dark-900 scrollbar-thumb-dark-700 hover:scrollbar-thumb-dark-600">
+    <div class="relative flex-1 overflow-visible" wire:ignore>
+        <div id="messages" class="h-full overflow-y-auto bg-customBoldDark p-3 sm:p-4 scrollbar-thin scrollbar-track-dark-900 scrollbar-thumb-dark-700 hover:scrollbar-thumb-dark-600">
 
         </div>
 

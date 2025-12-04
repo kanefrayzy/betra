@@ -1,6 +1,6 @@
-<header class="bg-customHeader sticky top-0 z-20 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-gradient-to-r after:from-white/5 after:via-white/10 after:to-white/5">
+<header class="bg-customHeader sticky top-0 z-20 relative shadow-[0px_3px_7px_0px_rgba(0,0,0,0.25)]">
 
-    <div class="container mx-auto flex h-20 items-center justify-between px-4">
+    <div class="container mx-auto flex h-16 items-center justify-between px-4">
         <div class="flex items-center">
             <div class="hidden lg:flex">
                 <a href="/" wire:navigate class="mr-8">
@@ -31,125 +31,141 @@
                     <livewire:notifications/>
                 </div>
 
-                <div class="relative hidden md:block" x-data="{ isOpen: false }">
-                  <button @click.stop.prevent="isOpen = !isOpen"
-                          type="button"
-                          class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-800/50 transition-all duration-200 group">
-                        <!-- Avatar with rank indicator -->
-                        <div class="relative">
-                            <img src="{{ auth()->user()->avatar ?? '/assets/images/avatar-placeholder.png' }}"
-                                 alt="{{ auth()->user()->username }}"
-                                 class="h-9 w-9 rounded-full object-cover border-2 border-gray-700 group-hover:border-[#ffb300] transition-colors">
-                            @if($u->rank && $u->rank->picture)
-                                <img src="{{ asset('storage/' . $u->rank->picture) }}"
-                                     alt="Rank"
-                                     class="absolute -bottom-1 -right-1 w-5 h-5 object-cover">
-                            @endif
-                        </div>
 
-                        <!-- Username -->
-                        <span class="ml-1 font-medium text-white hidden lg:block group-hover:text-[#ffb300] transition-colors">
-                            {{ Illuminate\Support\Str::limit($u->username, 12) }}
-                        </span>
-
-                        <!-- Arrow -->
-                        <svg :class="{'rotate-180': isOpen}"
-                             class="h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:text-[#ffb300]"
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-
-                    <!-- Dropdown -->
-                    <div x-show="isOpen"
-                        @click.away="isOpen = false"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 scale-100"
-                        x-transition:leave-end="opacity-0 scale-95"
-                        style="display: none;"
-                         class="absolute right-0 mt-3 w-64 bg-[#1e2329] rounded-xl shadow-2xl border border-gray-800 overflow-hidden z-50 transition-opacity duration-200">
-
-                        <!-- User Info Header -->
-                        <div class="bg-gradient-to-r from-[#ffb300]/10 to-transparent p-4 border-b border-gray-800">
-                            <div class="flex items-center gap-3">
-                                <div class="relative">
-                                    <img src="{{ auth()->user()->avatar ?? '/assets/images/avatar-placeholder.png' }}"
-                                         alt="{{ auth()->user()->username }}"
-                                         class="h-12 w-12 rounded-full object-cover border-2 border-[#ffb300]">
-                                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e2329]"></div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-white truncate">{{ auth()->user()->username }}</p>
-                                    <p class="text-xs text-gray-400 truncate">{{ auth()->user()->email }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Menu Items -->
-                        <div class="py-2">
-                            <a href="{{ route('account') }}"
-                               wire:navigate
-                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
-                                <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4 group-hover:text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                </div>
-                                <span>{{ __('Настройки') }}</span>
-                            </a>
-
-                            <a href="#"
-                               onclick="event.preventDefault(); window.openModalWithMyInfo();"
-                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
-                                <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4 group-hover:text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
-                                </div>
-                                <span>{{ __('Статистика') }}</span>
-                            </a>
-
-                            <a href="{{ route('transaction') }}"
-                               wire:navigate
-                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
-                                <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4 group-hover:text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                                    </svg>
-                                </div>
-                                <span>{{ __('Транзакции') }}</span>
-                            </a>
-
-                            <a href="#"
-                               onclick="event.preventDefault(); openRankModal();"
-                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
-                                <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4 group-hover:text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                    </svg>
-                                </div>
-                                <span>{{ __('Уровень') }}</span>
-                            </a>
-                        </div>
-
-                        <!-- Logout -->
-                        <div class="border-t border-gray-800 p-2">
-                            <a href="{{ route('auth.logout') }}"
-                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors group">
-                                <div class="w-8 h-8 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                    </svg>
-                                </div>
-                                <span>{{ __('Выход') }}</span>
-                            </a>
-                        </div>
-                    </div>
+        <div class="relative hidden md:block" x-data="{ isOpen: false }">
+            <button @click.stop.prevent="isOpen = !isOpen"
+                    type="button"
+                    class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#1a2c38] transition-all duration-200 group">
+                <div class="relative">
+                    <img src="{{ auth()->user()->avatar ?? '/assets/images/avatar-placeholder.png' }}"
+                        alt="{{ auth()->user()->username }}"
+                        class="h-9 w-9 rounded-full object-cover border-2 border-gray-700 group-hover:border-[#ffb300] transition-colors">
+                    @if($u->rank && $u->rank->picture)
+                        <img src="{{ asset('storage/' . $u->rank->picture) }}"
+                            alt="Rank"
+                            class="absolute -bottom-1 -right-1 w-5 h-5 object-cover">
+                    @endif
                 </div>
+
+                <span class="ml-1 font-medium text-white hidden lg:block group-hover:text-[#ffb300] transition-colors">
+                    {{ Illuminate\Support\Str::limit($u->username, 12) }}
+                </span>
+
+                <svg :class="{'rotate-180': isOpen}"
+                    class="h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:text-[#ffb300]"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div x-show="isOpen"
+                @click.away="isOpen = false"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                style="display: none;"
+                class="absolute right-0 mt-3 w-full bg-white rounded-xl shadow-2xl border border-gray-200 overflow-visible z-50 profile-dropdown-arrow">
+
+                <!-- Menu Items -->
+                <div class="py-2">
+                    <a href="javascript:void(0);" 
+                    onclick="openCashModal()"
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 6h-4c0 .71-.16 1.39-.43 2H20c.55 0 1 .45 1 1s-.45 1-1 1H4c-.55 0-1-.45-1-1s.45-1 1-1h3.43C7.16 7.39 7 6.71 7 6H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2m-2 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2"></path>
+                            <path d="M9.38 9h5.24C15.46 8.27 16 7.2 16 6c0-2.21-1.79-4-4-4S8 3.79 8 6c0 1.2.54 2.27 1.38 3"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Кошелек') }}</span>
+                    </a>
+
+                    <a href="{{ route('slots.favorites') }}"
+                    wire:navigate
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Хранилище') }}</span>
+                    </a>
+
+                    <a href="javascript:void(0);" 
+                    onclick="openRankModal()"
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('ВИП') }}</span>
+                    </a>
+
+                    <a href="{{ route('account.referrals') }}"
+                    wire:navigate
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Партнерам') }}</span>
+                    </a>
+
+                    <a href="javascript:void(0);" 
+                    onclick="window.openModalWithMyInfo()"
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Статистика') }}</span>
+                    </a>
+
+                    <a href="{{ route('transaction') }}"
+                    wire:navigate
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Транзакции') }}</span>
+                    </a>
+
+                    <a href="{{ route('slots.history') }}"
+                    wire:navigate
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Мои ставки') }}</span>
+                    </a>
+
+                    <a href="{{ route('account') }}"
+                    wire:navigate
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span class="text-sm font-bold">{{ __('Настройки') }}</span>
+                    </a>
+                </div>
+
+                    <a href="{{ route('auth.logout') }}" 
+                    @click="isOpen = false"
+                    class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="text-sm">{{ __('Выход') }}</span>
+                    </a>
+            </div>
+        </div>
+
             @else
                 <!-- Кнопки входа/регистрации - только на десктопе -->
                 <div class="hidden md:flex items-center gap-3">
@@ -219,9 +235,9 @@
                            }"
                     class="relative group chat-toggle-button">
                 <div class="relative p-2 rounded-full hover:bg-gray-800 transition-all duration-200"
-                     :class="isChatOpen ? 'bg-[#ffb300]/10' : ''">
+                     :class="isChatOpen ? '' : ''">
                     <svg class="h-6 w-6 transition-colors duration-200"
-                         :class="isChatOpen ? 'text-[#ffb300]' : 'text-gray-400 group-hover:text-white'"
+                         :class="isChatOpen ? 'text-[##44ce26]' : 'text-gray-400 group-hover:text-white'"
                          fill="none"
                          stroke="currentColor"
                          viewBox="0 0 24 24">

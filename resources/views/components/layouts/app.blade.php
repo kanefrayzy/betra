@@ -102,20 +102,24 @@
         }
         
     </style>
-    <style>
-        /* Отступ для Telegram Web App */
-        /* body.telegram-webapp .main-content {
-            margin-top: 100px;
-        } */
-    </style>
     
     {{-- Подключение Telegram WebView авторизации --}}
     @include('components.telegram-auth')
 </head>
 <body x-data="{ 
-    sidebarOpen: false, 
+    sidebarOpen: false,
+    sidebarCollapsed: false,
     chatOpen: false,
     init() {
+        // Восстанавливаем состояние sidebar из localStorage
+        if (window.innerWidth >= 1280) {
+            const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+            if (savedSidebarState === 'true') {
+                this.sidebarCollapsed = true;
+            }
+        }
+        
+        // Восстанавливаем состояние чата
         if (window.innerWidth >= 768) {
             const savedChatState = localStorage.getItem('chatOpen');
             if (savedChatState === 'true') {
@@ -124,7 +128,7 @@
             }
         }
         
-        // Синхронизируем изменения с localStorage и body классом
+        // Синхронизируем изменения чата с localStorage и body классом
         this.$watch('chatOpen', (value) => {
             if (value) {
                 document.body.classList.add('chat-open');
@@ -139,24 +143,52 @@
             }
         });
 
+        // Синхронизируем состояние sidebar
+        this.$watch('sidebarCollapsed', (value) => {
+            if (window.innerWidth >= 1280) {
+                localStorage.setItem('sidebarCollapsed', value.toString());
+                // Добавляем класс к main-content для правильных отступов
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    if (value) {
+                        mainContent.classList.add('sidebar-collapsed');
+                    } else {
+                        mainContent.classList.remove('sidebar-collapsed');
+                    }
+                }
+            }
+        });
+
         // Блокируем/разблокируем скролл при открытии/закрытии мобильного меню
         this.$watch('sidebarOpen', (value) => {
-            if (window.innerWidth < 1280) { // xl breakpoint
+            if (window.innerWidth < 1280) {
                 if (value) {
-                    // Блокируем скролл основной страницы
                     document.body.style.overflow = 'hidden';
                     document.documentElement.style.overflow = 'hidden';
                     document.body.classList.add('sidebar-scroll-locked');
                 } else {
-                    // Разблокируем скролл основной страницы
                     document.body.style.overflow = '';
                     document.documentElement.style.overflow = '';
                     document.body.classList.remove('sidebar-scroll-locked');
                 }
             }
         });
+
+        // Сбрасываем collapsed при переходе на мобильные размеры
+        window.addEventListener('resize', () => {
+            if (window.innerWidth < 1280) {
+                this.sidebarCollapsed = false;
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    mainContent.classList.remove('sidebar-collapsed');
+                }
+            }
+        });
+    },
+    toggleSidebar() {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
     }
-}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" class="app-layout">
+}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" class="bg-customDark app-layout">
     
 
     <script>
@@ -183,8 +215,11 @@
            style="display: none;">
       </div>
         <!-- Sidebar -->
-        <div class="sidebar-wrapper fixed inset-y-0 left-0 z-30 w-64 pb-14 xl:pb-0 overflow-y-auto bg-[#0f1419] transition-all duration-300 xl:translate-x-0 xl:static xl:inset-0 sidebar-mobile-hidden"
-             :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}"
+        <div class="sidebar-wrapper pb-14 xl:pb-0 overflow-y-auto bg-[#0f1419] transition-all duration-300 sidebar-mobile-hidden custom-scrollbar"
+             :class="{
+                'translate-x-0': sidebarOpen,
+                'collapsed': sidebarCollapsed && window.innerWidth >= 1280
+             }"
              style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;"
              @touchmove.stop
              @wheel.stop>
@@ -192,7 +227,8 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden main-content relative">
+        <div class="flex-1 flex flex-col overflow-hidden main-content relative transition-all duration-300"
+             :class="{ 'sidebar-collapsed': sidebarCollapsed && window.innerWidth >= 1280 }">
             <x-layouts.partials.header />
 
             <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-customDark px-1 transition-opacity duration-300" 

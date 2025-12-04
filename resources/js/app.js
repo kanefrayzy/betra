@@ -30,16 +30,16 @@ if (document.querySelector('[data-telegram-auth]') ||
     import('./telegram-auth-global.js');
 }
 
-// Ленивая загрузка QRCode для модалки кошелька
-let qrcodeLoaded = false;
-window.loadQRCode = function() {
-    if (!qrcodeLoaded) {
-        qrcodeLoaded = true;
-        import('qrcodejs').then(module => {
-            window.QRCode = module.default || module;
-        }).catch(err => console.error('QRCode load error:', err));
-    }
-};
+// // Ленивая загрузка QRCode для модалки кошелька
+// let qrcodeLoaded = false;
+// window.loadQRCode = function() {
+//     if (!qrcodeLoaded) {
+//         qrcodeLoaded = true;
+//         import('qrcodejs').then(module => {
+//             window.QRCode = module.default || module;
+//         }).catch(err => console.error('QRCode load error:', err));
+//     }
+// };
 
 // Автозагрузка при открытии модалки кошелька
 document.addEventListener('open-cash-modal', window.loadQRCode, { once: true });
@@ -49,14 +49,6 @@ document.addEventListener('livewire:navigated', () => {
     initNotyTailwindTheme();
     window.scrollTo({ top: 0, behavior: 'instant' });
 });
-
-// Заглушка для loadRecaptcha если не определена
-if (typeof window.loadRecaptcha === 'undefined') {
-    window.loadRecaptcha = function() {
-        // Заглушка - реализация должна быть добавлена отдельно
-        console.warn('loadRecaptcha called but not implemented');
-    };
-}
 
 // Notifications from meta tags
 document.addEventListener('DOMContentLoaded', function() {

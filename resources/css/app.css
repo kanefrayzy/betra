@@ -39,27 +39,129 @@ label {
     margin-bottom: 5px;
 }
 
-/* Стили для элементов сайдбара */
+/* Sidebar Mini-Mode Styles */
+.sidebar-wrapper {
+    width: 256px;
+    transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-wrapper.collapsed {
+    width: 80px;
+}
+
+.main-content {
+    margin-left: 0;
+    margin-right: 0;
+    transition: margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1), margin-right 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1280px) {
+    .main-content {
+        margin-left: 256px;
+        width: calc(100% - 256px);
+    }
+    
+    .main-content.sidebar-collapsed {
+        margin-left: 80px;
+        width: calc(100% - 80px);
+    }
+    
+    /* Когда открыт чат */
+    .chat-open .main-content {
+        margin-right: 320px;
+        width: calc(100% - 256px - 320px);
+    }
+    
+    .chat-open .main-content.sidebar-collapsed {
+        width: calc(100% - 80px - 320px);
+    }
+}
+
 .sidebar-item {
-    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:text-white hover:bg-[#242932] transition-colors duration-200;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
-.sidebar-item.active {
-    @apply bg-gray-700 text-white bg-[#242932]/80 font-medium;
+.sidebar-item svg {
+    color: #b1b1b1;
+    transition: color 0.2s ease;
 }
 
-/* Тонкие иконки */
-.sidebar-item svg,
-.nav-icon {
-    @apply text-white;
+.sidebar-item:hover {
+    background-color: #1a2c38;
+    color: #fff;
 }
 
 .sidebar-item:hover svg {
-    @apply text-gray-300;
+    color: #fff;
 }
 
-.sidebar-item.active svg {
-    @apply text-[#f2a900]/80;
+.sidebar-wrapper.collapsed .sidebar-item {
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.sidebar-item.active {
+    color: #fff;
+    background-color: #1a2c38;
+}
+
+.sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: #4ed930;
+    border-radius: 0 4px 4px 0;
+}
+
+.sidebar-wrapper.collapsed .sidebar-item.active::before {
+    display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 179, 0, 0.3);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 179, 0, 0.5);
+}
+
+@media (max-width: 1279px) {
+    .sidebar-wrapper {
+        width: 256px !important;
+    }
+    
+    .sidebar-wrapper.collapsed {
+        width: 256px !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
 }
 
 /* Стилизация скроллбара */
@@ -4760,20 +4862,65 @@ html.js-loading .sidebar-wrapper {
     visibility: hidden;
 }
 
-@media (min-width: 1024px) {
+.sidebar-wrapper {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 30;
+    overflow-y: auto;
+}
+
+@media (min-width: 1280px) {
     .sidebar-wrapper {
-        transform: none !important;
+        transform: translateX(0) !important;
         visibility: visible !important;
         display: block !important;
     }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
+    .sidebar-wrapper {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar-wrapper.translate-x-0 {
+        transform: translateX(0) !important;
+    }
+    
     html:not(.js-loading) .sidebar-wrapper {
         visibility: visible;
     }
 }
-
+.notifications-dropdown-arrow::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    background: #0f212e;
+    border: 1px solid #1a2c38;
+    border-right: none;
+    border-bottom: none;
+    transform: rotate(45deg);
+    z-index: 10;
+}
+.profile-dropdown-arrow::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: 50%;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-right: none;
+    border-bottom: none;
+    transform: rotate(45deg);
+    z-index: 10;
+}
 /* Стилизация скроллбара для списка провайдеров */
 .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -5068,25 +5215,17 @@ html.js-loading .sidebar-wrapper {
 .favorite-btn {
     touch-action: manipulation;
 }
-.main-content {
-    transition: margin-right 0.3s ease;
-    margin-right: 0;
-}
-
-/* Когда чат открыт, сдвигаем контент влево */
-.chat-open .main-content {
-    margin-right: 320px; /* ширина чата (80 * 4 = 320px в Tailwind) */
-}
 
 /* Когда чат открыт */
 .chat-open #right-sidebar {
     transform: translateX(0);
 }
 
-/* Для мобильных устройств оставляем поведение overlay */
-@media (max-width: 1024px) {
+/* Для мобильных и планшетов оставляем поведение overlay */
+@media (max-width: 1279px) {
     .main-content {
         margin-right: 0 !important;
+        width: 100% !important;
     }
 
     #right-sidebar {
@@ -5117,17 +5256,6 @@ main {
     height: auto !important;
 }
 
-/* Дополнительные отступы для красивого скролла */
-.main-content {
-    padding-top: 0;
-    width: 100%;
-}
-
-/* Плавные переходы при изменении отступов */
-.main-content {
-    transition: margin-left 0.3s ease, margin-right 0.3s ease;
-}
-
 /* Фиксы для контента внутри main */
 .main-content main > * {
     max-width: none;
@@ -5143,79 +5271,8 @@ main.overflow-y-auto {
 /* Исключения только для элементов, которые действительно должны иметь скролл */
 .scrollbar-thin,
 .overflow-y-auto.scrollbar-thin,
-#messages,
-.sidebar-wrapper {
+#messages {
     overflow-y: auto !important;
-}
-.sidebar-wrapper {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 256px; /* w-64 */
-    z-index: 30;
-    overflow-y: auto;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-}
-
-/* На больших экранах сайдбар всегда видим */
-@media (min-width: 1024px) {
-    .sidebar-wrapper {
-        transform: translateX(0) !important;
-        position: fixed !important;
-    }
-
-    /* Убираем класс который может сбивать позиционирование */
-    .sidebar-wrapper.lg\:static {
-        position: fixed !important;
-    }
-
-    .sidebar-wrapper.lg\:inset-0 {
-        /* inset: auto !important; */
-        top: 0 !important;
-        left: 0 !important;
-        right: auto !important;
-        bottom: auto !important;
-    }
-}
-
-/* На мобильных сайдбар скрыт по умолчанию */
-@media (max-width: 1023px) {
-    .sidebar-wrapper {
-        transform: translateX(-100%);
-    }
-
-    .sidebar-wrapper.translate-x-0 {
-        transform: translateX(0) !important;
-    }
-}
-
-/* Основной контент учитывает ширину сайдбара на больших экранах */
-@media (min-width: 1024px) {
-    .main-content {
-        margin-left: 256px !important; /* ширина сайдбара */
-        width: calc(100% - 256px);
-    }
-
-    /* При открытом чате дополнительно сдвигаем справа */
-    .chat-open .main-content {
-        margin-right: 320px !important; /* ширина чата */
-        width: calc(100% - 256px - 320px);
-    }
-}
-
-/* На мобильных отключаем отступы */
-@media (max-width: 1023px) {
-    .main-content {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        width: 100% !important;
-    }
-
-    .chat-open .main-content {
-        margin-right: 0 !important;
-    }
 }
 
 /* Оверлей для мобильного сайдбара */
@@ -5329,8 +5386,8 @@ display: none;
     background: transparent;
     transition: background .2s ease;
     position: relative;
-    background: #242932;
-    border-radius: 5px;
+    background: #213743;
+    border-radius: 10px;
 }
 .message:hover {
     background: rgba(255, 255, 255, 0.02);
@@ -5370,14 +5427,14 @@ display: none;
 
 /* Имя пользователя */
 .username {
-    color: #ffcd57;
-    font-weight: 500;
+    color: #b1bad3;
+    font-weight: bold;
     font-size: 14px;
     cursor: pointer;
 }
 
 .username:hover {
-    color: #ffb300;
+    color: #4ed930;
 }
 
 /* Время */
@@ -5428,8 +5485,8 @@ display: none;
 }
 
 .mention-current-user {
-    background: rgba(255, 179, 0, 0.2);
-    color: #ffb300;
+    background: rgb(214 18 208);
+    color: #ffffff;
     padding: 2px 4px;
     border-radius: 4px;
     font-weight: 600;
@@ -5499,9 +5556,8 @@ display: none;
 }
 
 .message.self {
-    border-left: 2px solid #ffb300;
-    background: #242932;
-    border-radius: 5px;
+    /* border-left: 2px solid #4ed930; */
+    background: #1c2c35;
 }
 
 /* Анимация появления */
@@ -5617,15 +5673,15 @@ img.emoji-in-message {
     display: none;
 }
 
-/* Показываем меню только на мобильных устройствах (до 768px) */
-@media screen and (max-width: 900px) {
+/* Показываем меню на устройствах до 1280px */
+@media screen and (max-width: 1279px) {
     #mb-menu {
         display: block;
     }
 }
 
-/* Скрываем на планшетах и больше (768px+) */
-@media screen and (min-width: 901px) {
+/* Скрываем на больших экранах (1280px+) */
+@media screen and (min-width: 1280px) {
     #mb-menu {
         display: none;
     }
@@ -5845,7 +5901,7 @@ a[wire\:navigate] {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #ffb300, #ff8c00);
+    background: linear-gradient(90deg, #4ed930, #ff8c00);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;

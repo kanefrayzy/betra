@@ -642,7 +642,6 @@ if (typeof window.ChatSystem === 'undefined') {
      * Добавление сообщения в чат
      */
     appendMessage(messageData, forceScroll = false) {
-        //  КРИТИЧНО: Проверяем что контейнер существует
         if (!this.elements.messagesContainer) {
             console.warn('⚠️ Messages container not found, reinitializing elements...');
             this.initElements();
@@ -723,13 +722,7 @@ if (typeof window.ChatSystem === 'undefined') {
         const senderElement = document.createElement('span');
         senderElement.className = 'sender';
 
-        // Аватар
-        const avatarImg = document.createElement('img');
-        avatarImg.className = 'chat-ava';
-        avatarImg.src = messageData.avatar || '/assets/images/avatar-placeholder.png';
-        avatarImg.alt = messageData.username || 'User';
-        avatarImg.addEventListener('click', () => this.openUserInfo(messageData.user_id));
-        senderElement.appendChild(avatarImg);
+        // Убираем аватар и оставляем только иконку ранга
 
         // Информация о пользователе
         const userInfo = document.createElement('div');
@@ -738,21 +731,26 @@ if (typeof window.ChatSystem === 'undefined') {
         const userLine = document.createElement('div');
         userLine.className = 'user-line';
 
-        // Имя пользователя
+        // Имя пользователя (иконка ранга будет перед именем)
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'username';
         usernameSpan.textContent = messageData.username || 'Unknown';
         usernameSpan.addEventListener('click', () => this.openUserInfo(messageData.user_id));
+            // Ранг (иконка 18x18 сразу перед именем)
+            if (messageData.rank && messageData.rank_picture) {
+                const rankImgInline = document.createElement('img');
+                rankImgInline.src = messageData.rank_picture;
+                rankImgInline.alt = messageData.rank;
+                rankImgInline.style.width = '18px';
+                rankImgInline.style.height = '18px';
+                rankImgInline.style.marginRight = '6px';
+                rankImgInline.style.verticalAlign = 'middle';
+                rankImgInline.style.display = 'inline-block';
+                userLine.appendChild(rankImgInline);
+            }
         userLine.appendChild(usernameSpan);
 
-        // Время
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'message-time';
-        timeSpan.textContent = messageData.time || new Date().toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        userLine.appendChild(timeSpan);
+        // Время сообщения удалено по требованию — не отображаем
 
         // Бейдж модератора
         if (messageData.is_moder) {
@@ -772,19 +770,7 @@ if (typeof window.ChatSystem === 'undefined') {
 
         senderElement.appendChild(userInfo);
 
-        // Ранг
-        if (messageData.rank && messageData.rank_picture) {
-            const rankContainer = document.createElement('div');
-            rankContainer.className = 'rank-picture-container-chat';
-
-            const rankImg = document.createElement('img');
-            rankImg.className = 'rank-picture';
-            rankImg.src = messageData.rank_picture;
-            rankImg.alt = messageData.rank;
-            rankContainer.appendChild(rankImg);
-
-            senderElement.appendChild(rankContainer);
-        }
+        // Отдельный контейнер ранга убран, иконка добавлена перед именем
 
         return senderElement;
     }
@@ -886,13 +872,13 @@ if (typeof window.ChatSystem === 'undefined') {
 
         const senderElement = document.createElement('span');
         senderElement.classList.add('sender');
+        // Без аватара, только иконка ранга перед именем
+            const rankHtml = (messageData.rank && messageData.rank_picture)
+                ? `<img src="${messageData.rank_picture}" alt="${messageData.rank}" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;display:inline-block;">`
+                : '';
         senderElement.innerHTML = `
-            <img class="chat-ava" src="${messageData.avatar}" alt="${messageData.username}">
+            ${rankHtml}
             <span class="username">${messageData.username}</span>
-            <div class="rank-picture-container-chat">
-                <img src="${messageData.rank_picture}" alt="${messageData.rank}" class="rank-picture">
-                <span class="rank-number-header">${messageData.rank}</span>
-            </div>
         `;
 
         const textElement = document.createElement('span');

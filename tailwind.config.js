@@ -43,8 +43,10 @@ module.exports = {
           '900': '#0f172a',
           '950': '#0e1116',
         },
-        'customDark': '#0f1419',
-        'customHeader': '#0f1419',
+        'customDark': '#1a2c38',
+        'customHeader': '#1a2c38',
+        'customBoldDark': '#0f212e',
+        'bgMessage': '#213743',
       },
       fontFamily: {
         'sans': ['Manrope', 'sans-serif'],
