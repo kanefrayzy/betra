@@ -39,7 +39,93 @@
 
     <div class="relative flex-1 overflow-visible" wire:ignore>
         <div id="messages" class="h-full overflow-y-auto bg-customBoldDark p-3 sm:p-3 scrollbar-thin scrollbar-track-dark-900 scrollbar-thumb-dark-700 hover:scrollbar-thumb-dark-600">
-
+            <!-- Chat Loading Placeholder -->
+            <div class="chat-placeholder space-y-3 opacity-50">
+                <div class="flex gap-2 animate-pulse">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-20"></div>
+                        <div class="h-3 bg-gray-600 rounded w-3/4"></div>
+                    </div>
+                </div>
+                <div class="flex gap-2 animate-pulse" style="animation-delay: 150ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-24"></div>
+                        <div class="h-3 bg-gray-600 rounded w-1/2"></div>
+                    </div>
+                </div>
+                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+                                <div class="flex gap-2 animate-pulse" style="animation-delay: 300ms">
+                    <div class="w-6 h-6 bg-gray-700 rounded-full"></div>
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-2.5 bg-gray-700 rounded w-28"></div>
+                        <div class="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button id="scroll-to-new" class="absolute w-3/4 text-center bottom-4 left-1/2 -translate-x-1/2 rounded-lg bg-[#2a2f3a] hover:bg-[#323844] px-4 py-2 text-sm font-medium text-white shadow-lg border border-[#ffb300]/20 hover:border-[#ffb300]/40 z-50 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2">

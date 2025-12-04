@@ -7,22 +7,8 @@ window.Noty = Noty;
 import { initNotyTailwindTheme } from './noty-tailwind-theme';
 initNotyTailwindTheme();
 
-// Import chat system - ленивая загрузка
-let chatLoaded = false;
-window.loadChatSystem = function() {
-    if (!chatLoaded) {
-        chatLoaded = true;
-        import('./chat/main.js').catch(err => console.error('Chat load error:', err));
-    }
-};
-
-// Автозагрузка при первом взаимодействии
-['mousedown', 'touchstart', 'scroll'].forEach(event => {
-    document.addEventListener(event, window.loadChatSystem, { 
-        once: true, 
-        passive: true 
-    });
-});
+// Import chat system - прямая загрузка для быстрого подключения
+import './chat/main.js';
 
 // Import Telegram auth - условная загрузка
 if (document.querySelector('[data-telegram-auth]') || 
