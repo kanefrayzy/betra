@@ -44,6 +44,12 @@ if (document.querySelector('[data-telegram-auth]') ||
 // Автозагрузка при открытии модалки кошелька
 document.addEventListener('open-cash-modal', window.loadQRCode, { once: true });
 
+// Livewire SPA Navigation
+document.addEventListener('livewire:navigated', () => {
+    initNotyTailwindTheme();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+});
+
 // Notifications from meta tags
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof window.showSuccessNotification === 'undefined') {

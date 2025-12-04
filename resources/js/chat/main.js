@@ -7,6 +7,7 @@ if (typeof window.ChatSystem === 'undefined') {
     window.ChatSystem = class ChatSystem {
         constructor() {
             this.ws = null;
+            this.preserveConnection = false; //  флаг для SPA навигации
             this.config = {
                 wsUrl: 'wss://betra1.com:3000',
                 maxMessages: 50,
@@ -23,6 +24,7 @@ if (typeof window.ChatSystem === 'undefined') {
                 currentUser: null,
                 userCache: new Map(),
                 emojiObj: {},
+                isNavigating: false, //  флаг навигации
                 lastOnlineCount: 0 //  Сохраняем последний онлайн счёт
             };
 
@@ -30,6 +32,7 @@ if (typeof window.ChatSystem === 'undefined') {
             this.sounds = {};
 
             this.init();
+            this.setupNavigationListeners(); //  инициализация слушателей навигации
         }
 
     /**
@@ -58,6 +61,54 @@ if (typeof window.ChatSystem === 'undefined') {
         this.initCurrentUser();
         this.loadInitialMessages();
         this.initChatState();
+    }
+
+    /**
+     * Настройка слушателей Livewire Navigate
+     */
+    setupNavigationListeners() {
+        // Закрытие WebSocket при выгрузке страницы
+        window.addEventListener('beforeunload', () => {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.close(1000, 'Page unload');
+            }
+        });
+        
+        // Перед навигацией - сохраняем состояние
+        document.addEventListener('livewire:navigating', () => {
+            this.state.isNavigating = true;
+            // Не закрываем WebSocket при SPA навигации
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.preserveConnection = true;
+            }
+        });
+
+        // После навигации - проверяем WebSocket
+        document.addEventListener('livewire:navigated', () => {
+            this.state.isNavigating = false;
+            
+            // Проверяем, что WebSocket всё ещё подключен
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+
+            } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            } else {
+                console.warn('⚠️ WebSocket lost, reconnecting...');
+                this.initWebSocket();
+            }
+
+            this.initElements();
+            this.initEventListeners();
+
+            // Проверяем состояние сообщений
+            if (this.elements.messagesContainer) {
+                const messageCount = this.elements.messagesContainer.childElementCount;
+                
+                if (messageCount > 0) {
+                } else if (this.state.currentChannel) {
+                    this.loadMessages(this.state.currentChannel);
+                }
+            }
+        });
     }
 
     /**
