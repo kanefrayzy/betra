@@ -310,7 +310,7 @@ class WestWalletService
 
         return $currencyData['min_receive'] ?? null;
     }
-}
+
 
 /**
  * Получить правильный тикер валюты с учетом сети
@@ -352,4 +352,6 @@ private function getCurrencyTicker(string $currency, ?string $network = null): s
     }
     
     return $currency;
+}    
 }
+
