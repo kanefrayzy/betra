@@ -101,6 +101,18 @@ class WestWalletService
     {
         $currency = strtoupper($currency);
         
+        // Список нативных валют блокчейнов, которые НЕ требуют указания сети
+        $nativeCurrencies = [
+            'BTC', 'ETH', 'LTC', 'SOL', 'TON', 'BNB', 'XRP', 'TRX', 
+            'DOGE', 'XMR', 'ADA', 'DASH', 'BCH', 'ZEC', 'ETC', 'NOT', 
+            'XLM', 'EOS'
+        ];
+        
+        // Если это нативная валюта - игнорируем network
+        if (in_array($currency, $nativeCurrencies)) {
+            return $currency;
+        }
+        
         // Если сеть не указана, возвращаем просто валюту
         if (!$network) {
             return $currency;
@@ -131,20 +143,18 @@ class WestWalletService
             
             // USDC на разных сетях
             'USDC' => [
-                'ERC20' => 'ERC20',
-                'ERC' => 'ERC',
-                'BEP20' => 'BEP20',
-                'BEP' => 'BEP',
+                'ERC20' => 'USDCERC20',
+                'ERC' => 'USDCERC',
+                'BEP20' => 'USDCBEP20',
+                'BEP' => 'USDCBEP',
             ],
             
             // Ethereum на разных сетях
             'ETH' => [
-                'ERC20' => 'ETH',
                 'BEP20' => 'ETHBEP20',
                 'BEP' => 'ETHBEP',
             ],
             'ETHEREUM' => [
-                'ERC20' => 'ETH',
                 'BEP20' => 'ETHBEP20',
                 'BEP' => 'ETHBEP',
             ],
@@ -157,25 +167,6 @@ class WestWalletService
             'SHIBA' => [
                 'BEP20' => 'SHIBBEP20',
             ],
-            
-            // Нативные валюты блокчейнов
-            'BITCOIN' => ['BTC' => 'BTC'],
-            'LITECOIN' => ['LTC' => 'LTC'],
-            'SOLANA' => ['SOL' => 'SOL'],
-            'TONCOIN' => ['TON' => 'TON'],
-            'BINANCE' => ['BNB' => 'BNB', 'BEP20' => 'BNB'],
-            'BNB' => ['BEP20' => 'BNB', 'BSC' => 'BNB'],
-            'RIPPLE' => ['XRP' => 'XRP'],
-            'TRON' => ['TRX' => 'TRX'],
-            'DOGECOIN' => ['DOGE' => 'DOGE'],
-            'MONERO' => ['XMR' => 'XMR'],
-            'CARDANO' => ['ADA' => 'ADA'],
-            'DASH' => ['DASH' => 'DASH'],
-            'BITCOINCASH' => ['BCH' => 'BCH'],
-            'ZCASH' => ['ZEC' => 'ZEC'],
-            'ETHEREUMCLASSIC' => ['ETC' => 'ETC'],
-            'NOTCOIN' => ['NOT' => 'NOT'],
-            'STELLAR' => ['XLM' => 'XLM'],
         ];
         
         if (isset($tickerMap[$currency][$network])) {
@@ -209,7 +200,7 @@ class WestWalletService
         
         return $currency;
     }
-
+    
     public function getOrCreateWallet(User $user, string $currency, ?string $network = null): array
     {
         // Получаем правильный тикер

@@ -284,17 +284,6 @@
 
                 <!-- Payment Methods List -->
                 <div x-show="!showCryptoAddress && !showBankPayment">
-                    <!-- Banner -->
-                    <div class="relative my-4">
-                        <div @click="openCryptoGuide()" 
-                             class="relative flex size-full flex-col items-start rounded-xl border border-gray-800 overflow-hidden p-3 bg-cover bg-no-repeat bg-[42%_center] min-h-[96px] cursor-pointer hover:border-[#ffb300] transition-all"
-                             style="background-image: url('/images/cashier-banners/banner-cashier_1.webp');">
-                            <p class="text-base font-semibold tracking-[-0.12px] leading-6 text-white max-w-[75%] tablet:max-w-[60%] line-clamp-2">
-                                {{__('Читай как пополнять и выводить в криптовалюте')}}
-                            </p>
-                        </div>
-                    </div>
-
                     <!-- Bank Payments -->
                     @if($matchingHandlers->where('network', null)->isNotEmpty() || $otherHandlers->where('network', null)->isNotEmpty())
                     <p class="text-base font-semibold tracking-[-0.12px] leading-6 mb-3 mt-4 text-white">{{__('Банковский платеж')}}</p>
