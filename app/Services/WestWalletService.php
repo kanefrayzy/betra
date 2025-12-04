@@ -21,11 +21,6 @@ class WestWalletService
         $this->privateKey = config('payment.westwallet.private_key');
     }
 
-    /**
-     * Генерация HMAC подписи для запроса
-     * Формат согласно документации: HMAC-SHA256(timestamp + json_dumps(data), private_key)
-     * ensure_ascii=False в Python = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES в PHP
-     */
     private function generateSignature(int $timestamp, array $data = []): string
     {
         if (!empty($data)) {
@@ -47,15 +42,14 @@ class WestWalletService
         return hash_hmac('sha256', $message, $this->privateKey);
     }
 
-    /**
-     * Выполнение API запроса к WestWallet
-     */
     private function makeRequest(string $endpoint, string $method = 'GET', array $data = []): array
     {
         try {
             $timestamp = time();
-            // Для GET и POST запросов всегда передаем data в generateSignature
-            $signature = $this->generateSignature($timestamp, $data);
+            
+            // Для GET запросов signature делаем с пустыми данными
+            $signatureData = $method === 'GET' ? [] : $data;
+            $signature = $this->generateSignature($timestamp, $signatureData);
 
             $headers = [
                 'Content-Type' => 'application/json',
@@ -101,10 +95,67 @@ class WestWalletService
     }
 
     /**
-     * Получить или создать крипто-кошелек для пользователя
+     * Получить правильный тикер валюты с учетом сети
      */
+    private function getCurrencyTicker(string $currency, ?string $network = null): string
+    {
+        $currency = strtoupper($currency);
+        
+        // Если сеть не указана, возвращаем просто валюту
+        if (!$network) {
+            return $currency;
+        }
+        
+        $network = strtoupper($network);
+        
+        // Маппинг валют и сетей на правильные тикеры WestWallet
+        $tickerMap = [
+            'USDT' => [
+                'ERC20' => 'USDTERC20',
+                'TRC20' => 'USDTTRC20',
+                'TRC' => 'USDTTRC20',
+            ],
+            'USDC' => [
+                'ERC20' => 'USDCERC20',
+            ],
+        ];
+        
+        if (isset($tickerMap[$currency][$network])) {
+            return $tickerMap[$currency][$network];
+        }
+        
+        // Если не нашли в маппинге, пробуем стандартные форматы
+        $possibleTickers = [
+            "{$currency}{$network}",   // USDTTRC20
+            "{$currency}_{$network}",  // USDT_TRC20
+        ];
+        
+        // Проверяем существование в списке валют
+        $currenciesData = $this->getCurrenciesData();
+        
+        foreach ($currenciesData as $currencyData) {
+            $tickers = $currencyData['tickers'] ?? [];
+            
+            foreach ($possibleTickers as $ticker) {
+                if (in_array($ticker, $tickers)) {
+                    Log::info('Found currency ticker', [
+                        'currency' => $currency,
+                        'network' => $network,
+                        'ticker' => $ticker
+                    ]);
+                    return $ticker;
+                }
+            }
+        }
+        
+        return $currency;
+    }
+
     public function getOrCreateWallet(User $user, string $currency, ?string $network = null): array
     {
+        // Получаем правильный тикер
+        $ticker = $this->getCurrencyTicker($currency, $network);
+        
         // Проверяем, есть ли уже кошелек
         $existingWallet = UserCryptoWallet::where('user_id', $user->id)
             ->where('currency', strtoupper($currency))
@@ -129,26 +180,28 @@ class WestWalletService
         return $this->generateAddress($user, $currency, $network);
     }
 
-    /**
-     * Генерация нового крипто-адреса
-     */
     public function generateAddress(User $user, string $currency, ?string $network = null): array
     {
         $label = UserCryptoWallet::generateLabel($user->id, $currency, $network);
         $ipnUrl = route('westwallet.callback');
+        
+        // Получаем правильный тикер
+        $ticker = $this->getCurrencyTicker($currency, $network);
 
         $data = [
-            'currency' => strtoupper($currency),
+            'currency' => $ticker,
             'ipn_url' => $ipnUrl,
             'label' => $label,
         ];
 
         $response = $this->makeRequest('/address/generate', 'POST', $data);
 
-        if (!isset($response['error']) || $response['error'] !== 'ok') {
+        // WestWallet возвращает error как строку или отсутствует при успехе
+        if (isset($response['error']) && $response['error'] !== 'ok') {
             Log::error('WestWallet Address Generation Failed', [
                 'user_id' => $user->id,
                 'currency' => $currency,
+                'ticker' => $ticker,
                 'response' => $response
             ]);
 
@@ -163,11 +216,11 @@ class WestWalletService
             ];
         }
 
-        // WestWallet возвращает данные напрямую в ответе, а не в поле 'data'
         if (!isset($response['address'])) {
             Log::error('WestWallet Address Missing', [
                 'user_id' => $user->id,
                 'currency' => $currency,
+                'ticker' => $ticker,
                 'response' => $response
             ]);
 
@@ -191,6 +244,8 @@ class WestWalletService
             Log::info('Crypto wallet created', [
                 'user_id' => $user->id,
                 'currency' => $currency,
+                'network' => $network,
+                'ticker' => $ticker,
                 'address' => $wallet->address,
                 'label' => $label
             ]);
@@ -220,20 +275,22 @@ class WestWalletService
         }
     }
 
-    /**
-     * Получить информацию о валютах
-     */
     public function getCurrenciesData(): array
     {
         // Кэшируем на 1 час
         return Cache::remember('westwallet_currencies', 3600, function () {
-            return $this->makeRequest('/wallet/currencies_data', 'GET');
+            $response = $this->makeRequest('/wallet/currencies_data', 'GET', []);
+            
+            // WestWallet возвращает данные напрямую массивом, а не в поле 'data'
+            // Оборачиваем для единообразия с остальными методами
+            if (isset($response['error'])) {
+                return $response; // Возвращаем ошибку как есть
+            }
+            
+            return $response; // Возвращаем массив валют напрямую
         });
     }
 
-    /**
-     * Проверить статус транзакции по ID
-     */
     public function getTransactionStatus(int $transactionId): array
     {
         return $this->makeRequest('/wallet/transaction', 'POST', [
@@ -241,9 +298,6 @@ class WestWalletService
         ]);
     }
 
-    /**
-     * Проверить статус транзакции по label
-     */
     public function getTransactionByLabel(string $label): array
     {
         return $this->makeRequest('/wallet/transaction', 'POST', [
@@ -251,9 +305,6 @@ class WestWalletService
         ]);
     }
 
-    /**
-     * Получить баланс кошелька
-     */
     public function getBalance(string $currency): array
     {
         return $this->makeRequest('/wallet/balance', 'GET', [
@@ -261,9 +312,6 @@ class WestWalletService
         ]);
     }
 
-    /**
-     * Получить историю транзакций
-     */
     public function getTransactions(array $params = []): array
     {
         $defaultParams = [
@@ -277,81 +325,43 @@ class WestWalletService
         return $this->makeRequest('/wallet/transactions', 'POST', $params);
     }
 
-    /**
-     * Проверка доступности валюты для депозита
-     */
-    public function isCurrencyAvailable(string $currency): bool
+    public function isCurrencyAvailable(string $currency, ?string $network = null): bool
     {
+        $ticker = $this->getCurrencyTicker($currency, $network);
         $currencies = $this->getCurrenciesData();
         
-        if (isset($currencies['error']) && $currencies['error'] !== 'ok') {
+        if (isset($currencies['error'])) {
             return false;
         }
 
-        $currencyData = collect($currencies['data'] ?? [])
-            ->firstWhere('tickers', fn($tickers) => in_array(strtoupper($currency), $tickers));
+        foreach ($currencies as $currencyData) {
+            $tickers = $currencyData['tickers'] ?? [];
+            
+            if (in_array($ticker, $tickers)) {
+                return ($currencyData['active'] ?? false) && ($currencyData['receive_active'] ?? false);
+            }
+        }
 
-        return $currencyData && ($currencyData['active'] ?? false) && ($currencyData['receive_active'] ?? false);
+        return false;
     }
 
-    /**
-     * Получить минимальную сумму депозита для валюты
-     */
-    public function getMinDeposit(string $currency): ?float
+    public function getMinDeposit(string $currency, ?string $network = null): ?float
     {
+        $ticker = $this->getCurrencyTicker($currency, $network);
         $currencies = $this->getCurrenciesData();
         
-        if (isset($currencies['error']) && $currencies['error'] !== 'ok') {
+        if (isset($currencies['error'])) {
             return null;
         }
 
-        $currencyData = collect($currencies['data'] ?? [])
-            ->firstWhere('tickers', fn($tickers) => in_array(strtoupper($currency), $tickers));
-
-        return $currencyData['min_receive'] ?? null;
-    }
-
-
-/**
- * Получить правильный тикер валюты с учетом сети
- */
-private function getCurrencyTicker(string $currency, ?string $network = null): string
-{
-    $currency = strtoupper($currency);
-    
-    // Для валют с разными сетями формируем специальный тикер
-    if ($network) {
-        $network = strtoupper($network);
-        
-        // Проверяем популярные форматы
-        $possibleTickers = [
-            "{$currency}_{$network}",  // USDT_TRC20
-            "{$currency}{$network}",   // USDTTRC20
-            "{$currency}-{$network}",  // USDT-TRC20
-        ];
-        
-        // Получаем список валют и ищем правильный тикер
-        $currenciesData = $this->getCurrenciesData();
-        
-        if (isset($currenciesData['data'])) {
-            foreach ($currenciesData['data'] as $currencyData) {
-                $tickers = $currencyData['tickers'] ?? [];
-                
-                foreach ($possibleTickers as $ticker) {
-                    if (in_array($ticker, $tickers)) {
-                        Log::info('Found currency ticker', [
-                            'currency' => $currency,
-                            'network' => $network,
-                            'ticker' => $ticker
-                        ]);
-                        return $ticker;
-                    }
-                }
+        foreach ($currencies as $currencyData) {
+            $tickers = $currencyData['tickers'] ?? [];
+            
+            if (in_array($ticker, $tickers)) {
+                return $currencyData['min_receive'] ?? null;
             }
         }
-    }
-    
-    return $currency;
-}    
-}
 
+        return null;
+    }
+}
