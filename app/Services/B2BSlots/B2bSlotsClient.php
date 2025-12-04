@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\B2BSlots;
 
 use App\Models\GameSession;
 use App\Models\User;
