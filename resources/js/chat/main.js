@@ -755,6 +755,7 @@ if (typeof window.ChatSystem === 'undefined') {
         if (messageData.is_moder) {
             const modBadge = document.createElement('span');
             modBadge.className = 'mod-badge';
+            modBadge.innerHTML = '🛡️';
             userLine.appendChild(modBadge);
         }
 
@@ -835,7 +836,7 @@ if (typeof window.ChatSystem === 'undefined') {
     createReplyButton(messageData) {
         const button = document.createElement('button');
         button.className = 'reply-button';
-        button.title = 'Ответить';
+        button.innerHTML = '💬';
         button.addEventListener('click', () => {
             // Если в имени есть пробелы, не добавляем запятую сразу после имени
             const username = messageData.username;
@@ -851,7 +852,7 @@ if (typeof window.ChatSystem === 'undefined') {
     createDeleteButton(messageId) {
         const button = document.createElement('button');
         button.className = 'delete-button';
-        button.title = 'Удалить';
+        button.innerHTML = '🗑️';
         button.addEventListener('click', () => this.deleteMessage(messageId));
         return button;
     }
