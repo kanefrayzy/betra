@@ -131,10 +131,10 @@ class WestWalletService
             
             // USDC на разных сетях
             'USDC' => [
-                'ERC20' => 'USDCERC20',
-                'ERC' => 'USDCERC',
-                'BEP20' => 'USDCBEP20',
-                'BEP' => 'USDCBEP',
+                'ERC20' => 'ERC20',
+                'ERC' => 'ERC',
+                'BEP20' => 'BEP20',
+                'BEP' => 'BEP',
             ],
             
             // Ethereum на разных сетях
