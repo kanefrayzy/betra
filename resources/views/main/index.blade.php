@@ -9,9 +9,9 @@
     <div class="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-2" x-data="{ activeTab: 'all' }">
         
         <!-- Category Tabs - Dynamically Generated -->
-        <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-hide pb-2">
-            <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-[#ffb300] text-black' : 'bg-dark-800/60 text-gray-300 hover:bg-dark-700/80'" class="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold whitespace-nowrap transition-colors text-sm">
-                <svg  class="w-4 h-4" data-ds-icon="AllGames" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" class="inline-block shrink-0">
+        <div class="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide bg-[#0f212e] p-2 rounded-full max-w-full">
+            <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-[#ffb300] text-black shadow-lg' : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#1a2c38]'" class="flex items-center gap-2 px-5 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-200 text-sm">
+                <svg class="w-4 h-4" data-ds-icon="AllGames" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                     <path fill="currentColor" d="M9.08 1H3a2 2 0 0 0-2 2v6.08a2 2 0 0 0 2 2h6.08a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2M21 1h-6.08a2 2 0 0 0-2 2v6.08a2 2 0 0 0 2 2H21a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2M9.08 12.92H3a2 2 0 0 0-2 2V21a2 2 0 0 0 2 2h6.08a2 2 0 0 0 2-2v-6.08a2 2 0 0 0-2-2m11.92 0h-6.08a2 2 0 0 0-2 2V21a2 2 0 0 0 2 2H21a2 2 0 0 0 2-2v-6.08a2 2 0 0 0-2-2"></path>
                 </svg>
                 {{__('Все игры')}}
@@ -20,7 +20,7 @@
             <!-- Recent Games Tab for Authenticated Users -->
             @auth
             @if(isset($recentGames) && $recentGames->isNotEmpty())
-            <button @click="activeTab = 'recent'" :class="activeTab === 'recent' ? 'bg-[#8b5cf6] text-white' : 'bg-dark-800/60 text-gray-300 hover:bg-dark-700/80'" class="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold whitespace-nowrap transition-colors text-sm">
+            <button @click="activeTab = 'recent'" :class="activeTab === 'recent' ? 'bg-[#8b5cf6] text-white shadow-lg' : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#1a2c38]'" class="flex items-center gap-2 px-5 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-200 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -30,11 +30,11 @@
             @endauth
             @foreach($categories as $category)
             <button @click="activeTab = '{{ $category->slug }}'" 
-                    :class="activeTab === '{{ $category->slug }}' ? 'text-black' : 'bg-dark-800/60 text-gray-300 hover:bg-dark-700/80'"
+                    :class="activeTab === '{{ $category->slug }}' ? 'text-black shadow-lg' : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#1a2c38]'"
                     :style="activeTab === '{{ $category->slug }}' ? 'background-color: {{ $category->color }}' : ''"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold whitespace-nowrap transition-colors text-sm">
+                    class="flex items-center gap-2 px-5 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-200 text-sm">
                 @if($category->icon)
-                    <div class="w-5 h-5">
+                    <div class="w-4 h-4">
                         {!! $category->icon !!}
                     </div>
                 @endif
@@ -65,10 +65,10 @@
                 </a>
             </div>
 
-            <div id="recent-slider" class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4">
+            <div id="recent-slider" class="flex gap-2.5 overflow-x-hidden scrollbar-hide snap-x snap-mandatory pt-1 pb-2">
                 @foreach($recentGames as $game)
-                <div class="flex-shrink-0 w-40 sm:w-44 snap-start group" x-data="{ showActions: false }">
-                    <div class="relative rounded-xl overflow-hidden bg-dark-900 border border-dark-700/50 hover:border-dark-600 transition-all duration-300 cursor-pointer"
+                <div class="flex-shrink-0 w-36 sm:w-40 snap-start group" x-data="{ showActions: false }">
+                    <div class="relative rounded-xl overflow-hidden bg-dark-900 border border-dark-700/50 hover:border-dark-600 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                          @click="showActions = !showActions"
                          @mouseenter="window.innerWidth >= 768 && (showActions = true)"
                          @mouseleave="window.innerWidth >= 768 && (showActions = false)">
@@ -127,21 +127,28 @@
              class="mb-4"
              :class="{ 'absolute inset-x-0 top-0': activeTab !== 'all' && activeTab !== '{{ $category->slug }}' }">
             <div class="flex items-center justify-between mb-2">
-                <h2 class="text-xl font-bold text-white">{{ $category->name }}</h2>
-                <div class="flex items-center gap-2">
-                    <button id="{{ $category->slug }}-prev" class="w-9 h-9 rounded-lg bg-dark-800/60 border border-dark-700/50 flex items-center justify-center text-gray-400 hover:text-white hover:bg-dark-700/80 transition-all">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    @if($category->icon)
+                        <div class="w-5 h-5" style="color: {{ $category->color }}">
+                            {!! $category->icon !!}
+                        </div>
+                    @endif
+                    {{ $category->name }}
+                </h2>
+                <div class="inline-flex border-2 border-gray-700/30 rounded-full overflow-hidden">
+                    <button id="{{ $category->slug }}-prev" class="w-14 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all border-r border-gray-700/20">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
                     </button>
-                    <button id="{{ $category->slug }}-next" class="w-9 h-9 rounded-lg bg-dark-800/60 border border-dark-700/50 flex items-center justify-center text-gray-400 hover:text-white hover:bg-dark-700/80 transition-all">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
+                    <button id="{{ $category->slug }}-next" class="w-14 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
                     </button>
                 </div>
             </div>
 
-            <div id="{{ $category->slug }}-slider" class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4">
+            <div id="{{ $category->slug }}-slider" class="flex gap-2.5 overflow-x-hidden scrollbar-hide snap-x snap-mandatory pt-1 pb-2">
                 @foreach($category->activeGames as $game)
-                <div class="flex-shrink-0 w-40 sm:w-44 snap-start group" x-data="{ showActions: false }">
-                    <div class="relative rounded-xl overflow-hidden bg-dark-900 border border-dark-700/50 hover:border-dark-600 transition-all duration-300 cursor-pointer"
+                <div class="flex-shrink-0 w-36 sm:w-40 snap-start group" x-data="{ showActions: false }">
+                    <div class="relative rounded-xl overflow-hidden bg-dark-900 border border-dark-700/50 hover:border-dark-600 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                          @click="showActions = !showActions"
                          @mouseenter="window.innerWidth >= 768 && (showActions = true)"
                          @mouseleave="window.innerWidth >= 768 && (showActions = false)">
@@ -234,7 +241,16 @@
                 const nextBtn = document.getElementById(nextId);
                 if (!slider || !prevBtn || !nextBtn) return;
 
-                const slideWidth = slider.querySelector('div') ? slider.querySelector('div').offsetWidth + 12 : 176;
+                // Точный расчет ширины одной карточки с gap (2.5 = 10px)
+                const firstCard = slider.querySelector('div');
+                const cardWidth = firstCard ? firstCard.offsetWidth : 144; // w-36 = 144px
+                const gap = 10; // gap-2.5
+                const slideWidth = cardWidth + gap;
+
+                // Рассчитываем сколько карточек помещается в видимую область
+                const visibleWidth = slider.offsetWidth;
+                const cardsToScroll = Math.floor(visibleWidth / slideWidth);
+                const scrollAmount = cardsToScroll * slideWidth;
 
                 // Удаляем старые обработчики
                 const newPrevBtn = prevBtn.cloneNode(true);
@@ -243,11 +259,11 @@
                 nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
 
                 newPrevBtn.addEventListener('click', () => {
-                    slider.scrollBy({ left: -slideWidth * 3, behavior: 'smooth' });
+                    slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
                 });
 
                 newNextBtn.addEventListener('click', () => {
-                    slider.scrollBy({ left: slideWidth * 3, behavior: 'smooth' });
+                    slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
                 });
             }
 
