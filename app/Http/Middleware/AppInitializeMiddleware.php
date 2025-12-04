@@ -93,8 +93,7 @@ class AppInitializeMiddleware
     protected function sharePaymentHandlers(User $user): void
     {
         $paymentHandlers = Cache::remember('payment_handlers', 86400, function () {
-            return PaymentHandler::select('id', 'name', 'currency', 'active')
-                ->where('active', 1)
+            return PaymentHandler::where('active', 1)
                 ->get();
         });
 

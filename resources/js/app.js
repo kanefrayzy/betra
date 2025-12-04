@@ -16,19 +16,6 @@ if (document.querySelector('[data-telegram-auth]') ||
     import('./telegram-auth-global.js');
 }
 
-// // Ленивая загрузка QRCode для модалки кошелька
-// let qrcodeLoaded = false;
-// window.loadQRCode = function() {
-//     if (!qrcodeLoaded) {
-//         qrcodeLoaded = true;
-//         import('qrcodejs').then(module => {
-//             window.QRCode = module.default || module;
-//         }).catch(err => console.error('QRCode load error:', err));
-//     }
-// };
-
-// Автозагрузка при открытии модалки кошелька
-document.addEventListener('open-cash-modal', window.loadQRCode, { once: true });
 
 // Livewire SPA Navigation
 document.addEventListener('livewire:navigated', () => {
