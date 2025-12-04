@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
             });
             
             if (!$settings) {
-                $settings = new Setting();
+                $settings = new Settings();
             }
             
             $view->with('settings', $settings);
