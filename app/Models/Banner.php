@@ -70,11 +70,13 @@ class Banner extends Model
     {
         $locale = $locale ?: app()->getLocale();
         
-        return self::active()
-            ->mainSlider()
-            ->forLocale($locale)
-            ->ordered()
-            ->get();
+        return \Cache::remember("main_banners_{$locale}", 3600, function () use ($locale) {
+            return self::active()
+                ->mainSlider()
+                ->forLocale($locale)
+                ->ordered()
+                ->get();
+        });
     }
 
     // Получить активные маленькие баннеры
@@ -82,11 +84,43 @@ class Banner extends Model
     {
         $locale = $locale ?: app()->getLocale();
         
-        return self::active()
-            ->smallBanners()
-            ->forLocale($locale)
-            ->ordered()
-            ->get();
+        return \Cache::remember("small_banners_{$locale}", 3600, function () use ($locale) {
+            return self::active()
+                ->smallBanners()
+                ->forLocale($locale)
+                ->ordered()
+                ->get();
+        });
+    }
+
+    /**
+     * Очистить кеш баннеров
+     */
+    public static function clearCache(): void
+    {
+        $locales = ['ru', 'en', 'az', 'uz', 'kz', 'tr'];
+        
+        foreach ($locales as $locale) {
+            \Cache::forget("main_banners_{$locale}");
+            \Cache::forget("small_banners_{$locale}");
+        }
+    }
+
+    /**
+     * Boot метод для автоматической очистки кеша
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Очищаем кеш при создании, обновлении или удалении баннера
+        static::saved(function () {
+            self::clearCache();
+        });
+        
+        static::deleted(function () {
+            self::clearCache();
+        });
     }
 
     // Получить путь к изображению с проверкой существования
