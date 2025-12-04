@@ -7,7 +7,7 @@ use App\Services\B2BSlotsService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
-class ImportB2bGames extends Command
+class ImportB2bGamesCommand extends Command
 {
     protected $signature = 'b2b:import {--provider= : Filter by provider name} {--limit= : Limit number of games to import}';
 
