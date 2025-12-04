@@ -227,12 +227,13 @@ Route::get('/test-westwallet', function() {
     $service = new \App\Services\WestWalletService();
     $currencies = $service->getCurrenciesData();
     
-    // Найди USDT и посмотри какие у него тикеры
-    foreach ($currencies['data'] ?? [] as $currency) {
-        if (str_contains(strtoupper($currency['name'] ?? ''), 'USDT')) {
-            dd($currency);
-        }
-    }
+    // Выводим весь ответ
+    dd([
+        'full_response' => $currencies,
+        'has_data' => isset($currencies['data']),
+        'has_error' => isset($currencies['error']),
+        'error_value' => $currencies['error'] ?? null,
+    ]);
 });
 Route::middleware(['auth', 'access:Admin'])->group(function () {
     $base = 'betrika';
