@@ -3,7 +3,7 @@
      :class="{ 'sidebar-collapsed': isCollapsed }">
     
     <div class="xl:hidden flex items-center justify-between p-4">
-        <a href="/" wire:navigate class="flex items-center">
+        <a href="/"  class="flex items-center">
             <img src="/assets/images/logo.png" alt="Logo" class="h-12">
         </a>
         <button @click="sidebarOpen = false" class="text-gray-400 hover:text-white transition">
@@ -23,7 +23,7 @@
         
         <div class="flex items-center gap-2 flex-1" x-show="!isCollapsed" x-transition>
             <a href="{{ route('slots.lobby') }}" 
-               wire:navigate
+               
                style="background: linear-gradient(135deg, #4dda31 0%, #3bb825 100%); box-shadow: 0 4px 14px rgba(77, 218, 49, 0.3);"
                class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm">
                 {{ __('Казино') }}
@@ -40,7 +40,7 @@
         @auth
         <div class="mb-4 bg-[#1a2c38] rounded-lg p-2 space-y-1">
             <a href="{{ route('slots.history') }}"
-               wire:navigate
+               
                @click="sidebarOpen = false"
                class="sidebar-item {{ request()->routeIs('slots.history') ? 'active' : '' }}"
                x-tooltip="isCollapsed ? '{{ __('Недавние') }}' : ''">
@@ -52,7 +52,7 @@
             </a>
 
             <a href="{{ route('slots.popular') }}"
-               wire:navigate
+               
                @click="sidebarOpen = false"
                class="sidebar-item {{ request()->routeIs('slots.popular') ? 'active' : '' }}"
                x-tooltip="isCollapsed ? '{{ __('Популярные') }}' : ''">
@@ -64,7 +64,7 @@
             </a>
 
             <a href="{{ route('slots.new') }}"
-               wire:navigate
+               
                @click="sidebarOpen = false"
                class="sidebar-item {{ request()->routeIs('slots.new') ? 'active' : '' }}"
                x-tooltip="isCollapsed ? '{{ __('Новые') }}' : ''">
@@ -77,7 +77,7 @@
             </a>
 
             <a href="{{ route('slots.favorites') }}"
-               wire:navigate
+               
                @click="sidebarOpen = false"
                class="sidebar-item {{ request()->routeIs('slots.favorites') ? 'active' : '' }}"
                x-tooltip="isCollapsed ? '{{ __('Избранные') }}' : ''">
@@ -102,7 +102,7 @@
 
             <div class="space-y-1">
                 <a href="{{ route('slots.lobby') }}"
-                   wire:navigate
+                   
                    @click="sidebarOpen = false"
                    class="sidebar-item {{ request()->routeIs('slots.lobby') ? 'active' : '' }}"
                    x-tooltip="isCollapsed ? '{{ __('Все слоты') }}' : ''">
@@ -114,7 +114,7 @@
 
                 @foreach($sidebarCategories as $cat)
                 <a href="{{ route('slots.category', $cat->slug) }}"
-                   wire:navigate
+                   
                    @click="sidebarOpen = false"
                    class="sidebar-item {{ request()->is('slots/category/'.$cat->slug) ? 'active' : '' }}"
                    x-tooltip="isCollapsed ? '{{ __($cat->name) }}' : ''">
@@ -182,7 +182,7 @@
                 </a>
 
                 <a href="{{ route('account.referrals') }}"
-                   wire:navigate
+                   
                    @click="sidebarOpen = false"
                    class="sidebar-item {{ request()->routeIs('account.referrals') ? 'active' : '' }}"
                    x-tooltip="isCollapsed ? '{{ __('Партнерам') }}' : ''">
@@ -207,7 +207,7 @@
                 </a>
 
                 <a href="{{ route('transaction') }}"
-                   wire:navigate
+                   
                    @click="sidebarOpen = false"
                    class="sidebar-item {{ request()->routeIs('transaction') ? 'active' : '' }}"
                    x-tooltip="isCollapsed ? '{{ __('Транзакции') }}' : ''">
@@ -219,7 +219,7 @@
                 </a>
 
                 <a href="{{ route('account') }}"
-                   wire:navigate
+                   
                    @click="sidebarOpen = false"
                    class="sidebar-item {{ request()->routeIs('account') ? 'active' : '' }}"
                    x-tooltip="isCollapsed ? '{{ __('Настройки') }}' : ''">
@@ -268,7 +268,7 @@
             @endif
 
             <a href="{{ route('rules') }}"
-               wire:navigate
+               
                @click="sidebarOpen = false"
                class="sidebar-item"
                x-tooltip="isCollapsed ? '{{ __('Правила') }}' : ''">
@@ -296,27 +296,27 @@
                      style="display: none;"
                      class="absolute bottom-full left-0 right-0 mb-2 bg-[#1a2c38] rounded-lg overflow-hidden shadow-xl border border-gray-700">
                     <div class="grid gap-1 p-2" :class="isCollapsed ? 'grid-cols-1' : 'grid-cols-3'">
-                        <a href="/setlocale/ru" wire:navigate class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
+                        <a href="/setlocale/ru"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/ru.png" class="h-6 w-6 rounded mb-1" alt="RU">
                             <span class="text-[10px] uppercase" x-show="!isCollapsed">RU</span>
                         </a>
-                        <a href="/setlocale/en" wire:navigate class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
+                        <a href="/setlocale/en"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/en.png" class="h-6 w-6 rounded mb-1" alt="EN">
                             <span class="text-[10px] uppercase" x-show="!isCollapsed">EN</span>
                         </a>
-                        <a href="/setlocale/tr" wire:navigate class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
+                        <a href="/setlocale/tr"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/tr.png" class="h-6 w-6 rounded mb-1" alt="TR">
                             <span class="text-[10px] uppercase" x-show="!isCollapsed">TR</span>
                         </a>
-                        <a href="/setlocale/az" wire:navigate class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
+                        <a href="/setlocale/az"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/az.png" class="h-6 w-6 rounded mb-1" alt="AZ">
                             <span class="text-[10px] uppercase" x-show="!isCollapsed">AZ</span>
                         </a>
-                        <a href="/setlocale/kz" wire:navigate class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
+                        <a href="/setlocale/kz"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/kz.png" class="h-6 w-6 rounded mb-1" alt="KZ">
                             <span class="text-[10px] uppercase" x-show="!isCollapsed">KZ</span>
                         </a>
-                        <a href="/setlocale/uz" wire:navigate class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
+                        <a href="/setlocale/uz"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/uz.png" class="h-6 w-6 rounded mb-1" alt="UZ">
                             <span class="text-[10px] uppercase" x-show="!isCollapsed">UZ</span>
                         </a>
