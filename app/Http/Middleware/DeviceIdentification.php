@@ -10,21 +10,30 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DeviceIdentification
 {
-
-
     public function handle(Request $request, Closure $next): Response
     {
-
-        if (Agent::isMobile()) {
-            $deviceType = 'mobile';
-        } elseif (Agent::isTablet()) {
-            $deviceType = 'tablet';
-        } else {
-            $deviceType = 'desktop';
+        // Проверяем, нужно ли определять устройство
+        if (!Session::has('device_type')) {
+            $deviceType = $this->detectDeviceType();
+            Session::put('device_type', $deviceType);
         }
 
-        Session::put('device_type', $deviceType);
-
         return $next($request);
+    }
+
+    /**
+     * Определяет тип устройства
+     */
+    private function detectDeviceType(): string
+    {
+        if (Agent::isMobile()) {
+            return 'mobile';
+        }
+        
+        if (Agent::isTablet()) {
+            return 'tablet';
+        }
+        
+        return 'desktop';
     }
 }

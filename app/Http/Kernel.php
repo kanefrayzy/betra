@@ -68,8 +68,4 @@ class Kernel extends HttpKernel
         'withdrawModer' => \App\Http\Middleware\WithdrawModer::class,
         'game-token' => \App\Http\Middleware\GameTokenMiddleware::class,
     ];
-
-    protected $middlewareAliases = [
-        'aes.callback' => \App\Http\Middleware\AesCallbackMiddleware::class,
-    ];
 }
