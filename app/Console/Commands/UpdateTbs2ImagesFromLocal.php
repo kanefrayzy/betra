@@ -24,7 +24,7 @@ class UpdateTbs2ImagesFromLocal extends Command
         $images = File::files($imagesPath);
         $this->info("📁 Found " . count($images) . " images in folder");
 
-        $games = SlotegratorGame::where('provider_type', 'aes')->get();
+        $games = SlotegratorGame::where('provider_type', 'b2b')->get();
         $this->info("🎮 Found " . $games->count() . " TBS2 games in DB");
 
         $bar = $this->output->createProgressBar($games->count());
