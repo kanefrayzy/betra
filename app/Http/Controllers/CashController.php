@@ -47,7 +47,7 @@ class CashController extends Controller
     public function getCryptoAddress(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'currency' => ['required', 'string', 'in:BTC,ETH,USDT,TRX,LTC,XRP,DOGE'],
+            'currency' => ['required', 'string', 'in:BTC,ETH,USDT,TRX,LTC,XRP,DOGE, SOL, USDC, BNB'],
             'network' => ['nullable', 'string'],
         ]);
 

@@ -97,121 +97,119 @@ class WestWalletService
     /**
      * Получить правильный тикер валюты с учетом сети
      */
-private function getCurrencyTicker(string $currency, ?string $network = null): string
-{
-    $currency = strtoupper($currency);
-    
-    // Список нативных валют блокчейнов, которые НЕ требуют указания сети
-    // Это основные валюты своих блокчейнов, а не токены на них
-    $nativeCurrencies = [
-        'BTC',  // Bitcoin
-        'ETH',  // Ethereum (нативный, не токены ERC-20)
-        'LTC',  // Litecoin
-        'SOL',  // Solana
-        'TON',  // Toncoin
-        'BNB',  // Binance Coin
-        'XRP',  // Ripple
-        'TRX',  // TRON
-        'DOGE', // Dogecoin
-        'XMR',  // Monero
-        'ADA',  // Cardano
-        'DASH', // Dash
-        'BCH',  // Bitcoin Cash
-        'ZEC',  // Zcash
-        'ETC',  // Ethereum Classic
-        'NOT',  // Notcoin
-        'XLM',  // Stellar
-        'EOS',  // EOS
-    ];
-    
-    // Если это нативная валюта - игнорируем network полностью
-    if (in_array($currency, $nativeCurrencies)) {
-        Log::info('Native currency detected, ignoring network', [
-            'currency' => $currency,
-            'network' => $network,
-            'result' => $currency
-        ]);
-        return $currency;
-    }
-    
-    // Если сеть не указана, возвращаем просто валюту
-    if (!$network) {
-        return $currency;
-    }
-    
-    $network = strtoupper($network);
-    
-    // Полный маппинг ТОКЕНОВ на разных сетях (не нативные валюты!)
-    $tickerMap = [
-        // USDT на разных сетях
-        'USDT' => [
-            'ERC20' => 'USDTERC20',
-            'ERC' => 'USDTERC',
-            'TRC20' => 'USDTTRC20',
-            'TRC' => 'USDTTRC',
-            'BEP20' => 'USDTBEP20',
-            'BEP' => 'USDTBEP',
-            'SOL' => 'USDTSOL',
-            'SOLANA' => 'USDTSOL',
-            'TON' => 'USDTTON',
-            'TONCOIN' => 'USDTTONCOIN',
-        ],
+    private function getCurrencyTicker(string $currency, ?string $network = null): string
+    {
+        $currency = strtoupper($currency);
         
-        // USDC на разных сетях (НЕТ на Solana!)
-        'USDC' => [
-            'ERC20' => 'USDCERC20',
-            'ERC' => 'USDCERC',
-            'BEP20' => 'USDCBEP20',
-            'BEP' => 'USDCBEP',
-        ],
+        // Если сеть не указана, возвращаем просто валюту
+        if (!$network) {
+            return $currency;
+        }
         
-        // SHIBA INU (только токен)
-        'SHIB' => [
-            'BEP20' => 'SHIBBEP20',
-            'BEP' => 'SHIB',
-        ],
-    ];
-    
-    if (isset($tickerMap[$currency][$network])) {
-        Log::info('Token ticker found in map', [
-            'currency' => $currency,
-            'network' => $network,
-            'result' => $tickerMap[$currency][$network]
-        ]);
-        return $tickerMap[$currency][$network];
-    }
-    
-    // Если не нашли в маппинге, пробуем стандартные форматы
-    $possibleTickers = [
-        "{$currency}{$network}",   // USDTTRC20
-        "{$currency}_{$network}",  // USDT_TRC20
-    ];
-    
-    // Проверяем существование в списке валют
-    $currenciesData = $this->getCurrenciesData();
-    
-    foreach ($currenciesData as $currencyData) {
-        $tickers = $currencyData['tickers'] ?? [];
+        $network = strtoupper($network);
         
-        foreach ($possibleTickers as $ticker) {
-            if (in_array($ticker, $tickers)) {
-                Log::info('Found currency ticker dynamically', [
-                    'currency' => $currency,
-                    'network' => $network,
-                    'ticker' => $ticker
-                ]);
-                return $ticker;
+        // Специальные случаи: когда currency и network совпадают
+        if ($currency === $network || $currency === "{$network}COIN") {
+            return $network;
+        }
+        
+        // Полный маппинг валют и сетей на тикеры WestWallet
+        $tickerMap = [
+            // USDT на разных сетях
+            'USDT' => [
+                'ERC20' => 'USDTERC20',
+                'ERC' => 'USDTERC',
+                'TRC20' => 'USDTTRC20',
+                'TRC' => 'USDTTRC',
+                'BEP20' => 'USDTBEP20',
+                'BEP' => 'USDTBEP',
+                'SOL' => 'USDTSOL',
+                'SOLANA' => 'USDTSOL',
+                'TON' => 'USDTTON',
+                'TONCOIN' => 'USDTTONCOIN',
+            ],
+            
+            // USDC на разных сетях
+            'USDC' => [
+                'ERC20' => 'USDCERC20',
+                'ERC' => 'USDCERC',
+                'BEP20' => 'USDCBEP20',
+                'BEP' => 'USDCBEP',
+            ],
+            
+            // Ethereum на разных сетях
+            'ETH' => [
+                'ERC20' => 'ETH',
+                'BEP20' => 'ETHBEP20',
+                'BEP' => 'ETHBEP',
+            ],
+            'ETHEREUM' => [
+                'ERC20' => 'ETH',
+                'BEP20' => 'ETHBEP20',
+                'BEP' => 'ETHBEP',
+            ],
+            
+            // SHIBA INU
+            'SHIB' => [
+                'BEP20' => 'SHIBBEP20',
+                'BEP' => 'SHIB',
+            ],
+            'SHIBA' => [
+                'BEP20' => 'SHIBBEP20',
+            ],
+            
+            // Нативные валюты блокчейнов
+            'BITCOIN' => ['BTC' => 'BTC'],
+            'LITECOIN' => ['LTC' => 'LTC'],
+            'SOLANA' => ['SOL' => 'SOL'],
+            'TONCOIN' => ['TON' => 'TON'],
+            'BINANCE' => ['BNB' => 'BNB', 'BEP20' => 'BNB'],
+            'BNB' => ['BEP20' => 'BNB', 'BSC' => 'BNB'],
+            'RIPPLE' => ['XRP' => 'XRP'],
+            'TRON' => ['TRX' => 'TRX'],
+            'DOGECOIN' => ['DOGE' => 'DOGE'],
+            'MONERO' => ['XMR' => 'XMR'],
+            'CARDANO' => ['ADA' => 'ADA'],
+            'DASH' => ['DASH' => 'DASH'],
+            'BITCOINCASH' => ['BCH' => 'BCH'],
+            'ZCASH' => ['ZEC' => 'ZEC'],
+            'ETHEREUMCLASSIC' => ['ETC' => 'ETC'],
+            'NOTCOIN' => ['NOT' => 'NOT'],
+            'STELLAR' => ['XLM' => 'XLM'],
+        ];
+        
+        if (isset($tickerMap[$currency][$network])) {
+            return $tickerMap[$currency][$network];
+        }
+        
+        // Если не нашли в маппинге, пробуем стандартные форматы
+        $possibleTickers = [
+            $network,                  // Просто сеть
+            "{$currency}{$network}",   // USDTTRC20
+            "{$currency}_{$network}",  // USDT_TRC20
+        ];
+        
+        // Проверяем существование в списке валют
+        $currenciesData = $this->getCurrenciesData();
+        
+        foreach ($currenciesData as $currencyData) {
+            $tickers = $currencyData['tickers'] ?? [];
+            
+            foreach ($possibleTickers as $ticker) {
+                if (in_array($ticker, $tickers)) {
+                    Log::info('Found currency ticker', [
+                        'currency' => $currency,
+                        'network' => $network,
+                        'ticker' => $ticker
+                    ]);
+                    return $ticker;
+                }
             }
         }
+        
+        return $currency;
     }
-    
-    Log::warning('No ticker mapping found, using currency as-is', [
-        'currency' => $currency,
-        'network' => $network,
-    ]);
-    
-    return $currency;
-}
+
     public function getOrCreateWallet(User $user, string $currency, ?string $network = null): array
     {
         // Получаем правильный тикер
@@ -243,39 +241,19 @@ private function getCurrencyTicker(string $currency, ?string $network = null): s
 
     public function generateAddress(User $user, string $currency, ?string $network = null): array
     {
-        Log::info('=== generateAddress called ===', [
-            'user_id' => $user->id,
-            'currency_input' => $currency,
-            'network_input' => $network,
-        ]);
-        
         $label = UserCryptoWallet::generateLabel($user->id, $currency, $network);
         $ipnUrl = route('westwallet.callback');
         
         // Получаем правильный тикер
         $ticker = $this->getCurrencyTicker($currency, $network);
-        
-        Log::info('=== Ticker resolved ===', [
-            'currency_input' => $currency,
-            'network_input' => $network,
-            'ticker_result' => $ticker,
-        ]);
 
         $data = [
             'currency' => $ticker,
             'ipn_url' => $ipnUrl,
             'label' => $label,
         ];
-        
-        Log::info('=== Sending to WestWallet API ===', [
-            'data' => $data,
-        ]);
 
         $response = $this->makeRequest('/address/generate', 'POST', $data);
-        
-        Log::info('=== WestWallet API Response ===', [
-            'response' => $response,
-        ]);
 
         // WestWallet возвращает error как строку или отсутствует при успехе
         if (isset($response['error']) && $response['error'] !== 'ok') {
