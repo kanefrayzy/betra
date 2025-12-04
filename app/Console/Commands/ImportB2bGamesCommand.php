@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\SlotegratorGame;
-use App\Services\B2BSlotsClient;
+use App\Services\B2BSlots\B2BSlotsClient;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
