@@ -27,6 +27,8 @@ class AppInitializeMiddleware
         $user = Auth::user();
         
         if ($user) {
+            // Кешируем загрузку user relationships
+            $this->loadUserRelationships($user);
             $this->shareUserData($user);
             $this->sharePaymentHandlers($user);
             
@@ -46,13 +48,35 @@ class AppInitializeMiddleware
 
     /**
      * ═══════════════════════════════════════════════════════════
+     *  Load User Relationships with Caching
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function loadUserRelationships(User $user): void
+    {
+        // Кешируем currency на 1 час (редко меняется)
+        if (!$user->relationLoaded('currency')) {
+            $currency = Cache::remember("user_{$user->id}_currency", 3600, function () use ($user) {
+                return Currency::find($user->currency_id);
+            });
+            $user->setRelation('currency', $currency);
+        }
+
+        // Кешируем rank на 1 час
+        if (!$user->relationLoaded('rank') && $user->rank_id) {
+            $rank = Cache::remember("user_{$user->id}_rank", 3600, function () use ($user) {
+                return \App\Models\Rank::find($user->rank_id);
+            });
+            $user->setRelation('rank', $rank);
+        }
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
      *  Share User Data to Views
      * ═══════════════════════════════════════════════════════════
      */
     protected function shareUserData(User $user): void
     {
-        $user->load(['currency', 'rank']);
-        
         View::share([
             'u' => $user,
             'rakeback_balance' => moneyFormat(toUSD($user->rakeback, $user->currency->symbol))
