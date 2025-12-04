@@ -380,7 +380,7 @@
         </div>
     </div>
 
-    <div id="chat-persist-container" data-navigate-once>
+    <div id="chat-persist-container">
         <x-real-time.chat />
     </div>
 
@@ -393,7 +393,6 @@
         <x-modals.cash/>
         <x-modals.rank/>
         <x-modals.promocode/>
-        <x-modals.withdrawal-success/>
         <x-modals.chat-rules/>
     @endauth
     <x-modals.rakeback/>
@@ -401,7 +400,6 @@
     <x-modals.login/>
     <x-modals.forgot-password/>
     <x-modals.telegram-auth/>
-    <x-modals.crypto-guide/>
     <x-modals.currency-select/>
 
     <script>
@@ -415,29 +413,9 @@
             })
         })
     });
-
-    window.addEventListener('unhandledrejection', function(event) {
-        if (event.reason && event.reason.isFromCancelledTransition) {
-            event.preventDefault();
-        }
-    });
     </script>
 
     @livewireScripts
-
-    <script>
-        document.addEventListener('livewire:navigating', () => {
-            if (window.chatSystem && window.chatSystem.ws) {
-                window.chatSystem.preserveConnection = true;
-            }
-        });
-
-        document.addEventListener('livewire:navigated', () => {
-            if (window.chatSystem && window.chatSystem.preserveConnection) {
-                window.chatSystem.preserveConnection = false;
-            }
-        });
-    </script>
 
     @guest
         <script src="//ulogin.ru/js/ulogin.js"></script>
@@ -446,7 +424,7 @@
 
 
 
-    <script data-navigate-once>
+    <script>
         // Используем Alpine.store для управления состоянием
         document.addEventListener('alpine:init', () => {
             if (typeof Alpine !== 'undefined' && Alpine.store) {
@@ -467,14 +445,9 @@
             window.isModerator = {{ (Auth::user()->is_moder || Auth::user()->is_admin || Auth::user()->is_chat_moder) ? 'true' : 'false' }};
             @endauth
         }
-        
-        // Очистка при навигации для ресинхронизации (Alpine.store сохраняется автоматически)
-        document.addEventListener('livewire:navigating', () => {
-            // State управляется через Alpine.store
-        });
     </script>
 
-    <script data-navigate-once>
+    <script>
         // Modal Manager
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof window.modalManager === 'undefined') {
@@ -884,24 +857,6 @@
                 setTimeout(checkAndLoadTelegramStyles, 50);
             });
         }
-        
-        document.addEventListener('livewire:navigated', function() {
-            const isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-            
-            if (isGamePage) {
-                checkAndLoadTelegramStyles();
-                if (typeof window.applyTelegramWebAppSettings === 'function') {
-                    window.applyTelegramWebAppSettings();
-                }
-            } else {
-                setTimeout(checkAndLoadTelegramStyles, 50);
-                if (typeof window.applyTelegramWebAppSettings === 'function') {
-                    setTimeout(() => {
-                        window.applyTelegramWebAppSettings();
-                    }, 150);
-                }
-            }
-        });
     </script>
     @endif
  
