@@ -120,36 +120,27 @@ class WestWalletService
                 'ERC20' => 'USDTERC20',
                 'TRC20' => 'USDTTRC20',
                 'TRC' => 'USDTTRC20',
-                'BEP20' => 'USDTBEP20',
-                'SOL' => 'USDTSOL',
-                'SOLANA' => 'USDTSOL',
             ],
             
             // USDC на разных сетях
             'USDC' => [
                 'ERC20' => 'USDCERC20',
+                'ERC' => 'USDCERC',
                 'BEP20' => 'USDCBEP20',
-                'SOL' => 'USDCSOL',
-                'SOLANA' => 'USDCSOL',
-                'TRC20' => 'USDCTRC20',
+                'BEP' => 'USDCBEP',
             ],
             
-            // Нативные валюты блокчейнов
             'BITCOIN' => [
                 'BTC' => 'BTC',
             ],
             'LITECOIN' => [
                 'LTC' => 'LTC',
             ],
-            'SOL' => [
+            'SOLANA' => [
                 'SOL' => 'SOL',
             ],
             'TONCOIN' => [
                 'TON' => 'TON',
-            ],
-            'BINANCE' => [
-                'BNB' => 'BNB',
-                'BEP20' => 'BNB',
             ],
             'BNB' => [
                 'BNB' => 'BNB',
