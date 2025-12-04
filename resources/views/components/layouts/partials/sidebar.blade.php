@@ -2,35 +2,35 @@
      x-data="sidebarState()" 
      :class="{ 'sidebar-collapsed': isCollapsed }">
     
-    <div class="xl:hidden flex items-center justify-between p-4">
-        <a href="/"  class="flex items-center">
-            <img src="/assets/images/logo.png" alt="Logo" class="h-12">
-        </a>
-        <button @click="sidebarOpen = false" class="text-gray-400 hover:text-white transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="flex items-center gap-2 p-4">
+        <button @click="sidebarOpen = false" 
+                class="xl:hidden p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400 hover:text-white flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
-    </div>
-
-    <div class="hidden xl:flex items-center gap-2 p-4">
+        
         <button @click="toggleSidebar()" 
-                class="p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400 hover:text-white flex-shrink-0">
+                class="hidden xl:block p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400 hover:text-white flex-shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
         
-        <div class="flex items-center gap-2 flex-1" x-show="!isCollapsed" x-transition>
+        <div class="flex items-center gap-2 flex-1">
             <a href="{{ route('slots.lobby') }}" 
                
                style="background: linear-gradient(135deg, #4dda31 0%, #3bb825 100%); box-shadow: 0 4px 14px rgba(77, 218, 49, 0.3);"
-               class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm">
+               class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm"
+               x-show="!isCollapsed || window.innerWidth < 1280" 
+               x-transition>
                 {{ __('Казино') }}
             </a>
             <a href="#" 
                style="background: linear-gradient(135deg, #1e3a4a 0%, #16303d 100%);"
-               class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm border border-white/5">
+               class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm border border-white/5"
+               x-show="!isCollapsed || window.innerWidth < 1280" 
+               x-transition>
                 {{ __('Live') }}
             </a>
         </div>
