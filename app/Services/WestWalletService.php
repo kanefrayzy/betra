@@ -311,3 +311,45 @@ class WestWalletService
         return $currencyData['min_receive'] ?? null;
     }
 }
+
+/**
+ * Получить правильный тикер валюты с учетом сети
+ */
+private function getCurrencyTicker(string $currency, ?string $network = null): string
+{
+    $currency = strtoupper($currency);
+    
+    // Для валют с разными сетями формируем специальный тикер
+    if ($network) {
+        $network = strtoupper($network);
+        
+        // Проверяем популярные форматы
+        $possibleTickers = [
+            "{$currency}_{$network}",  // USDT_TRC20
+            "{$currency}{$network}",   // USDTTRC20
+            "{$currency}-{$network}",  // USDT-TRC20
+        ];
+        
+        // Получаем список валют и ищем правильный тикер
+        $currenciesData = $this->getCurrenciesData();
+        
+        if (isset($currenciesData['data'])) {
+            foreach ($currenciesData['data'] as $currencyData) {
+                $tickers = $currencyData['tickers'] ?? [];
+                
+                foreach ($possibleTickers as $ticker) {
+                    if (in_array($ticker, $tickers)) {
+                        Log::info('Found currency ticker', [
+                            'currency' => $currency,
+                            'network' => $network,
+                            'ticker' => $ticker
+                        ]);
+                        return $ticker;
+                    }
+                }
+            }
+        }
+    }
+    
+    return $currency;
+}
