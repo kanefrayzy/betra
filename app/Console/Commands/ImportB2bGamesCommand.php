@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\SlotegratorGame;
-use App\Services\B2BSlots\B2BSlotsClient;
+use App\Services\B2BSlots\B2bSlotsClient;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -13,9 +13,9 @@ class ImportB2bGamesCommand extends Command
 
     protected $description = 'Import games from B2B Slots API';
 
-    protected B2BSlotsClient $b2bService;
+    protected B2bSlotsClient $b2bService;
 
-    public function __construct(B2BSlotsClient $b2bService)
+    public function __construct(B2bSlotsClient $b2bService)
     {
         parent::__construct();
         $this->b2bService = $b2bService;
