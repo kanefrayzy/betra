@@ -101,10 +101,10 @@
                                    class="w-full py-2.5 bg-[#ffb300] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all">
                                     {{__('Играть')}}
                                 </a>
-                                {{-- <a href="{{ route('slots.fun', $game->slug) }}"
+                                <a href="{{ route('slots.fun', $game->slug) }}"
                                    class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all">
                                     {{__('Демо')}}
-                                </a> --}}
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -182,10 +182,10 @@
                                    style="background-color: {{ $category->color }}">
                                     {{__('Играть')}}
                                 </a>
-                                {{-- <a href="#" onclick="handleGameClick('{{ route('slots.fun', $game->slug) }}', event)"
+                                <a href="#" onclick="handleGameClick('{{ route('slots.fun', $game->slug) }}', event)"
                                    class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all">
                                     {{__('Демо')}}
-                                </a> --}}
+                                </a>
                             </div>
                         </div>
                     </div> 

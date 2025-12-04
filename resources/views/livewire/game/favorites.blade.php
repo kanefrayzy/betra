@@ -71,11 +71,11 @@
                                        @click.stop="if (!requireAuth(null, $event)) return false">
                                         {{__('Играть')}}
                                     </a>
-                                    {{-- <a href="{{ route('slots.fun', $game->slug ?? $game->name) }}"
+                                    <a href="{{ route('slots.fun', $game->slug ?? $game->name) }}"
                                        class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all"
                                        @click.stop>
                                         {{__('Демо')}}
-                                    </a> --}}
+                                    </a>
                                 </div>
                             </div>
                         </div>
