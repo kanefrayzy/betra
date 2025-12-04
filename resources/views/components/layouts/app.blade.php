@@ -34,13 +34,13 @@
     <link rel="apple-touch-icon" href="{{ asset('assets/images/favicons/apple-touch-icon.png') }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicons/favicon.ico') }}">
 
-    <!-- Preconnect для критичных CDN -->
+    <!-- Preconnect  -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://telegram.org">
 
-    <!-- Шрифты с async загрузкой через media="print" -->
+    <!-- Шрифты  -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" 
           rel="stylesheet" 
           media="print" 
@@ -48,7 +48,7 @@
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     </noscript>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <<script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -1,12 +1,10 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use App\Models\Currency;
 use App\Models\PaymentHandler;
-use App\Models\Settings;
 use App\Models\User;
-use App\Models\DepositBonus;
-use App\Models\UserDepositBonus;
 use App\Services\RankService;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -19,73 +17,132 @@ use Illuminate\Support\Facades\View;
 
 class AppInitializeMiddleware
 {
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Handle Incoming Request
+     * ═══════════════════════════════════════════════════════════
+     */
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
-        View::share('u', $user);
-
-        // Кэширование payment_handlers на 1 день
-        $payment_handlers = Cache::remember('payment_handlers', now()->addDay(), function () {
-            return PaymentHandler::all();
-        });
-
+        
         if ($user) {
-            // Логика для обычных пользователей
-            [$matchingHandlers, $otherHandlers] = $this->handlersFilter($payment_handlers, $user);
-            [$matchingSystems, $otherSystems] = $this->systemFilter($payment_handlers, $user);
-            View::share(RankService::progress($user));
-            View::share('matchingHandlers', $matchingHandlers);
-            View::share('otherHandlers', $otherHandlers);
-            View::share('matchingSystems', $matchingSystems);
-            View::share('otherSystems', $otherSystems);
-            View::share('rakeback_balance', moneyFormat(toUSD($user->rakeback, $user->currency->symbol)));
-
-            if (strpos($request->getPathInfo(), '/games/') === 0) {
-              return $next($request);
-          }
-              // Пропускаем проверку для маршрута входа
-              if ($request->routeIs('login') || $request->routeIs('login.post')) {
-                  return $next($request);
-              }
-
-              if (Auth::check() && Auth::user()->last_login_at === null) {
-                  Auth::logout();
-                  return redirect()->route('home')->with('error', 'Ваша сессия была завершена. Пожалуйста, войдите снова.');
-              }
+            $this->shareUserData($user);
+            $this->sharePaymentHandlers($user);
+            
+            if ($this->shouldSkipSessionCheck($request)) {
+                return $next($request);
+            }
+            
+            if ($this->isInvalidSession()) {
+                return $this->logoutAndRedirect();
+            }
         }
 
         Carbon::setLocale('ru');
 
-        // Кэширование настроек на 1 день
-        $settings = Cache::remember('app_settings', now()->addDay(), function () {
-            return Settings::first();
-        });
-        
-        if (!$settings) {
-            $settings = new Settings();
-        }
-        
-        View::share('settings', $settings);
-
         return $next($request);
     }
 
-    protected function handlersFilter(Collection $payment_handlers, User|Authenticatable|null $user): array
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Share User Data to Views
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function shareUserData(User $user): void
     {
-        $matchingHandlers = $payment_handlers->filter(function ($handler) use ($user) {
-            return $handler->currency == $user->currency->symbol;
-        });
-        $otherHandlers = $payment_handlers->diff($matchingHandlers);
-        return [$matchingHandlers, $otherHandlers];
+        $user->load(['currency', 'rank']);
+        
+        View::share([
+            'u' => $user,
+            'rakeback_balance' => moneyFormat(toUSD($user->rakeback, $user->currency->symbol))
+        ]);
+        
+        View::share(RankService::progress($user));
     }
 
-    protected function systemFilter(Collection $payment_handlers, User|Authenticatable|null $user): array
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Share Payment Handlers
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function sharePaymentHandlers(User $user): void
     {
-        $matchingSystems = $payment_handlers->filter(function ($system) use ($user) {
-            return $system->currency == $user->currency->symbol;
+        $paymentHandlers = Cache::remember('payment_handlers', 86400, function () {
+            return PaymentHandler::select('id', 'name', 'currency', 'is_active')
+                ->where('is_active', 1)
+                ->get();
         });
-        $otherSystems = $payment_handlers->diff($matchingSystems);
-        return [$matchingSystems, $otherSystems];
+
+        [$matchingHandlers, $otherHandlers] = $this->filterHandlers($paymentHandlers, $user);
+        [$matchingSystems, $otherSystems] = $this->filterSystems($paymentHandlers, $user);
+        
+        View::share([
+            'matchingHandlers' => $matchingHandlers,
+            'otherHandlers' => $otherHandlers,
+            'matchingSystems' => $matchingSystems,
+            'otherSystems' => $otherSystems
+        ]);
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Filter Handlers by User Currency
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function filterHandlers(Collection $handlers, User $user): array
+    {
+        $userCurrency = $user->currency->symbol;
+        
+        $matching = $handlers->filter(fn($h) => $h->currency === $userCurrency);
+        $other = $handlers->diff($matching);
+        
+        return [$matching, $other];
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Filter Systems by User Currency
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function filterSystems(Collection $handlers, User $user): array
+    {
+        return $this->filterHandlers($handlers, $user);
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Check if Should Skip Session Validation
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function shouldSkipSessionCheck(Request $request): bool
+    {
+        return str_starts_with($request->getPathInfo(), '/games/') ||
+               $request->routeIs('login') ||
+               $request->routeIs('login.post');
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Check if Session is Invalid
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function isInvalidSession(): bool
+    {
+        return Auth::check() && Auth::user()->last_login_at === null;
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Logout and Redirect
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function logoutAndRedirect()
+    {
+        Auth::logout();
+        
+        return redirect()
+            ->route('home')
+            ->with('error', 'Ваша сессия была завершена. Пожалуйста, войдите снова.');
+    }
 }

@@ -16,19 +16,17 @@
         @auth
             <!-- Баланс на мобильных -->
             <div class="md:hidden">
-                <livewire:balance/>
+                <livewire:balance lazy />
             </div>
       
-            <div class="hidden md:block">
-                <livewire:balance/>
-            </div>
+     
         @endauth
 
         <!-- Правая часть -->
         <div class="flex items-center space-x-3">
             @auth
                 <div class="hidden md:block">
-                    <livewire:notifications/>
+                    <livewire:notifications lazy />
                 </div>
 
 
@@ -420,7 +418,7 @@
                                  x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
                                  class="mx-2 mb-2 bg-[#0f1419] rounded-lg shadow-xl border border-gray-700 max-h-64 overflow-y-auto custom-scrollbar"
                                  style="display: none;">
-                                <livewire:mobile-notifications />
+                             
                             </div>
                         </div>
 

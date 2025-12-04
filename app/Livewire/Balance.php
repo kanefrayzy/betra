@@ -1,10 +1,13 @@
 <?php
+
 namespace App\Livewire;
+
 use App\Models\Currency;
 use App\Services\ExchangeService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Attributes\Middleware;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Cache;
 
 #[Middleware(['auth'])]
@@ -16,22 +19,66 @@ class Balance extends Component
     
     protected $listeners = ['balanceUpdated' => 'refreshBalance'];
 
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Lazy Loading Placeholder
+     * ═══════════════════════════════════════════════════════════
+     */
+    public function placeholder()
+    {
+        return <<<'HTML'
+        <div class="flex items-stretch">
+            <div class="flex items-center h-12 bg-[#0f212e] px-4 rounded-l-xl border border-r-0 border-[#1a2c38] min-w-[160px] animate-pulse">
+                <div class="bg-gray-700 h-5 w-20 rounded"></div>
+            </div>
+            <div class="flex items-center justify-center h-12 w-12 md:w-auto md:px-4 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] rounded-r-xl border border-l-0 border-[#1a2c38] animate-pulse">
+                <div class="bg-white/20 h-4 w-16 rounded hidden md:block"></div>
+                <div class="w-4 h-4 bg-white/20 rounded md:hidden"></div>
+            </div>
+        </div>
+        HTML;
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Component Mount
+     * ═══════════════════════════════════════════════════════════
+     */
     public function mount(): void
     {
         $user = Auth::user();
+        
         if (!$user) {
             return;
         }
-        $this->refreshBalance();
+
+        $user->load(['currency']);
+        
+        $this->balance = $user->balance;
         $this->selectedCurrency = $user->currency->symbol ?? '';
-        $this->currencies = Currency::select('id', 'name', 'symbol')->get();
+        $this->currencies = $this->getCachedCurrencies();
     }
 
-    public function render()
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Get Cached Currencies
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function getCachedCurrencies()
     {
-        return view('livewire.balance');
+        return Cache::remember('active_currencies', 3600, function () {
+            return Currency::select('id', 'name', 'symbol')
+                ->where('is_active', 1)
+                ->orderBy('name')
+                ->get();
+        });
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Change User Currency
+     * ═══════════════════════════════════════════════════════════
+     */
     public function changeCurrency(int $currencyId): void
     {
         $user = Auth::user();
@@ -58,13 +105,38 @@ class Balance extends Component
         $this->dispatch('balanceUpdated');
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Refresh Balance (Polled every 3s)
+     * ═══════════════════════════════════════════════════════════
+     */
     public function refreshBalance(): void
     {
-        $this->balance = Auth::user()->balance ?? 0;
+        $user = Auth::user();
+        
+        if ($user) {
+            $this->balance = $user->balance;
+        }
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Get Formatted Balance
+     * ═══════════════════════════════════════════════════════════
+     */
+    #[Computed]
     public function getFormattedBalance(): string
     {
         return number_format($this->balance, 2, '.', '');
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Render Component
+     * ═══════════════════════════════════════════════════════════
+     */
+    public function render()
+    {
+        return view('livewire.balance');
     }
 }

@@ -8,6 +8,7 @@
                     <img src="{{ asset('assets/images/curr/'.$selectedCurrency.'.png') }}"
                          alt="{{ $selectedCurrency }}"
                          class="h-4 w-4"
+                         loading="lazy"
                          onerror="this.style.display='none';">
                 </div>
 
@@ -38,7 +39,9 @@
                     <img src="{{ asset('assets/images/curr/'.$selectedCurrency.'.png') }}"
                          alt="{{ $selectedCurrency }}"
                          class="h-4 w-4"
+                         loading="lazy"
                          onerror="this.style.display='none';">            
+                </div>
             </div>
             
             <svg class="w-4 h-4 text-gray-400 transition-transform ml-3" 
@@ -63,7 +66,6 @@
              style="display: none;"
              @keydown.escape="open = false">
             
-            <!-- Currency List -->
             <div class="max-h-[320px] overflow-y-auto custom-scrollbar">
                 @foreach($currencies as $currency)
                     <button 
@@ -76,6 +78,7 @@
                                 <img src="{{ asset('assets/images/curr/'.$currency->symbol.'.png') }}"
                                      alt="{{ $currency->symbol }}"
                                      class="h-5 w-5"
+                                     loading="lazy"
                                      onerror="this.style.display='none';">
                             </div>
                             
@@ -114,7 +117,7 @@
 
     <button
         onclick="openCashModal();"
-        class="hidden md:flex items-center space-x-2 h-13 px-4 py-2 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] text-white rounded-r-xl border border-l-0 border-[#1a2c38] shadow-lg hover:shadow-xl font-semibold transition-all duration-200 text-sm">
+        class="hidden md:flex items-center space-x-2 h-12 px-4 py-2 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] text-white rounded-r-xl border border-l-0 border-[#1a2c38] shadow-lg hover:shadow-xl font-semibold transition-all duration-200 text-sm">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 12h2" />

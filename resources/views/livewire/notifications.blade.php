@@ -75,10 +75,10 @@
             <div class="overflow-y-auto max-h-[420px] custom-scrollbar p-2">
                 @forelse($notifications as $notification)
                     <div class="flex items-stretch gap-0 p-0 mb-3 rounded-xl overflow-hidden bg-transparent border-0 shadow-none cursor-pointer"
-                         wire:click="markAsRead('{{ $notification->id }}')">
-                        <!-- Иконка -->
+                         wire:click="markAsRead('{{ $notification['id'] }}')">
+                        
                         <div class="flex-shrink-0 flex items-center justify-center bg-[#1a2c38] w-16 h-auto">
-                            @switch($notification->data['event'] ?? 'default')
+                            @switch($notification['data']['event'] ?? 'default')
                                 @case('deposit')
                                     <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
                                         <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24">
@@ -87,61 +87,61 @@
                                         </svg>
                                     </div>
                                     @break
-                                    @case('withdrawal')
-                                        <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                        </div>
-                                        @break
-                                    @case('bonus')
-                                        <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                                            </svg>
-                                        </div>
-                                        @break
-                                    @case('level')
-                                        <div class="w-10 h-10 rounded-lg bg-[#ffb300]/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                            </svg>
-                                        </div>
-                                        @break
-                                    @case('rain')
-                                        <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                                            </svg>
-                                        </div>
-                                        @break
-                                    @case('transfer')
-                                        <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                                            </svg>
-                                        </div>
-                                        @break
-                                    @case('win')
-                                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                                            </svg>
-                                        </div>
-                                        @break
-                                    @default
-                                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                        </div>
-                                @endswitch
+                                @case('withdrawal')
+                                    <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    @break
+                                @case('bonus')
+                                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                                        </svg>
+                                    </div>
+                                    @break
+                                @case('level')
+                                    <div class="w-10 h-10 rounded-lg bg-[#ffb300]/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-[#ffb300]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                        </svg>
+                                    </div>
+                                    @break
+                                @case('rain')
+                                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                                        </svg>
+                                    </div>
+                                    @break
+                                @case('transfer')
+                                    <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                        </svg>
+                                    </div>
+                                    @break
+                                @case('win')
+                                    <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                        </svg>
+                                    </div>
+                                    @break
+                                @default
+                                    <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                            @endswitch
                         </div>
-                        <!-- Текстовый блок -->
+
                         <div class="flex-1 min-w-0 bg-[#213743] px-5 py-4 flex flex-col justify-center rounded-r-xl">
                             @php
                                 $title = '';
-                                switch($notification->data['event'] ?? 'default') {
+                                switch($notification['data']['event'] ?? 'default') {
                                     case 'deposit':
                                         $title = __('Депозит подтвержден');
                                         break;
@@ -167,19 +167,21 @@
                                         $title = __('Уведомление');
                                 }
 
-                                $message = $notification->data['data']['message'] ?? $notification->data['message'] ?? '';
-                                $amount = $notification->data['data']['amount'] ?? $notification->data['amount'] ?? null;
-                                $currency = $notification->data['data']['currency'] ?? $notification->data['currency'] ?? null;
+                                $message = $notification['data']['data']['message'] ?? $notification['data']['message'] ?? '';
+                                $amount = $notification['data']['data']['amount'] ?? $notification['data']['amount'] ?? null;
+                                $currency = $notification['data']['data']['currency'] ?? $notification['data']['currency'] ?? null;
+                                $createdAt = \Carbon\Carbon::parse($notification['created_at']);
+                                $isUnread = is_null($notification['read_at'] ?? null);
                             @endphp
 
                             <div class="flex items-start justify-between gap-2 mb-1.5">
                                 <h4 class="text-base font-bold text-white leading-tight">{{ $title }}</h4>
                                 <div class="flex items-center gap-2 flex-shrink-0">
-                                    @if(is_null($notification->read_at))
+                                    @if($isUnread)
                                         <div class="w-2 h-2 bg-[#10b981] rounded-full"></div>
                                     @endif
                                     <span class="text-xs text-gray-500 whitespace-nowrap">
-                                        {{ $notification->created_at->diffForHumans(null, true) }}
+                                        {{ $createdAt->diffForHumans(null, true) }}
                                     </span>
                                 </div>
                             </div>
