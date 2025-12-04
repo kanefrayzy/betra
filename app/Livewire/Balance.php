@@ -88,21 +88,48 @@ class Balance extends Component
             return;
         }
 
-        if ($user->balance > 0) {
-            $user->balance = (new ExchangeService())->convert(
-                $user->balance,
-                $user->currency->symbol,
-                $newCurrency->symbol
-            );
-        }
+        // Принудительно перезагружаем отношение currency для актуальности
+        $user->load('currency');
+        
+        $oldBalance = $user->balance;
+        $oldCurrency = $user->currency->symbol;
+        $newCurrencySymbol = $newCurrency->symbol;
 
-        $user->currency_id = $currencyId;
-        $user->save();
-        
-        $this->balance = $user->balance;
-        $this->selectedCurrency = $newCurrency->symbol;
-        
-        $this->dispatch('balanceUpdated');
+        try {
+            // Конвертируем баланс только если он больше 0
+            if ($oldBalance > 0) {
+                $convertedBalance = (new ExchangeService())->convert(
+                    $oldBalance,
+                    $oldCurrency,
+                    $newCurrencySymbol
+                );
+                
+                $user->balance = $convertedBalance;
+            }
+
+            // Обновляем валюту
+            $user->currency_id = $currencyId;
+            $user->save();
+            
+            // Обновляем локальное состояние ПОСЛЕ успешного сохранения
+            $this->balance = $user->balance;
+            $this->selectedCurrency = $newCurrencySymbol;
+            
+            $this->dispatch('balanceUpdated');
+            
+        } catch (\Exception $e) {
+            \Log::error('Currency change error: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'old_currency' => $oldCurrency,
+                'new_currency' => $newCurrencySymbol,
+                'old_balance' => $oldBalance
+            ]);
+            
+            // Откатываем изменения
+            $user->refresh();
+            $this->balance = $user->balance;
+            $this->selectedCurrency = $user->currency->symbol;
+        }
     }
 
     /**
@@ -115,7 +142,8 @@ class Balance extends Component
         $user = Auth::user();
         
         if ($user) {
-            $this->balance = $user->balance;
+            // Обновляем только баланс, валюта уже установлена
+            $this->balance = $user->fresh()->balance;
         }
     }
 
