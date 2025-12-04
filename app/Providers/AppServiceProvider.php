@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Contracts\NotifyServiceContract;
 use App\Services\NotifyService;
 use App\Services\User\ExternalAuthService;
-use App\Models\Setting;
+use App\Models\Settings;
 use App\Models\GameCategory;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
@@ -65,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
             $settings = Cache::remember('app_settings', 86400, function () {
-                return Setting::first();
+                return Settings::first();
             });
             
             if (!$settings) {
