@@ -43,8 +43,9 @@ return [
     ],
 
     'b2b_slots' => [
-        'base_url' => env('B2B_SLOTS_BASE_URL', 'https://int.apichannel.cloud'),
-        'operator_id' => env('B2B_SLOTS_OPERATOR_ID'),
+        'api_url' => env('B2B_API_URL'),
+        'api_key' => env('B2B_API_KEY'),
+        'partner_id' => env('B2B_PARTNER_ID'),
     ],
     'tbs2' => [
         'base_url' => env('TBS2_BASE_URL'),
