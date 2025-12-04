@@ -3,12 +3,12 @@
     <div class="container mx-auto flex h-16 items-center justify-between px-4">
         <div class="flex items-center">
             <div class="hidden lg:flex">
-                <a href="/" wire:navigate class="mr-8">
+                <a href="/"  class="mr-8">
                     <img src="/assets/images/logo.png?v1" alt="Flash" class="h-10">
                 </a>
             </div>
             <div class="lg:hidden">
-                <a href="/" wire:navigate>
+                <a href="/" >
                     <img src="/assets/images/logo-mobile.png?v1" alt="Flash" class="h-8">
                 </a>
             </div>
@@ -84,7 +84,7 @@
                     </a>
 
                     <a href="{{ route('slots.favorites') }}"
-                    wire:navigate
+                    
                     @click="isOpen = false"
                     class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
                         <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -104,7 +104,7 @@
                     </a>
 
                     <a href="{{ route('account.referrals') }}"
-                    wire:navigate
+                    
                     @click="isOpen = false"
                     class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
                         <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -124,7 +124,7 @@
                     </a>
 
                     <a href="{{ route('transaction') }}"
-                    wire:navigate
+                    
                     @click="isOpen = false"
                     class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
                         <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -134,7 +134,7 @@
                     </a>
 
                     <a href="{{ route('slots.history') }}"
-                    wire:navigate
+                    
                     @click="isOpen = false"
                     class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
                         <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -144,7 +144,7 @@
                     </a>
 
                     <a href="{{ route('account') }}"
-                    wire:navigate
+                    
                     @click="isOpen = false"
                     class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors group">
                         <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -278,7 +278,7 @@
 
         <!-- Казино -->
         <a href="{{ route('slots.lobby') }}"
-           wire:navigate
+           
            class="flex flex-col items-center justify-center flex-1 group {{ request()->routeIs('slots.lobby') ? 'text-[#ffb300]' : 'text-gray-400' }} hover:text-[#ffb300] transition-all duration-200">
             <div class="relative">
                 <div class="w-10 h-10 flex items-center justify-center rounded-xl {{ request()->routeIs('slots.lobby') ? 'bg-[#ffb300]/10' : 'group-hover:bg-gray-800' }} transition-colors">
@@ -425,7 +425,7 @@
                         </div>
 
                         <a href="{{ route('account') }}" 
-                           wire:navigate
+                           
                            @click="isOpen = false"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
@@ -450,7 +450,7 @@
                         </a>
                         
                         <a href="{{ route('transaction') }}" 
-                           wire:navigate
+                           
                            @click="isOpen = false"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
                             <div class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#ffb300]/10 flex items-center justify-center transition-colors">
