@@ -223,7 +223,17 @@ Route::get('/fail', function () {
     return redirect('/')->with('error', __('Ошибка при пополнении баланса'));
 })->name('payment.fail');
 
-
+Route::get('/test-westwallet', function() {
+    $service = new \App\Services\WestWalletService();
+    $currencies = $service->getCurrenciesData();
+    
+    // Найди USDT и посмотри какие у него тикеры
+    foreach ($currencies['data'] ?? [] as $currency) {
+        if (str_contains(strtoupper($currency['name'] ?? ''), 'USDT')) {
+            dd($currency);
+        }
+    }
+});
 Route::middleware(['auth', 'access:Admin'])->group(function () {
     $base = 'betrika';
     Route::get('/' . $base, [AdminController::class, 'index'])->name('Admin');

@@ -325,13 +325,7 @@
 
             <!-- Divider -->
             <div class="border-t border-gray-800 pt-8">
-                <!-- Payment Methods -->
-                <div class="flex flex-wrap items-center justify-center gap-4 mb-6 opacity-80">
-                    <img src="/assets/images/payments/visa.webp" alt="Visa" class="h-6 hover:grayscale-1 transition">
-                    <img src="/assets/images/payments/mastercard.png" alt="Mastercard" class="h-6 hover:grayscale-1 transition">
-                    <img src="/assets/images/payments/btc.png" alt="Bitcoin" class="h-6 hover:grayscale-1 transition">
-                    <img src="/assets/images/payments/usdt.png" alt="USDT" class="h-6 hover:grayscale-1 transition">
-                </div>
+
 
                 <!-- Warning -->
                 <p class="text-gray-500 text-xs text-center mb-4 max-w-4xl mx-auto">
