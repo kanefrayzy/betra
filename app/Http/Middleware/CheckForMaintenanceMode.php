@@ -24,7 +24,10 @@ class CheckForMaintenanceMode
 //            return response()->view('errors.503', [], 503);
 //        }
         
-        $settings = Settings::first();
+        $settings = \Cache::remember('app_settings', 86400, function () {
+            return Settings::first();
+        });
+        
         $allowed_ips = [];
         
         if ($settings && $settings->ip_maintenance) {

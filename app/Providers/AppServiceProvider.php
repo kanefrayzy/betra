@@ -63,17 +63,17 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function shareGlobalSettings(): void
     {
-        View::composer('*', function ($view) {
-            $settings = Cache::remember('app_settings', 86400, function () {
-                return Settings::first();
-            });
-            
-            if (!$settings) {
-                $settings = new Settings();
-            }
-            
-            $view->with('settings', $settings);
+        // Кешируем settings один раз при загрузке приложения
+        $settings = Cache::remember('app_settings', 86400, function () {
+            return Settings::first();
         });
+        
+        if (!$settings) {
+            $settings = new Settings();
+        }
+        
+        // Шарим уже закешированный объект во все view
+        View::share('settings', $settings);
     }
 
     /**
@@ -83,18 +83,16 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function shareGameCategories(): void
     {
-        View::composer('*', function ($view) {
-            if (!$view->offsetExists('sidebarCategories')) {
-                $categories = Cache::remember('sidebar_categories', 86400, function () {
-                    return GameCategory::select('id', 'name', 'slug', 'icon', 'order')
-                        ->where('is_active', true)
-                        ->orderBy('order', 'asc')
-                        ->get();
-                });
-                
-                $view->with('sidebarCategories', $categories);
-            }
+        // Кешируем категории один раз при загрузке приложения
+        $categories = Cache::remember('sidebar_categories', 86400, function () {
+            return GameCategory::select('id', 'name', 'slug', 'icon', 'order')
+                ->where('is_active', true)
+                ->orderBy('order', 'asc')
+                ->get();
         });
+        
+        // Шарим уже закешированную коллекцию во все view
+        View::share('sidebarCategories', $categories);
     }
 
     /**
