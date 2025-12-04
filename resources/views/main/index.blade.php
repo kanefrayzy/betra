@@ -1,5 +1,5 @@
 <x-layouts.app>
-  @include('components.slider')
+ 
       <div class="container mx-auto px-2 md:px-4 relative z-2 mt-2">
           @livewire('home-search')
       </div>
