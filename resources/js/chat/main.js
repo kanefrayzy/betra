@@ -730,31 +730,32 @@ if (typeof window.ChatSystem === 'undefined') {
         const userLine = document.createElement('div');
         userLine.className = 'user-line';
 
-        // Имя пользователя (иконка ранга будет перед именем)
-        const usernameSpan = document.createElement('span');
-        usernameSpan.className = 'username';
-        usernameSpan.textContent = messageData.username || 'Unknown';
-        usernameSpan.addEventListener('click', () => this.openUserInfo(messageData.user_id));
-            // Ранг (иконка 18x18 сразу перед именем)
-            if (messageData.rank && messageData.rank_picture) {
-                const rankImgInline = document.createElement('img');
-                rankImgInline.src = messageData.rank_picture;
-                rankImgInline.alt = messageData.rank;
-                rankImgInline.style.width = '18px';
-                rankImgInline.style.height = '18px';
-                rankImgInline.style.marginRight = '6px';
-                rankImgInline.style.verticalAlign = 'middle';
-                rankImgInline.style.display = 'inline-block';
-                userLine.appendChild(rankImgInline);
-            }
-        // Бейдж модератора - синяя буква М перед username
+        // Ранг (иконка 18x18 сразу перед именем)
+        if (messageData.rank && messageData.rank_picture) {
+            const rankImgInline = document.createElement('img');
+            rankImgInline.src = messageData.rank_picture;
+            rankImgInline.alt = messageData.rank;
+            rankImgInline.style.width = '18px';
+            rankImgInline.style.height = '18px';
+            rankImgInline.style.marginRight = '6px';
+            rankImgInline.style.verticalAlign = 'middle';
+            rankImgInline.style.display = 'inline-block';
+            userLine.appendChild(rankImgInline);
+        }
+        
+        // Бейдж модератора - синяя буква М после ранга
         if (messageData.is_moder) {
             const modBadge = document.createElement('span');
             modBadge.className = 'mod-badge';
             modBadge.textContent = 'М';
-            userLine.insertBefore(modBadge, usernameSpan);
+            userLine.appendChild(modBadge);
         }
         
+        // Имя пользователя
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username';
+        usernameSpan.textContent = messageData.username || 'Unknown';
+        usernameSpan.addEventListener('click', () => this.openUserInfo(messageData.user_id));
         userLine.appendChild(usernameSpan);
 
         // Время сообщения удалено по требованию — не отображаем
