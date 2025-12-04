@@ -243,19 +243,39 @@ private function getCurrencyTicker(string $currency, ?string $network = null): s
 
     public function generateAddress(User $user, string $currency, ?string $network = null): array
     {
+        Log::info('=== generateAddress called ===', [
+            'user_id' => $user->id,
+            'currency_input' => $currency,
+            'network_input' => $network,
+        ]);
+        
         $label = UserCryptoWallet::generateLabel($user->id, $currency, $network);
         $ipnUrl = route('westwallet.callback');
         
         // Получаем правильный тикер
         $ticker = $this->getCurrencyTicker($currency, $network);
+        
+        Log::info('=== Ticker resolved ===', [
+            'currency_input' => $currency,
+            'network_input' => $network,
+            'ticker_result' => $ticker,
+        ]);
 
         $data = [
             'currency' => $ticker,
             'ipn_url' => $ipnUrl,
             'label' => $label,
         ];
+        
+        Log::info('=== Sending to WestWallet API ===', [
+            'data' => $data,
+        ]);
 
         $response = $this->makeRequest('/address/generate', 'POST', $data);
+        
+        Log::info('=== WestWallet API Response ===', [
+            'response' => $response,
+        ]);
 
         // WestWallet возвращает error как строку или отсутствует при успехе
         if (isset($response['error']) && $response['error'] !== 'ok') {
