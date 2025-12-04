@@ -179,19 +179,6 @@
                             </div>
                         </div>
 
-                        <!-- Bonus Toggle -->
-                        <div class="mt-6 p-4 bg-gradient-to-r from-[#ffb300]/10 to-transparent border border-[#ffb300]/20 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-white font-semibold">{{__('Бонус 50% на депозит')}}</p>
-                                    <p class="text-xs text-gray-400 mt-1">{{__('Условия бонуса')}}</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" x-model="bonusEnabled" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#ffb300]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ffb300]"></div>
-                                </label>
-                            </div>
-                        </div>
                     </div>
                 </div>
 

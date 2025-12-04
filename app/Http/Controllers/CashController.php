@@ -44,72 +44,71 @@ class CashController extends Controller
     /**
      * Получение крипто-адреса для пополнения
      */
-public function getCryptoAddress(Request $request)
-{
-    // Получаем список всех активных крипто-валют из payment_handlers
-    $availableCurrencies = PaymentHandler::where('payment_system_id', 9) // 9 = WestWallet
-        ->where('active', 1)
-        ->pluck('currency')
-        ->unique()
-        ->toArray();
+    public function getCryptoAddress(Request $request)
+    {
+        $availableCurrencies = PaymentHandler::where('payment_system_id', 9)
+            ->where('active', 1)
+            ->pluck('currency')
+            ->unique()
+            ->toArray();
 
-    $validator = Validator::make($request->all(), [
-        'currency' => ['required', 'string', Rule::in($availableCurrencies)],
-        'network' => ['nullable', 'string'],
-    ]);
+        $validator = Validator::make($request->all(), [
+            'currency' => ['required', 'string', Rule::in($availableCurrencies)],
+            'network' => ['nullable', 'string'],
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'message' => __('Ошибка валидации'),
-            'errors' => $validator->errors()
-        ], 422);
-    }
-
-    $user = Auth::user();
-    $currency = $request->currency;
-    $network = $request->network;
-
-    try {
-        $westWalletService = new WestWalletService();
-        $result = $westWalletService->getOrCreateWallet($user, $currency, $network);
-
-        if ($result['error']) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => $result['message'] ?? __('Ошибка при получении адреса')
-            ], 400);
+                'message' => __('Ошибка валидации'),
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        $data = $result['data'];
-        
-        // Генерируем QR код (base64)
-        $qrCodeData = $data['address'];
-        if ($data['dest_tag']) {
-            $qrCodeData .= '?dt=' . $data['dest_tag'];
-        }
+        $user = Auth::user();
+        $currency = $request->currency;
+        $network = $request->network;
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'address' => $data['address'],
-                'dest_tag' => $data['dest_tag'],
-                'currency' => $data['currency'],
-                'network' => $data['network'],
-                'qr_data' => $qrCodeData,
-                'existing' => $data['existing']
-                ]
-            ]);
+        try {
+            $westWalletService = new WestWalletService();
+            $result = $westWalletService->getOrCreateWallet($user, $currency, $network);
 
-        } catch (\Exception $e) {
-            \Log::error('Get crypto address error: ' . $e->getMessage());
+            if ($result['error']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message'] ?? __('Ошибка при получении адреса')
+                ], 400);
+            }
+
+            $data = $result['data'];
             
+            // Генерируем QR код (base64)
+            $qrCodeData = $data['address'];
+            if ($data['dest_tag']) {
+                $qrCodeData .= '?dt=' . $data['dest_tag'];
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => __('Произошла ошибка при получении адреса')
-            ], 500);
+                'success' => true,
+                'data' => [
+                    'address' => $data['address'],
+                    'dest_tag' => $data['dest_tag'],
+                    'currency' => $data['currency'],
+                    'network' => $data['network'],
+                    'qr_data' => $qrCodeData,
+                    'existing' => $data['existing']
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Get crypto address error: ' . $e->getMessage());
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Произошла ошибка при получении адреса')
+                ], 500);
+            }
         }
-    }
 
     public function handler(Request $request, $operation)
     {
