@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
-class B2BSlotsService
+class B2bSlotsClient
 {
     protected string $baseUrl;
     protected ?int $operatorId;
