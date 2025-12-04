@@ -5381,8 +5381,8 @@ display: none;
 .message {
     display: flex;
     align-items: flex-start;
-    padding: 6px 10px;
-    margin: 4px 0;
+    padding: 8px 10px;
+    margin: 6px 0px;
     background: transparent;
     transition: background .2s ease;
     position: relative;
@@ -5420,7 +5420,7 @@ display: none;
 .username {
     color: #b1bad3;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     margin-right: 4px;
 }
@@ -5444,7 +5444,7 @@ display: none;
 .message-content {
     display: inline;
     color: #fff;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.5;
     word-wrap: break-word;
     margin-left: 4px;

@@ -38,7 +38,7 @@
     </div>
 
     <div class="relative flex-1 overflow-visible" wire:ignore>
-        <div id="messages" class="h-full overflow-y-auto bg-customBoldDark p-3 sm:p-4 scrollbar-thin scrollbar-track-dark-900 scrollbar-thumb-dark-700 hover:scrollbar-thumb-dark-600">
+        <div id="messages" class="h-full overflow-y-auto bg-customBoldDark p-3 sm:p-2 scrollbar-thin scrollbar-track-dark-900 scrollbar-thumb-dark-700 hover:scrollbar-thumb-dark-600">
 
         </div>
 
