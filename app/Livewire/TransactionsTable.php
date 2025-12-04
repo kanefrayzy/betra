@@ -265,8 +265,6 @@ class TransactionsTable extends Component
 
     public function refreshTransactions(): void
     {
-        Log::info('refreshTransactions called', ['user_id' => Auth::id()]);
-
         // Очищаем кеш перед обновлением
         Cache::forget("transactions:all");
         if (Auth::id()) {
@@ -275,10 +273,6 @@ class TransactionsTable extends Component
 
         $this->loadTransactions();
 
-        Log::info('Transactions refreshed', [
-            'all_count' => count($this->transactions),
-            'my_count' => count($this->mytransactions)
-        ]);
     }
 
     public function switchType(string $newType): void
