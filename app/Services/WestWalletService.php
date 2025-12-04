@@ -108,18 +108,25 @@ class WestWalletService
         
         $network = strtoupper($network);
         
-        // Специальные случаи: когда currency и network совпадают или похожи
+        // Специальные случаи: когда currency и network совпадают
         if ($currency === $network || $currency === "{$network}COIN") {
             return $network;
         }
         
-        // Маппинг валют и сетей на правильные тикеры WestWallet
+        // Полный маппинг валют и сетей на тикеры WestWallet
         $tickerMap = [
             // USDT на разных сетях
             'USDT' => [
                 'ERC20' => 'USDTERC20',
+                'ERC' => 'USDTERC',
                 'TRC20' => 'USDTTRC20',
-                'TRC' => 'USDTTRC20',
+                'TRC' => 'USDTTRC',
+                'BEP20' => 'USDTBEP20',
+                'BEP' => 'USDTBEP',
+                'SOL' => 'USDTSOL',
+                'SOLANA' => 'USDTSOL',
+                'TON' => 'USDTTON',
+                'TONCOIN' => 'USDTTONCOIN',
             ],
             
             // USDC на разных сетях
@@ -130,22 +137,45 @@ class WestWalletService
                 'BEP' => 'USDCBEP',
             ],
             
-            'BITCOIN' => [
-                'BTC' => 'BTC',
+            // Ethereum на разных сетях
+            'ETH' => [
+                'ERC20' => 'ETH',
+                'BEP20' => 'ETHBEP20',
+                'BEP' => 'ETHBEP',
             ],
-            'LITECOIN' => [
-                'LTC' => 'LTC',
+            'ETHEREUM' => [
+                'ERC20' => 'ETH',
+                'BEP20' => 'ETHBEP20',
+                'BEP' => 'ETHBEP',
             ],
-            'SOLANA' => [
-                'SOL' => 'SOL',
+            
+            // SHIBA INU
+            'SHIB' => [
+                'BEP20' => 'SHIBBEP20',
+                'BEP' => 'SHIB',
             ],
-            'TONCOIN' => [
-                'TON' => 'TON',
+            'SHIBA' => [
+                'BEP20' => 'SHIBBEP20',
             ],
-            'BNB' => [
-                'BNB' => 'BNB',
-                'BSC' => 'BNB',
-            ],
+            
+            // Нативные валюты блокчейнов
+            'BITCOIN' => ['BTC' => 'BTC'],
+            'LITECOIN' => ['LTC' => 'LTC'],
+            'SOLANA' => ['SOL' => 'SOL'],
+            'TONCOIN' => ['TON' => 'TON'],
+            'BINANCE' => ['BNB' => 'BNB', 'BEP20' => 'BNB'],
+            'BNB' => ['BEP20' => 'BNB', 'BSC' => 'BNB'],
+            'RIPPLE' => ['XRP' => 'XRP'],
+            'TRON' => ['TRX' => 'TRX'],
+            'DOGECOIN' => ['DOGE' => 'DOGE'],
+            'MONERO' => ['XMR' => 'XMR'],
+            'CARDANO' => ['ADA' => 'ADA'],
+            'DASH' => ['DASH' => 'DASH'],
+            'BITCOINCASH' => ['BCH' => 'BCH'],
+            'ZCASH' => ['ZEC' => 'ZEC'],
+            'ETHEREUMCLASSIC' => ['ETC' => 'ETC'],
+            'NOTCOIN' => ['NOT' => 'NOT'],
+            'STELLAR' => ['XLM' => 'XLM'],
         ];
         
         if (isset($tickerMap[$currency][$network])) {
@@ -154,8 +184,8 @@ class WestWalletService
         
         // Если не нашли в маппинге, пробуем стандартные форматы
         $possibleTickers = [
-            $network,                  // Просто сеть (BTC, LTC, SOL, BNB)
-            "{$currency}{$network}",   // USDTTRC20, USDCBEP20
+            $network,                  // Просто сеть
+            "{$currency}{$network}",   // USDTTRC20
             "{$currency}_{$network}",  // USDT_TRC20
         ];
         

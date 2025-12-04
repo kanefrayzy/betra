@@ -223,24 +223,7 @@ Route::get('/fail', function () {
     return redirect('/')->with('error', __('Ошибка при пополнении баланса'));
 })->name('payment.fail');
 
-Route::get('/test-westwallet-currencies', function() {
-    $service = new \App\Services\WestWalletService();
-    $currencies = $service->getCurrenciesData();
-    
-    // Выводим все доступные валюты
-    $result = [];
-    foreach ($currencies as $currency) {
-        $result[] = [
-            'name' => $currency['name'],
-            'tickers' => $currency['tickers'],
-            'min_receive' => $currency['min_receive'],
-            'active' => $currency['active'],
-            'receive_active' => $currency['receive_active'],
-        ];
-    }
-    
-    return response()->json($result);
-});
+
 Route::middleware(['auth', 'access:Admin'])->group(function () {
     $base = 'betrika';
     Route::get('/' . $base, [AdminController::class, 'index'])->name('Admin');
