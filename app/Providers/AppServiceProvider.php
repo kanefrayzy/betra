@@ -82,13 +82,14 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * ═══════════════════════════════════════════════════════════
-     *  Share Game Categories (Cached, Lazy)
+     *  Share Game Categories (Cached)
      * ═══════════════════════════════════════════════════════════
      */
     protected function shareGameCategories(): void
     {
-        // Ленивая загрузка - только для sidebar/footer
+        // ✅ Для всех view где используется $sidebarCategories
         View::composer([
+            'layouts.app',
             'components.layouts.partials.sidebar',
             'components.layouts.partials.footer'
         ], function ($view) {
