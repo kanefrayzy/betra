@@ -27,29 +27,9 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
-        // Загружаем settings ОДИН РАЗ при старте приложения
-        $this->loadGlobalSettings();
         $this->shareChatEmojis();
+        $this->shareGlobalSettings();
         $this->shareGameCategories();
-    }
-
-    /**
-     * ═══════════════════════════════════════════════════════════
-     *  Load Global Settings ONCE (not per view)
-     * ═══════════════════════════════════════════════════════════
-     */
-    protected function loadGlobalSettings(): void
-    {
-        $settings = Cache::remember('app_settings', 86400, function () {
-            return Settings::first();
-        });
-        
-        if (!$settings) {
-            $settings = new Settings();
-        }
-        
-        // Share ONCE для всех view
-        View::share('settings', $settings);
     }
 
     /**
@@ -62,10 +42,6 @@ class AppServiceProvider extends ServiceProvider
         $emojis = Cache::remember('chat_emojis', 86400, function () {
             $directory = public_path('/assets/images/emoj/');
             $emoj_arr = [];
-            
-            if (!is_dir($directory)) {
-                return [];
-            }
             
             foreach (glob($directory."*.{jpg,jpeg,png,gif}", GLOB_BRACE) as $filename) {
                 $name_file = basename($filename);
@@ -82,25 +58,42 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * ═══════════════════════════════════════════════════════════
+     *  Share Global Settings (Cached)
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function shareGlobalSettings(): void
+    {
+        View::composer('*', function ($view) {
+            $settings = Cache::remember('app_settings', 86400, function () {
+                return Settings::first();
+            });
+            
+            if (!$settings) {
+                $settings = new Settings();
+            }
+            
+            $view->with('settings', $settings);
+        });
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
      *  Share Game Categories (Cached)
      * ═══════════════════════════════════════════════════════════
      */
     protected function shareGameCategories(): void
     {
-        // ✅ Для всех view где используется $sidebarCategories
-        View::composer([
-            'layouts.app',
-            'components.layouts.partials.sidebar',
-            'components.layouts.partials.footer'
-        ], function ($view) {
-            $categories = Cache::remember('sidebar_categories', 86400, function () {
-                return GameCategory::select('id', 'name', 'slug', 'icon', 'order')
-                    ->where('is_active', true)
-                    ->orderBy('order', 'asc')
-                    ->get();
-            });
-            
-            $view->with('sidebarCategories', $categories);
+        View::composer('*', function ($view) {
+            if (!$view->offsetExists('sidebarCategories')) {
+                $categories = Cache::remember('sidebar_categories', 86400, function () {
+                    return GameCategory::select('id', 'name', 'slug', 'icon', 'order')
+                        ->where('is_active', true)
+                        ->orderBy('order', 'asc')
+                        ->get();
+                });
+                
+                $view->with('sidebarCategories', $categories);
+            }
         });
     }
 
