@@ -600,28 +600,59 @@ class SlotsController extends Controller
                 ], 401);
             }
 
-            // Получаем первую доступную игру для тестовой сессии
-            $game = \App\Models\SlotegratorGame::first();
+            // Пытаемся найти игру, перебирая разные варианты
+            $game = null;
+            $attempts = [];
+            
+            // Попробуем разные провайдеры
+            $providers = \App\Models\SlotegratorGame::select('provider')
+                ->distinct()
+                ->pluck('provider')
+                ->take(10);
+            
+            foreach ($providers as $provider) {
+                $testGame = \App\Models\SlotegratorGame::where('provider', $provider)
+                    ->where('has_lobby', 0) // Игры без лобби проще
+                    ->first();
+                
+                if (!$testGame) continue;
+                
+                try {
+                    $sessionToken = Str::uuid()->toString();
+                    
+                    // Пробуем инициализировать игру
+                    $initResponse = $this->initGame([
+                        'game_uuid' => $testGame->uuid,
+                        'player_id' => $user->id,
+                        'player_name' => $user->username,
+                        'currency' => $user->currency->symbol,
+                        'session_id' => $sessionToken,
+                        'return_url' => route('home'),
+                        'language' => 'en',
+                    ]);
+                    
+                    // Если успешно - используем эту игру
+                    $game = $testGame;
+                    break;
+                    
+                } catch (\Exception $e) {
+                    $attempts[] = [
+                        'provider' => $provider,
+                        'game' => $testGame->name,
+                        'error' => $e->getMessage()
+                    ];
+                    continue;
+                }
+            }
             
             if (!$game) {
                 return response()->json([
-                    'error' => 'No games available for validation',
-                    'hint' => 'Please sync games first'
+                    'error' => 'No available games for validation',
+                    'hint' => 'All tested providers are not enabled in your contract',
+                    'attempts' => $attempts,
+                    'action_required' => 'Please import games using: php artisan slotegrator:import'
                 ], 400);
             }
-
-            $sessionToken = Str::uuid()->toString();
-            
-            // Создаем тестовую игровую сессию
-            $initResponse = $this->initGame([
-                'game_uuid' => $game->uuid,
-                'player_id' => $user->id,
-                'player_name' => $user->username,
-                'currency' => $user->currency->symbol,
-                'session_id' => $sessionToken,
-                'return_url' => route('home'),
-                'language' => 'en',
-            ]);
 
             // Обновляем сессию пользователя
             $user->gameSession()->updateOrCreate(
@@ -639,6 +670,7 @@ class SlotsController extends Controller
                 'validation' => $result,
                 'test_session' => [
                     'game' => $game->name,
+                    'provider' => $game->provider,
                     'session_id' => $sessionToken,
                     'player_id' => $user->id,
                 ]

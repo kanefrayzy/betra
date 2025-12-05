@@ -84,7 +84,7 @@ class ImportSlotegratorGames extends Command
                     SlotegratorGame::create([
                         'uuid' => $gameData['uuid'],
                         'name' => $gameData['name'],
-                        'image' => $gameData['image'] ?? null,
+                        'image' => !empty($gameData['image']) ? $gameData['image'] : '/assets/images/avatar-placeholder.png',
                         'type' => $gameData['type'] ?? null,
                         'provider' => $gameData['provider'] ?? null,
                         'technology' => $gameData['technology'] ?? null,

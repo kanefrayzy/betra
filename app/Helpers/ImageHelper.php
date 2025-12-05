@@ -7,7 +7,7 @@ if (!function_exists('webp_url')) {
     function webp_url(?string $url): string
     {
         if (empty($url)) {
-            return '/assets/images/game-placeholder.png'; // Возвращаем placeholder
+            return '/assets/images/avatar-placeholder.png'; // Возвращаем placeholder
         }
 
         // Если это внешний URL, возвращаем как есть
