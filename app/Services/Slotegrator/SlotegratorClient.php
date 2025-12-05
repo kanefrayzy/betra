@@ -24,7 +24,7 @@ class SlotegratorClient
         
         // Настройки HTTP клиента с timeout
         $this->client = new Client([
-            'timeout' => 2.5,
+            'timeout' => 35,
             'connect_timeout' => 1.0,
         ]);
     }
