@@ -175,18 +175,6 @@
 </div>
 
 <style>
-    [x-cloak] {
-        display: none !important;
-    }
-
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
     .scrollbar-thin::-webkit-scrollbar {
         width: 6px;
     }

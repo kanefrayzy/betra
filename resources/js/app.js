@@ -7,7 +7,7 @@ window.Noty = Noty;
 import { initNotyTailwindTheme } from './noty-tailwind-theme';
 initNotyTailwindTheme();
 
-// Core modules - app initialization
+// Core modules
 import { initializeAppConfig } from './core/app-init.js';
 import { 
     ModalManager, 
@@ -25,6 +25,8 @@ import {
     setupChatStore,
     setupChatGlobals
 } from './core/livewire-hooks.js';
+
+import './banner-sliders.js';
 
 // Initialize app config
 initializeAppConfig();
