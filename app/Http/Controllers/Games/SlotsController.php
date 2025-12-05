@@ -267,9 +267,14 @@ class SlotsController extends Controller
     protected function getBalance($data)
     {
         return DB::transaction(function () use ($data) {
-            $user = User::select('id', 'balance')->lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::select('id', 'balance')->with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
 
             if ($errorDescription = $this->checkTokenValidity($user, $data)) {
+                $this->logger->warning('Token validation failed in balance check', [
+                    'player_id' => $data['player_id'],
+                    'session_id' => $data['session_id'] ?? 'none',
+                    'error' => $errorDescription
+                ]);
                 return $this->errorResponse("Token fail: {$errorDescription}");
             }
 
@@ -300,7 +305,7 @@ class SlotsController extends Controller
         
         return DB::transaction(function () use ($data, $type, $startTime) {
             $amount = round($data['amount'], 2);
-            $user = User::lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
 
             if ($data['currency'] !== $user->currency->symbol) {
                 $this->logger->error('Currency mismatch', [
@@ -340,7 +345,7 @@ class SlotsController extends Controller
     protected function refund($data)
     {
         return DB::transaction(function () use ($data) {
-            $user = User::lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
             
             // Проверка на существующую транзакцию возврата
             $existingRefundTransaction = Transaction::where('hash', $data['transaction_id'])->first();
@@ -515,7 +520,7 @@ class SlotsController extends Controller
         return DB::transaction(function () use ($data) {
             $rollbackTransactions = $data['rollback_transactions'];
             $answerArrRollbackTransactions = [];
-            $user = User::with('gameSession')->lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
             $balance_before = round($user->balance, 2);
 
             $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
@@ -742,7 +747,7 @@ class SlotsController extends Controller
                     'player_id' => $user->id
                 ]);
                 
-                // Обновляем сессию пользователя
+                // Обновляем сессию пользователя ПЕРЕД валидацией
                 $user->gameSession()->updateOrCreate(
                     ['user_id' => $user->id],
                     [
@@ -751,8 +756,27 @@ class SlotsController extends Controller
                     ]
                 );
 
+                // КРИТИЧЕСКИ: Даём время на сохранение в БД
+                sleep(1);
+                
+                // Проверяем что сессия сохранилась
+                $savedSession = $user->gameSession()->first();
+                if (!$savedSession) {
+                    return response()->json([
+                        'error' => 'Session was not saved to database',
+                        'session_token' => $sessionToken,
+                        'hint' => 'Check database connection and game_sessions table'
+                    ], 500);
+                }
+                
+                Log::info('Slotegrator self-validate: Session saved', [
+                    'session_id' => $savedSession->token,
+                    'user_id' => $user->id,
+                    'game_uuid' => $savedSession->game_uuid
+                ]);
+
                 // ВАЖНО: Пауза чтобы Slotegrator успел зарегистрировать сессию
-                sleep(3);
+                sleep(2);
 
                 // Запускаем self-validate
                 $result = $this->client->selfValidate();
@@ -765,6 +789,7 @@ class SlotsController extends Controller
                         'session_id' => $sessionToken,
                         'player_id' => $user->id,
                         'game_url_received' => true,
+                        'session_saved' => true,
                     ]
                 ]);
                 
