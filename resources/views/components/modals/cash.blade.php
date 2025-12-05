@@ -252,7 +252,7 @@
                         @foreach($matchingHandlers->where('network', null) as $handler)
                         <button type="button"
                                 @click="selectBankMethod({{ $handler->id }})"
-                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 lg:basis-[calc(100%_/_3_-_8px)] md:basis-[calc(100%_/_2_-_8px)] basis-[calc(50%_-_6px)]"
                                 style="background-image: url('{{ asset('storage/' . $handler->icon) }}');">
                             <p class="text-sm font-semibold line-clamp-2 max-w-[96px] text-left text-white">{{ $handler->name }}</p>
                             <p class="text-xs mt-auto flex max-w-[calc(100%-50px)] flex-wrap text-left text-gray-400">{{__('от')}} {{ moneyFormat($handler->min_deposit_limit ?? 100) }} {{$u->currency->symbol}}</p>
@@ -262,7 +262,7 @@
                         @foreach($otherHandlers->where('network', null) as $handler)
                         <button type="button"
                                 @click="selectBankMethod({{ $handler->id }})"
-                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 lg:basis-[calc(100%_/_3_-_8px)] md:basis-[calc(100%_/_2_-_8px)] basis-[calc(50%_-_6px)]"
                                 style="background-image: url('{{ asset('storage/' . $handler->icon) }}');">
                             <p class="text-sm font-semibold line-clamp-2 max-w-[96px] text-left text-white">{{ $handler->name }}</p>
                             <p class="text-xs mt-auto flex max-w-[calc(100%-50px)] flex-wrap text-left text-gray-400">{{__('от')}} {{ moneyFormat($handler->min_deposit_limit ?? 100) }} {{$u->currency->symbol}}</p>
@@ -277,7 +277,7 @@
                         @foreach($matchingHandlers->whereNotNull('network') as $handler)
                         <button type="button"
                                 @click="selectCryptoMethod({{ $handler->id }}, '{{ $handler->currency }}', '{{ $handler->network }}')"
-                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 lg:basis-[calc(100%_/_3_-_8px)] md:basis-[calc(100%_/_2_-_8px)] basis-[calc(50%_-_6px)]"
                                 style="background-image: url('{{ asset('storage/' . $handler->icon) }}');">
                             <p class="text-sm font-semibold line-clamp-2 max-w-[96px] text-left text-white">{{ $handler->name }}</p>
                             @if($handler->deposit_fee == 0)
@@ -294,7 +294,7 @@
                         @foreach($otherHandlers->whereNotNull('network') as $handler)
                         <button type="button"
                                 @click="selectCryptoMethod({{ $handler->id }}, '{{ $handler->currency }}', '{{ $handler->network }}')"
-                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 lg:basis-[calc(100%_/_3_-_8px)] md:basis-[calc(100%_/_2_-_8px)] basis-[calc(50%_-_6px)]"
                                 style="background-image: url('{{ asset('storage/' . $handler->icon) }}');">
                             <p class="text-sm font-semibold line-clamp-2 max-w-[96px] text-left text-white">{{ $handler->name }}</p>
                             @if($handler->deposit_fee == 0)
@@ -423,7 +423,7 @@
                         @foreach($matchingSystems as $system)
                         <button type="button"
                                 @click="selectWithdrawalMethod({{ $system->id }})"
-                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 lg:basis-[calc(100%_/_3_-_8px)] md:basis-[calc(100%_/_2_-_8px)] basis-[calc(50%_-_6px)]"
                                 style="background-image: url('{{ asset('storage/' . $system->icon) }}');">
                             <p class="text-sm font-semibold line-clamp-2 max-w-[96px] text-left text-white">{{ $system->name }}</p>
                             <p class="text-xs mt-auto flex max-w-[calc(100%-50px)] flex-wrap text-left text-gray-400">{{__('комиссия')}} {{ $system->commission ?? 5 }}%</p>
@@ -433,7 +433,7 @@
                         @foreach($otherSystems as $system)
                         <button type="button"
                                 @click="selectWithdrawalMethod({{ $system->id }})"
-                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 tablet:basis-[calc(100%_/_3_-_8px)] basis-[calc(50%_-_6px)]"
+                                class="w-full h-[100px] relative overflow-hidden p-3 rounded-xl bg-[#1a2c38] flex flex-col items-start bg-right bg-contain bg-no-repeat hover:bg-[#2d3748] border border-[#2d3748] transition-all active:opacity-80 lg:basis-[calc(100%_/_3_-_8px)] md:basis-[calc(100%_/_2_-_8px)] basis-[calc(50%_-_6px)]"
                                 style="background-image: url('{{ asset('storage/' . $system->icon) }}');">
                             <p class="text-sm font-semibold line-clamp-2 max-w-[96px] text-left text-white">{{ $system->name }}</p>
                             <p class="text-xs mt-auto flex max-w-[calc(100%-50px)] flex-wrap text-left text-gray-400">{{__('комиссия')}} {{ $system->commission ?? 5 }}%</p>
