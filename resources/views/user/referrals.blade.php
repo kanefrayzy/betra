@@ -1,7 +1,7 @@
 <x-layouts.app>
     <div class="min-h-screen">
         
-        <div class="relative overflow-hidden bg-gradient-to-br from-[#1a2c38] via-[#0f212e] to-[#1a2c38] border-b border-[#2d3748]">
+        <div class="relative overflow-hidden border-b border-[#2d3748]">
             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSg1OSwxMzAsMjQ2LDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
             
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16 relative">
@@ -20,19 +20,19 @@
                 </div>
 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                    <div class="bg-[#1a2c38]/80 backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
+                    <div class="bg-[#0f212e] backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
                         <div class="text-3xl md:text-4xl font-bold text-[#3b82f6] mb-2">{{ $referralsCount }}</div>
                         <div class="text-gray-400 text-sm">{{ __('Рефералов') }}</div>
                     </div>
-                    <div class="bg-[#1a2c38]/80 backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
+                    <div class="bg-[#0f212e] backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
                         <div class="text-3xl md:text-4xl font-bold text-[#4dda30] mb-2">{{ moneyFormat($refProfit) }}</div>
                         <div class="text-gray-400 text-sm">{{ __('Заработано') }}</div>
                     </div>
-                    <div class="bg-[#1a2c38]/80 backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
+                    <div class="bg-[#0f212e] backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
                         <div class="text-3xl md:text-4xl font-bold text-[#3b82f6] mb-2">{{ moneyFormat($refBalance) }}</div>
                         <div class="text-gray-400 text-sm">{{ __('Доступно') }}</div>
                     </div>
-                    <div class="bg-[#1a2c38]/80 backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
+                    <div class="bg-[#0f212e] backdrop-blur-sm border border-[#2d3748] rounded-2xl p-6 text-center">
                         <div class="text-3xl md:text-4xl font-bold text-[#4dda30] mb-2">20%</div>
                         <div class="text-gray-400 text-sm">{{ __('Ваш %') }}</div>
                     </div>
@@ -43,7 +43,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
             
             @if($u->ref_percentage && $u->ref_percentage != 20)
-            <div class="relative overflow-hidden bg-gradient-to-r from-[#3b82f6] to-[#2563eb] rounded-2xl p-8 mb-8 shadow-2xl shadow-[#3b82f6]/20">
+            <div class="relative overflow-hidden bg-[#0f212e] rounded-2xl p-8 mb-8 shadow-2xl shadow-[#3b82f6]/20">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
                 <div class="relative flex items-center gap-6">
                     <div class="flex-shrink-0">
@@ -67,7 +67,7 @@
             </div>
             @endif
 
-            <div class="bg-gradient-to-br from-[#1a2c38] to-[#0f212e] border border-[#2d3748] rounded-2xl p-6 md:p-8 mb-8 shadow-xl">
+            <div class="bg-[#0f212e] border border-[#2d3748] rounded-2xl p-6 md:p-8 mb-8 shadow-xl">
                 <div class="flex items-center gap-4 mb-6">
                     <div class="w-12 h-12 bg-gradient-to-br from-[#3b82f6] to-[#2563eb] rounded-xl flex items-center justify-center shadow-lg shadow-[#3b82f6]/20">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -107,7 +107,7 @@
 
             <div class="grid md:grid-cols-2 gap-6 mb-8">
                 
-                <div class="bg-[#1a2c38] border border-[#2d3748] rounded-2xl p-6 shadow-xl">
+                <div class="bg-[#0f212e] border border-[#2d3748] rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-[#4dda30]/10 rounded-xl flex items-center justify-center">
@@ -154,7 +154,7 @@
                     </div>
                 </div>
 
-                <div class="bg-[#1a2c38] border border-[#2d3748] rounded-2xl p-6 shadow-xl">
+                <div class="bg-[#0f212e] border border-[#2d3748] rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-[#3b82f6]/10 rounded-xl flex items-center justify-center">
                             <svg class="w-5 h-5 text-[#3b82f6]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -202,7 +202,7 @@
                 </div>
             </div>
 
-            <div class="bg-[#1a2c38] border border-[#2d3748] rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-[#0f212e] border border-[#2d3748] rounded-2xl shadow-xl overflow-hidden">
                 <div class="px-6 md:px-8 py-6 border-b border-[#2d3748] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-[#3b82f6]/10 rounded-xl flex items-center justify-center">
@@ -286,7 +286,7 @@
                                                             {{ strtoupper(substr($referral->username, 0, 2)) }}
                                                         @endif
                                                     </div>
-                                                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#4dda30] border-2 border-[#1a2c38] rounded-full"></div>
+                                                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#4dda30] border-2 border-[#0f212e] rounded-full"></div>
                                                 </div>
                                                 <div>
                                                     <div class="text-sm font-semibold text-white mb-1">{{ $referral->username }}</div>
