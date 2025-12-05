@@ -45,10 +45,6 @@ class ImportSlotegratorGames extends Command
 
         foreach ($allGames as $gameData) {
 
-          if ($gameData['provider'] !== 'PragmaticPlay') {
-              continue;
-          }
-
             if (Str::contains($gameData['name'], 'Mobile')) {
                 continue;
             }
