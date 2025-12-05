@@ -551,12 +551,9 @@ class SlotsController extends Controller
             return $this->errorResponse('Transaction not found');
         }
         
-        $context = json_decode($transaction->context, true);
-        
-        // КРИТИЧНО: Для ВСЕХ дублирующихся транзакций возвращаем balance_after
-        // balance_after = баланс который мы ВЕРНУЛИ в первом ответе
-        // Это доказывает Slotegrator что duplicate не изменил баланс
-        $balance = $context['balance_after'] ?? $user->balance;
+        // КРИТИЧНО: Для duplicate возвращаем ТЕКУЩИЙ баланс игрока
+        // Duplicate = retry от провайдера, нужен актуальный баланс, не исторический
+        $balance = $user->balance;
         
         return response()->json([
             'balance' => round($balance, 2),
