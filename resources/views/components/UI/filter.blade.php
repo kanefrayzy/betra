@@ -1,9 +1,9 @@
-<div x-data="filterComponent()" class="mt-6 relative">
+<div x-data="filterComponent()" x-init="$nextTick(() => {})" class="mt-6 relative" x-cloak style="display: block !important;">
     <div class="flex items-center gap-2 mb-6 overflow-x-auto scrollbar-hide pb-2 h-14">
         <button
             @click="clearFilters()"
             :class="selectedProviders.length === 0 ? 'bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20' : 'bg-[#1a2c38] text-gray-300 hover:bg-[#2d3748] border border-[#2d3748]'"
-            class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold whitespace-nowrap transition-all text-sm"
+            class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold whitespace-nowrap transition-all text-sm bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20"
         >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
@@ -13,7 +13,7 @@
 
         <button
             @click="toggleDropdown()"
-            class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold whitespace-nowrap transition-all text-sm relative"
+            class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold whitespace-nowrap transition-all text-sm relative bg-[#1a2c38] text-gray-300 hover:bg-[#2d3748] border border-[#2d3748]"
             :class="selectedProviders.length > 0 ? 'bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/20' : 'bg-[#1a2c38] text-gray-300 hover:bg-[#2d3748] border border-[#2d3748]'"
         >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -25,6 +25,8 @@
             </svg>
             <div
                 x-show="selectedProviders.length > 0"
+                x-cloak
+                style="display: none"
                 class="absolute -top-1 -right-1 w-5 h-5 bg-[#4dda30] rounded-full flex items-center justify-center text-xs text-white font-bold shadow-lg"
                 x-text="selectedProviders.length"
             ></div>
@@ -42,6 +44,7 @@
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
         class="absolute z-50 mt-3 w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+        style="display: none"
     >
         <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-[#3b82f6]/5 to-transparent">
             <h3 class="text-lg font-bold text-gray-900">{{ __('Выберите провайдеров') }}</h3>
@@ -132,6 +135,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2"
         x-transition:enter-end="opacity-100 translate-y-0"
         class="mt-4"
+        style="display: none"
     >
         <div class="p-4 bg-[#1a2c38] border border-[#2d3748] rounded-xl">
             <div class="flex justify-between items-center mb-3">
