@@ -208,26 +208,39 @@ class SlotsController extends Controller
         $action = $request->input('action');
         $data = $request->all();
 
-        // $this->logger->info('Received callback', ['action' => $action, 'data' => $data]);
-
+        // Проверка существования пользователя
         $userExists = Cache::remember("user_exists:{$data['player_id']}", 3600, function () use ($data) {
             return User::where('id', $data['player_id'])->exists();
         });
 
         if (!$userExists) {
-            // $this->logger->warning('Player not found', ['player_id' => $data['player_id']]);
-            return $this->errorResponse('Player not found - ' . $data['player_id']);
+            return $this->errorResponse('Player not found');
         }
 
         try {
+            // Верификация подписи
             $this->client->verifySignature($request->headers->all(), $data);
+            
+            // КРИТИЧЕСКИ: Проверяем session_id ДО обработки
+            if (isset($data['session_id'])) {
+                $sessionExists = DB::table('game_sessions')
+                    ->where('user_id', $data['player_id'])
+                    ->where('token', $data['session_id'])
+                    ->exists();
+                    
+                if (!$sessionExists) {
+                    $this->logger->error('Session not found in DB', [
+                        'player_id' => $data['player_id'],
+                        'session_id' => $data['session_id'],
+                        'action' => $action
+                    ]);
+                    return $this->errorResponse('Invalid session');
+                }
+            }
+            
             $result = $this->processCallbackWithRetry($action, $data);
             $endTime = microtime(true);
-            // $this->logger->info('Callback processed', [
-            //     'action' => $action,
-            //     'execution_time' => $endTime - $startTime,
-            //     'result' => $result->getContent()
-            // ]);
+            
             return $result;
         } catch (Exception $e) {
             $this->logger->error('Error processing callback', [
@@ -267,16 +280,7 @@ class SlotsController extends Controller
     protected function getBalance($data)
     {
         return DB::transaction(function () use ($data) {
-            $user = User::select('id', 'balance')->with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
-
-            if ($errorDescription = $this->checkTokenValidity($user, $data)) {
-                $this->logger->warning('Token validation failed in balance check', [
-                    'player_id' => $data['player_id'],
-                    'session_id' => $data['session_id'] ?? 'none',
-                    'error' => $errorDescription
-                ]);
-                return $this->errorResponse("Token fail: {$errorDescription}");
-            }
+            $user = User::select('id', 'balance')->lockForUpdate()->findOrFail($data['player_id']);
 
             return response()->json([
                 'balance' => round($user->balance, 2),
@@ -305,7 +309,7 @@ class SlotsController extends Controller
         
         return DB::transaction(function () use ($data, $type, $startTime) {
             $amount = round($data['amount'], 2);
-            $user = User::with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::lockForUpdate()->findOrFail($data['player_id']);
 
             if ($data['currency'] !== $user->currency->symbol) {
                 $this->logger->error('Currency mismatch', [
@@ -320,10 +324,6 @@ class SlotsController extends Controller
                 return $this->getExistingTransactionResponse($user, $data['transaction_id']);
             }
 
-            if ($errorDescription = $this->checkTokenValidity($user, $data)) {
-                return $this->errorResponse("Token fail: {$errorDescription}");
-            }
-
             if ($type === 'bet' && $user->balance < $amount) {
                 return $this->insufficientFundsResponse();
             }
@@ -332,7 +332,6 @@ class SlotsController extends Controller
             $this->updateUserBalance($user, $type, $amount);
 
             $transaction = $this->createTransaction($user, $data, $type, $amount, $originalBalance);
-
 
             $this->storeTransactionInRedis($transaction, $user, $data);
 
@@ -345,7 +344,7 @@ class SlotsController extends Controller
     protected function refund($data)
     {
         return DB::transaction(function () use ($data) {
-            $user = User::with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::lockForUpdate()->findOrFail($data['player_id']);
             
             // Проверка на существующую транзакцию возврата
             $existingRefundTransaction = Transaction::where('hash', $data['transaction_id'])->first();
@@ -520,7 +519,7 @@ class SlotsController extends Controller
         return DB::transaction(function () use ($data) {
             $rollbackTransactions = $data['rollback_transactions'];
             $answerArrRollbackTransactions = [];
-            $user = User::with('gameSession', 'currency')->lockForUpdate()->findOrFail($data['player_id']);
+            $user = User::lockForUpdate()->findOrFail($data['player_id']);
             $balance_before = round($user->balance, 2);
 
             $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
@@ -619,46 +618,6 @@ class SlotsController extends Controller
                 'rollback_transactions' => $answerArrRollbackTransactions,
             ])
         ]);
-    }
-
-    protected function checkTokenValidity($user, $data): ?string
-    {
-        $gameSession = $user->gameSession()->first();
-        
-        if (!$gameSession) {
-            return 'No active game session';
-        }
-        
-        // Проверка токена сессии
-        if ($gameSession->token !== $data['session_id']) {
-            return 'Invalid game session token';
-        }
-        
-        // валюта должна совпадать с текущей валютой пользователя
-        if ($data['currency'] !== $user->currency->symbol) {
-            $this->logger->warning('Currency mismatch during game session', [
-                'user_id' => $user->id,
-                'session_currency' => $data['currency'],
-                'current_currency' => $user->currency->symbol,
-                'session_id' => $data['session_id'],
-                'transaction_id' => $data['transaction_id'] ?? 'unknown'
-            ]);
-            return 'Currency mismatch - cannot change currency during active game session';
-        }
-        
-        // Проверка времени сессии
-        if ($gameSession->updated_at->diffInMinutes(now()) > 15) {
-            $this->logger->info('Game session expired', [
-                'user_id' => $user->id,
-                'session_age_minutes' => $gameSession->updated_at->diffInMinutes(now())
-            ]);
-            return 'Session expired';
-        }
-        
-        // Обновляем время последней активности
-        $gameSession->touch();
-        
-        return null;
     }
 
     protected function errorResponse($message)
