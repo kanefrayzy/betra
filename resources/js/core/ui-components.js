@@ -114,28 +114,6 @@ export class DropdownManager {
 
     setupClickAwayListener() {
         document.addEventListener('click', (event) => {
-            // Close currency dropdown
-            const currencyDropdown = document.getElementById('balance-currency-dropdown');
-            const currencyButton = document.getElementById('balance-currency-button');
-            if (currencyDropdown && currencyButton &&
-                !currencyDropdown.contains(event.target) &&
-                !currencyButton.contains(event.target)) {
-                currencyDropdown.classList.add('hidden');
-                document.getElementById('balance-currency-arrow')?.classList.remove('rotate-180');
-            }
-
-            // Close notifications
-            if (window.notificationsState) {
-                const notifDropdown = document.getElementById('notifications-dropdown');
-                const notifButton = document.getElementById('notifications-button');
-                if (notifDropdown && notifButton &&
-                    !notifDropdown.contains(event.target) &&
-                    !notifButton.contains(event.target)) {
-                    notifDropdown.classList.add('hidden');
-                    window.notificationsState = false;
-                }
-            }
-
             // Close other dropdowns
             Object.keys(this.states).forEach(dropdownId => {
                 if (this.states[dropdownId]) {
@@ -154,8 +132,6 @@ export class DropdownManager {
         });
     }
 }
-
-
 
 /**
  * Chat Functions
