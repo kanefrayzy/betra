@@ -402,301 +402,34 @@
     <x-modals.telegram-auth/>
     <x-modals.currency-select/>
 
+    <!-- PHP Config Injection for JavaScript -->
     <script>
-    document.addEventListener('livewire:init', () => {
-        Livewire.hook('request', ({ fail }) => {
-            fail(({ status, preventDefault }) => {
-                if (status === 419) {
-                    preventDefault();
-                    window.location.reload();
-                }
-            })
-        })
-    });
-
-    window.addEventListener('unhandledrejection', function(event) {
-        if (event.reason && event.reason.isFromCancelledTransition) {
-            event.preventDefault();
-        }
-    });
+        window.appConfig = {
+            routes: {
+                telegramGenerate: '{{ route("telegram.generate-token") }}',
+                telegramCheck: '{{ route("telegram.check-status") }}'
+            },
+            @auth
+            user: {
+                id: {{ auth()->id() }},
+                username: "{{ auth()->user()->username }}",
+                currency: "{{ $u->currency->symbol ?? '' }}",
+                isModerator: {{ (auth()->user()->is_moder || auth()->user()->is_admin || auth()->user()->is_chat_moder) ? 'true' : 'false' }}
+            },
+            @else
+            user: null,
+            @endauth
+            chatEmojis: {!! $chat_emoj !!},
+            i18n: {
+                telegramError: '{{ __("Ошибка при генерации ссылки Telegram") }}'
+            }
+        };
     </script>
 
     @livewireScripts
 
-    <script>
-        document.addEventListener('livewire:navigating', () => {
-            if (window.chatSystem && window.chatSystem.ws) {
-                window.chatSystem.preserveConnection = true;
-            }
-        });
-
-        document.addEventListener('livewire:navigated', () => {
-            if (window.chatSystem && window.chatSystem.preserveConnection) {
-                window.chatSystem.preserveConnection = false;
-            }
-        });
-    </script>
-
-    @guest
-        <script src="//ulogin.ru/js/ulogin.js" defer></script>
-    @endguest
-
-
-
-
+    <!-- Telegram Auth Component - остается для Alpine x-data -->
     <script data-navigate-once>
-        // Используем Alpine.store для управления состоянием
-        document.addEventListener('alpine:init', () => {
-            if (typeof Alpine !== 'undefined' && Alpine.store) {
-                Alpine.store('chat', {
-                    emojis: {!! $chat_emoj !!}
-                });
-            }
-        });
-        
-        // Обратная совместимость
-        if (typeof window.chatEmojis === 'undefined') {
-            window.chatEmojis = {!! $chat_emoj !!};
-            window.isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
-            @auth
-            window.currentUserUsername = "{{ Auth::user()->username }}";
-            window.currentUserId = {{ Auth::user()->id }};
-            window.currentUserCurrency = "{{ $u->currency->symbol }}";
-            window.isModerator = {{ (Auth::user()->is_moder || Auth::user()->is_admin || Auth::user()->is_chat_moder) ? 'true' : 'false' }};
-            @endauth
-        }
-        
-        // Очистка при навигации для ресинхронизации (Alpine.store сохраняется автоматически)
-        document.addEventListener('livewire:navigating', () => {
-            // State управляется через Alpine.store
-        });
-    </script>
-
-    <script data-navigate-once>
-        // Modal Manager
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof window.modalManager === 'undefined') {
-                window.modalManager = {
-                modals: {},
-                init() {
-                    document.querySelectorAll('[data-modal]').forEach(modal => {
-                        const modalId = modal.getAttribute('data-modal');
-                        this.modals[modalId] = false;
-                    });
-                }
-            };
-
-            window.openModal = function(modalId) {
-                const modal = document.getElementById(modalId);
-                const overlay = document.getElementById('overlay');
-                if (modal && overlay) {
-                    modal.classList.remove('hidden');
-                    overlay.classList.remove('hidden');
-                    window.modalManager.modals[modalId] = true;
-                }
-            };
-
-            window.closeModal = function(modalId) {
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.add('hidden');
-                    window.modalManager.modals[modalId] = false;
-
-                    const hasOpenModal = Object.values(window.modalManager.modals).some(isOpen => isOpen);
-                    if (!hasOpenModal) {
-                        document.getElementById('overlay').classList.add('hidden');
-                    }
-                }
-            };
-
-            window.modalManager.init();
-
-            // Close modal on overlay click
-            document.getElementById('overlay').addEventListener('click', () => {
-                Object.keys(window.modalManager.modals).forEach(modalId => {
-                    window.closeModal(modalId);
-                });
-            });
-
-            // Проверка авторизации и открытие модалки регистрации
-            window.requireAuth = function(callback, event) {
-                const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
-                
-                if (!isAuthenticated) {
-                    if (event) event.preventDefault();
-                    window.dispatchEvent(new CustomEvent('open-register-modal'));
-                    return false;
-                }
-                
-                if (callback && typeof callback === 'function') {
-                    return callback();
-                }
-                return true;
-            };
-            } 
-        });
-
-
-        if (typeof window.toggleBalanceCurrencyDropdown === 'undefined') {
-            window.toggleBalanceCurrencyDropdown = function() {
-                const dropdown = document.getElementById('balance-currency-dropdown');
-                const arrow = document.getElementById('balance-currency-arrow');
-
-                dropdown?.classList.toggle('hidden');
-                arrow?.classList.toggle('rotate-180');
-            };
-        }
-
-        if (typeof window.changeCurrency === 'undefined') {
-            window.changeCurrency = function(currency) {
-                document.getElementById('balance-currency-dropdown')?.classList.add('hidden');
-                document.getElementById('balance-currency-arrow')?.classList.remove('rotate-180');
-                Livewire.dispatch('balance-change-currency', { currency });
-            };
-        }
-
-
-
-        // Notifications Toggle
-        window.notificationsState = false;
-
-        function toggleNotifications(event) {
-            event?.stopPropagation();
-            const dropdown = document.getElementById('notifications-dropdown');
-
-            if (dropdown) {
-                dropdown.classList.toggle('hidden');
-                window.notificationsState = !dropdown.classList.contains('hidden');
-            }
-        }
-
-        // Dropdown Manager
-        window.dropdownStates = {};
-
-        window.toggleDropdown = function(dropdownId, event) {
-            event?.stopPropagation();
-
-            const dropdown = document.getElementById(dropdownId);
-            if (!dropdown) return;
-
-            const isOpen = !dropdown.classList.contains('hidden');
-
-            // Close all other dropdowns
-            if (!isOpen) {
-                Object.keys(window.dropdownStates).forEach(id => {
-                    if (id !== dropdownId && window.dropdownStates[id]) {
-                        const other = document.getElementById(id);
-                        other?.classList.add('hidden');
-                        window.dropdownStates[id] = false;
-                    }
-                });
-            }
-
-            dropdown.classList.toggle('hidden');
-            window.dropdownStates[dropdownId] = !isOpen;
-
-            const arrow = document.getElementById(dropdownId + '-arrow');
-            arrow?.classList.toggle('rotate-180');
-
-            return !isOpen;
-        };
-
-        // Close dropdowns on outside click
-        document.addEventListener('click', function(event) {
-            // Close currency dropdown
-            const currencyDropdown = document.getElementById('balance-currency-dropdown');
-            const currencyButton = document.getElementById('balance-currency-button');
-            if (currencyDropdown && currencyButton &&
-                !currencyDropdown.contains(event.target) &&
-                !currencyButton.contains(event.target)) {
-                currencyDropdown.classList.add('hidden');
-                document.getElementById('balance-currency-arrow')?.classList.remove('rotate-180');
-            }
-
-            // Close notifications
-            if (window.notificationsState) {
-                const notifDropdown = document.getElementById('notifications-dropdown');
-                const notifButton = document.getElementById('notifications-button');
-                if (notifDropdown && notifButton &&
-                    !notifDropdown.contains(event.target) &&
-                    !notifButton.contains(event.target)) {
-                    notifDropdown.classList.add('hidden');
-                    window.notificationsState = false;
-                }
-            }
-
-            // Close other dropdowns
-            Object.keys(window.dropdownStates).forEach(dropdownId => {
-                if (window.dropdownStates[dropdownId]) {
-                    const dropdown = document.getElementById(dropdownId);
-                    const button = document.getElementById(dropdownId.replace('-dropdown', '-button'));
-
-                    if (dropdown && button &&
-                        !dropdown.contains(event.target) &&
-                        !button.contains(event.target)) {
-                        dropdown.classList.add('hidden');
-                        window.dropdownStates[dropdownId] = false;
-                        document.getElementById(dropdownId + '-arrow')?.classList.remove('rotate-180');
-                    }
-                }
-            });
-        });
-
-        // Chat Functions
-        window.openChat = function() {
-            document.body.classList.add('chat-open');
-            if (window.innerWidth >= 768) {
-                localStorage.setItem('chatOpen', 'true');
-            }
-        };
-
-        window.closeChat = function() {
-            document.body.classList.remove('chat-open');
-            if (window.innerWidth >= 768) {
-                localStorage.setItem('chatOpen', 'false');
-            }
-        };
-
-        window.toggleChat = function() {
-            document.body.classList.contains('chat-open') ? window.closeChat() : window.openChat();
-        };
-
-        // Sidebar Controller
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('sidebarController', () => ({
-                init() {
-                    this.sidebarOpen = window.innerWidth >= 1024;
-
-                    window.addEventListener('resize', () => {
-                        this.sidebarOpen = window.innerWidth >= 1024;
-                    });
-                }
-            }));
-        });
-
-        // Функция для показа всех уведомлений
-        function showAllNotifications() {
-            // Закрываем мобильное меню профиля
-            Alpine.store('profileMenuOpen', false);
-            
-            // Находим и кликаем на кнопку уведомлений в десктопной версии
-            const desktopNotificationsBtn = document.querySelector('.notifications-toggle-button');
-            if (desktopNotificationsBtn) {
-                desktopNotificationsBtn.click();
-            }
-        }
-
-        // Livewire Events
-        document.addEventListener('livewire:init', function() {
-            Livewire.on('notificationUpdated', () => {
-                Livewire.dispatch('refresh-notifications');
-            });
-
-            Livewire.on('allNotificationsRead', () => {
-                Livewire.dispatch('refresh-notifications');
-            });
-        });
-
         // Telegram Auth Component
         function telegramAuth(type) {
             return {
@@ -721,8 +454,9 @@
                 },
                 
                 async generateDeepLink() {
+                    const config = window.appConfig || {};
                     try {
-                        const response = await fetch('{{ route("telegram.generate-token") }}', {
+                        const response = await fetch(config.routes?.telegramGenerate || '', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -758,7 +492,8 @@
                         
                         if (!success || !this.deepLink) {
                             this.loading = false;
-                            alert('{{ __("Ошибка при генерации ссылки Telegram") }}');
+                            const config = window.appConfig || {};
+                            alert(config.i18n?.telegramError || 'Error');
                             return;
                         }
                     }
@@ -790,8 +525,9 @@
                 },
                 
                 async checkStatus() {
+                    const config = window.appConfig || {};
                     try {
-                        const response = await fetch('{{ route("telegram.check-status") }}', {
+                        const response = await fetch(config.routes?.telegramCheck || '', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -834,13 +570,9 @@
         }
     </script>
 
-    <!-- reCAPTCHA - Отложенная загрузка -->
-    <script>
-        // Загружаем при взаимодействии пользователя
-        ['mousedown', 'touchstart', 'keydown'].forEach(function(event) {
-            document.addEventListener(event, window.loadRecaptcha, { once: true, passive: true });
-        });
-    </script>
+    @guest
+        <script src="//ulogin.ru/js/ulogin.js" defer></script>
+    @endguest
 
     <!-- Telegram WebApp - только если открыто в TG -->
     @if(request()->header('User-Agent') && (str_contains(request()->header('User-Agent'), 'Telegram') || str_contains(request()->header('User-Agent'), 'TelegramBot')))

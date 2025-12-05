@@ -7,6 +7,74 @@ window.Noty = Noty;
 import { initNotyTailwindTheme } from './noty-tailwind-theme';
 initNotyTailwindTheme();
 
+// Core modules - app initialization
+import { initializeAppConfig } from './core/app-init.js';
+import { 
+    ModalManager, 
+    DropdownManager,
+    toggleBalanceCurrencyDropdown,
+    changeCurrency,
+    toggleNotifications,
+    showAllNotifications,
+    openChat,
+    closeChat,
+    toggleChat,
+    setupRecaptchaLazyLoad
+} from './core/ui-components.js';
+import {
+    setupCsrfHandler,
+    setupUnhandledRejectionHandler,
+    setupChatPreservation,
+    setupNotificationEvents,
+    setupSidebarController,
+    setupChatStore,
+    setupChatGlobals
+} from './core/livewire-hooks.js';
+
+// Initialize app config
+initializeAppConfig();
+
+// Setup Livewire hooks
+setupCsrfHandler();
+setupUnhandledRejectionHandler();
+setupChatPreservation();
+setupNotificationEvents();
+setupSidebarController();
+setupChatStore();
+setupChatGlobals();
+
+// Initialize UI Managers
+const modalManager = new ModalManager();
+const dropdownManager = new DropdownManager();
+
+// Expose global functions for backward compatibility
+window.modalManager = modalManager;
+window.openModal = (id) => modalManager.open(id);
+window.closeModal = (id) => modalManager.close(id);
+window.requireAuth = (callback, event) => modalManager.requireAuth(callback, event);
+
+window.dropdownStates = dropdownManager.states;
+window.toggleDropdown = (id, event) => dropdownManager.toggle(id, event);
+
+window.toggleBalanceCurrencyDropdown = toggleBalanceCurrencyDropdown;
+window.changeCurrency = changeCurrency;
+
+window.notificationsState = false;
+window.toggleNotifications = toggleNotifications;
+window.showAllNotifications = showAllNotifications;
+
+window.openChat = openChat;
+window.closeChat = closeChat;
+window.toggleChat = toggleChat;
+
+// Initialize modal manager on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    modalManager.init();
+});
+
+// Setup reCAPTCHA lazy loading
+setupRecaptchaLazyLoad();
+
 // Import chat system - прямая загрузка для быстрого подключения
 import './chat/main.js';
 
