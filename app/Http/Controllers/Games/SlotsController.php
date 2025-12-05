@@ -446,8 +446,8 @@ class SlotsController extends Controller
             $balanceBefore = $user->balance;
             
             // КРИТИЧЕСКАЯ ЛОГИКА: Направление refund зависит от типа оригинальной транзакции
-            // ВАЖНО: Сравниваем СТРОКИ (не enum!)
-            if ($originalTransaction->type === 'bet') {
+            // ВАЖНО: type из БД = enum объект, используем ->value для получения строки
+            if ($originalTransaction->type->value === 'bet') {
                 // Refund для BET = возврат ставки = возвращаем деньги
                 $user->balance += $amount;
                 
@@ -458,7 +458,7 @@ class SlotsController extends Controller
                     'balance_after' => $user->balance
                 ]);
                 
-            } elseif ($originalTransaction->type === 'win') {
+            } elseif ($originalTransaction->type->value === 'win') {
                 // Refund для WIN = отмена выигрыша = забираем деньги
                 $user->balance -= $amount;
                 
@@ -554,8 +554,8 @@ class SlotsController extends Controller
         $context = json_decode($transaction->context, true);
         
         // КРИТИЧНО: Разная логика для разных типов!
-        // ВАЖНО: Сравниваем СТРОКИ (не enum!)
-        if ($transaction->type === 'refund') {
+        // ВАЖНО: type из БД = enum объект, используем ->value для получения строки
+        if ($transaction->type->value === 'refund') {
             // Для REFUND: возвращаем баланс ПОСЛЕ возврата
             $balance = $context['balance_after'] ?? $user->balance;
         } else {
@@ -661,14 +661,14 @@ class SlotsController extends Controller
         $amount = round($transaction->amount, 2);
         
         // Откатываем баланс в зависимости от типа транзакции
-        // ВАЖНО: Сравниваем СТРОКИ (не enum!)
-        if ($transaction->type === 'bet') {
+        // ВАЖНО: type из БД = enum объект, используем ->value для получения строки
+        if ($transaction->type->value === 'bet') {
             // Откат BET = возврат ставки
             $user->balance += $amount;
-        } elseif ($transaction->type === 'win') {
+        } elseif ($transaction->type->value === 'win') {
             // Откат WIN = забрать выигрыш
             $user->balance -= $amount;
-        } elseif ($transaction->type === 'refund') {
+        } elseif ($transaction->type->value === 'refund') {
             // Откат REFUND = отменить возврат
             $user->balance -= $amount;
         }
