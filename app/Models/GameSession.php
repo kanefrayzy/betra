@@ -11,7 +11,7 @@ class GameSession extends Model
     protected $fillable = [
         'user_id', 'game_id', 'provider', 'token', 'provider_game_token',
         'user_ip', 'device', 'started_at', 'last_activity_at', 'ended_at',
-        'session_data'
+        'session_data', 'game_uuid', 'currency'
     ];
 
     protected $casts = [

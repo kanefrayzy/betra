@@ -81,12 +81,14 @@ class SlotsController extends Controller
                     'language' => $locale,
                 ]);
 
-                $user->gameSession()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    ['token' => $sessionToken]
-                );
-
-                $gameUrl = $response['url'] ?? null;
+            $user->gameSession()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'token' => $sessionToken,
+                    'game_uuid' => $game->uuid,
+                    'currency' => $user->currency->symbol,
+                ]
+            );                $gameUrl = $response['url'] ?? null;
 
                 if (!$gameUrl) {
                     return redirect()->back()->with('error', __('errors.game_unavailable'));
@@ -159,6 +161,7 @@ class SlotsController extends Controller
                     [
                         'token' => $sessionToken,
                         'game_uuid' => $game->uuid,
+                        'currency' => $user->currency->symbol,
                     ]
                 );
 
@@ -223,18 +226,29 @@ class SlotsController extends Controller
             
             // КРИТИЧЕСКИ: Проверяем session_id ДО обработки
             if (isset($data['session_id'])) {
-                $sessionExists = DB::table('game_sessions')
+                $session = DB::table('game_sessions')
                     ->where('user_id', $data['player_id'])
                     ->where('token', $data['session_id'])
-                    ->exists();
+                    ->first();
                     
-                if (!$sessionExists) {
+                if (!$session) {
                     $this->logger->error('Session not found in DB', [
                         'player_id' => $data['player_id'],
                         'session_id' => $data['session_id'],
                         'action' => $action
                     ]);
                     return $this->errorResponse('Invalid session');
+                }
+                
+                // Проверка валюты сессии (защита от смены валюты во время игры)
+                if ($session->currency && $data['currency'] !== $session->currency) {
+                    $this->logger->error('Currency mismatch with session', [
+                        'session_currency' => $session->currency,
+                        'transaction_currency' => $data['currency'],
+                        'player_id' => $data['player_id'],
+                        'session_id' => $data['session_id']
+                    ]);
+                    return $this->errorResponse('Currency mismatch');
                 }
             }
             
@@ -707,12 +721,13 @@ class SlotsController extends Controller
                 ]);
                 
                 // Обновляем сессию пользователя ПЕРЕД валидацией
-                // ВАЖНО: Сохраняем UUID игры (не ID модели!)
+                // ВАЖНО: Сохраняем UUID игры (не ID модели!) и валюту
                 $user->gameSession()->updateOrCreate(
                     ['user_id' => $user->id],
                     [
                         'token' => $sessionToken,
                         'game_uuid' => $game->uuid, // UUID игры из API
+                        'currency' => $user->currency->symbol, // Валюта сессии
                     ]
                 );
 
