@@ -378,23 +378,38 @@ class SlotsController extends Controller
         return DB::transaction(function () use ($data) {
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
             
-            // Проверка на существующую транзакцию возврата
-            $existingRefundTransaction = Transaction::where('hash', $data['transaction_id'])->first();
-            if ($existingRefundTransaction && $existingRefundTransaction->type === 'refund') {
-                // Возврат уже обработан, возвращаем информацию о транзакции
-                return $this->getTransactionResponse($existingRefundTransaction->user, $existingRefundTransaction);
+            // Проверка на дубликат refund
+            if ($this->isExistingTransaction($data['transaction_id'])) {
+                return $this->getExistingTransactionResponse($user, $data['transaction_id']);
             }
 
-            $betTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
+            // Ищем ОРИГИНАЛЬНУЮ транзакцию
+            $originalTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
 
-            // Если транзакция ставки не найдена - по API нужно сохранить refund и вернуть успех
-            if (!$betTransaction) {
+            if (!$originalTransaction) {
+                // Транзакция не найдена - сохраняем refund без изменения баланса
                 $refundTransaction = $this->createRefundTransactionForNonExistentBet($user, $data);
                 return $this->getTransactionResponse($user, $refundTransaction);
             }
 
-            // Если ставка существует, выполняем стандартную обработку возврата
-            return $this->handleTransaction($data, 'refund');
+            $amount = round($data['amount'], 2);
+            $originalBalance = $user->balance;
+            
+            // КРИТИЧЕСКИ: Определяем направление refund на основе типа оригинальной транзакции
+            if ($originalTransaction->type === 'bet') {
+                // Возврат ставки - возвращаем деньги
+                $user->balance += $amount;
+            } elseif ($originalTransaction->type === 'win') {
+                // Отмена выигрыша - забираем деньги
+                $user->balance -= $amount;
+            }
+            
+            $user->save();
+
+            $transaction = $this->createTransaction($user, $data, 'refund', $amount, $originalBalance);
+            $this->storeTransactionInRedis($transaction, $user, $data);
+
+            return $this->getTransactionResponse($user, $transaction);
         });
     }
 
