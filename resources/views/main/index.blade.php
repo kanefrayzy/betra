@@ -3,12 +3,8 @@
       <div class="container mx-auto px-2 md:px-4 relative z-2 mt-2">
           @livewire('home-search')
       </div>
-
-    <!-- Games Section with Dynamic Categories -->
-    @if(isset($categories) && $categories->isNotEmpty())
     <div class="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-2" x-data="{ activeTab: 'all' }">
-        
-        <!-- Category Tabs - Dynamically Generated -->
+
         <div class="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide bg-[#0f212e] p-2 rounded-full max-w-full">
             <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-[#ffb300] text-black shadow-lg' : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#1a2c38]'" class="flex items-center gap-2 px-5 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-200 text-sm">
                 <svg class="w-4 h-4" data-ds-icon="AllGames" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -17,7 +13,6 @@
                 {{__('Все игры')}}
             </button>
             
-            <!-- Recent Games Tab for Authenticated Users -->
             @auth
             @if(isset($recentGames) && $recentGames->isNotEmpty())
             <button @click="activeTab = 'recent'" :class="activeTab === 'recent' ? 'bg-[#8b5cf6] text-white shadow-lg' : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#1a2c38]'" class="flex items-center gap-2 px-5 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-200 text-sm">
@@ -44,8 +39,7 @@
         </div>
 
         <div class="relative">
-        
-        <!-- Recent Games Section for Authenticated Users -->
+
         @auth
         @if(isset($recentGames) && $recentGames->isNotEmpty())
         <div x-show="activeTab === 'all' || activeTab === 'recent'" 
@@ -115,8 +109,7 @@
         </div>
         @endif
         @endauth
-        
-        <!-- Dynamic Category Sections -->
+
         @foreach($categories as $category)
         <div x-show="activeTab === 'all' || activeTab === '{{ $category->slug }}'" 
              x-transition:enter="transition ease-out duration-300"
@@ -204,7 +197,7 @@
         </div>
         @endforeach
         
-        </div><!-- End Tab Content Wrapper -->
+        </div>
     </div>
 
 
