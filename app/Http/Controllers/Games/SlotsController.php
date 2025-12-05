@@ -553,15 +553,10 @@ class SlotsController extends Controller
         
         $context = json_decode($transaction->context, true);
         
-        // КРИТИЧНО: Разная логика для разных типов!
-        // ВАЖНО: type из БД = enum объект, используем ->value для получения строки
-        if ($transaction->type->value === 'refund') {
-            // Для REFUND: возвращаем баланс ПОСЛЕ возврата
-            $balance = $context['balance_after'] ?? $user->balance;
-        } else {
-            // Для BET/WIN: возвращаем баланс ДО операции
-            $balance = $context['balance_before'] ?? $user->balance;
-        }
+        // КРИТИЧНО: Для ВСЕХ дублирующихся транзакций возвращаем balance_after
+        // balance_after = баланс который мы ВЕРНУЛИ в первом ответе
+        // Это доказывает Slotegrator что duplicate не изменил баланс
+        $balance = $context['balance_after'] ?? $user->balance;
         
         return response()->json([
             'balance' => round($balance, 2),
