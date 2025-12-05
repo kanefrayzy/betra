@@ -71,9 +71,12 @@
 
                         <!-- Изображение игры -->
                         <div class="relative flex-shrink-0">
-                            <img src="{{ $game->image }}"
-                                 alt="{{ $game->name }}"
-                                 class="w-14 h-14 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200">
+                            <picture>
+                                <source srcset="{{ webp_url($game->image) }}" type="image/webp">
+                                <img src="{{ $game->image }}"
+                                     alt="{{ $game->name }}"
+                                     class="w-14 h-14 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200">
+                            </picture>
 
                             <!-- Play overlay -->
                             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center transition-opacity duration-200">

@@ -1715,31 +1715,33 @@ class AdminController extends Controller
          // Обновляем данные игры, кроме изображения
          $game->update($request->except('image'));
 
-         // Проверяем, загружен ли файл изображения
-         if ($request->hasFile('image')) {
-             // Удаляем старое изображение, если оно существует
-             if ($game->image) {
-                 $oldImagePath = public_path(str_replace('', '', $game->image));
-                 if (file_exists($oldImagePath)) {
-                     unlink($oldImagePath);
-                 }
-             }
+        // Проверяем, загружен ли файл изображения
+        if ($request->hasFile('image')) {
+            // Удаляем старое изображение, если оно существует и это локальный файл
+            if ($game->image && !str_starts_with($game->image, 'http')) {
+                $oldImagePath = public_path(ltrim($game->image, '/'));
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
 
-             // Сохраняем новое изображение
-             $file = $request->file('image');
-             $destinationPath = public_path('/assets/images/slots');
+            // Сохраняем новое изображение
+            $file = $request->file('image');
+            $destinationPath = public_path('/assets/images/slots');
 
-             // Формируем имя файла на основе имени слота
-             $slug = Str::slug($game->name); // Преобразуем имя слота в URL-дружественный формат
-             $fileName = $slug . '.' . $file->getClientOriginalExtension();
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
 
-             $file->move($destinationPath, $fileName);
+            // Формируем имя файла на основе имени слота
+            $slug = Str::slug($game->name);
+            $fileName = $slug . '.' . $file->getClientOriginalExtension();
 
-             // Обновляем путь к изображению в базе данных
-             $game->image = '/assets/images/slots/' . $fileName;
-         }
+            $file->move($destinationPath, $fileName);
 
-         $game->save();
+            // Обновляем путь к изображению в базе данных
+            $game->image = '/assets/images/slots/' . $fileName;
+        }         $game->save();
 
          // Перенаправляем обратно с сообщением об успехе
          return redirect()->route('slotegrator_games.slots')->with('success', 'Игра успешно обновлена');

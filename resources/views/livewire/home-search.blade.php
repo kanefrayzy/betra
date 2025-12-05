@@ -52,10 +52,13 @@
                                      @mouseleave="window.innerWidth >= 768 && (showActions = false)">
 
                                     <div class="relative aspect-[3/4]">
-                                        <img src="{{ $game->image }}"
-                                             alt="{{ $game->name }}"
-                                             class="w-full h-full object-cover"
-                                             loading="lazy">
+                                        <picture>
+                                            <source srcset="{{ webp_url($game->image) }}" type="image/webp">
+                                            <img src="{{ $game->image }}"
+                                                 alt="{{ $game->name }}"
+                                                 class="w-full h-full object-cover"
+                                                 loading="lazy">
+                                        </picture>
 
                                         <div class="absolute top-2 left-2 flex flex-col gap-1">
                                             @if($game->is_new)

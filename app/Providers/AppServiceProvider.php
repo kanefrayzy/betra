@@ -7,6 +7,10 @@ use App\Services\NotifyService;
 use App\Services\User\ExternalAuthService;
 use App\Models\Settings;
 use App\Models\GameCategory;
+use App\Models\Banner;
+use App\Models\SlotegratorGame;
+use App\Observers\BannerObserver;
+use App\Observers\SlotegratorGameObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Cache;
@@ -30,6 +34,18 @@ class AppServiceProvider extends ServiceProvider
         $this->shareChatEmojis();
         $this->shareGlobalSettings();
         $this->shareGameCategories();
+        $this->registerObservers();
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Register Model Observers
+     * ═══════════════════════════════════════════════════════════
+     */
+    protected function registerObservers(): void
+    {
+        Banner::observe(BannerObserver::class);
+        SlotegratorGame::observe(SlotegratorGameObserver::class);
     }
 
     /**
