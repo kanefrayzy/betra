@@ -611,7 +611,7 @@ class SlotsController extends Controller
             return response()->json([
                 'balance' => round($user->balance, 2),
                 'transaction_id' => $this->hash($rollbackTransaction->id),
-                'rollback_transactions' => $answerArrRollbackTransactions,
+                'rollback_transactions' => array_column($data['rollback_transactions'], 'transaction_id'),
             ]);
             });
         } catch (\Exception $e) {
@@ -653,7 +653,7 @@ class SlotsController extends Controller
      */
     protected function processRollbackForTransaction($user, $transaction)
     {
-        $amount = round($transaction->amount, 2);
+        $amount = $transaction->amount; // Используем точную сумму без округления
         
         // Откатываем баланс в зависимости от типа транзакции
         // ВАЖНО: type из БД = enum объект, используем ->value для получения строки
