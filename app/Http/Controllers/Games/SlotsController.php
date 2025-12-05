@@ -379,14 +379,29 @@ class SlotsController extends Controller
         return DB::transaction(function () use ($data) {
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
             
-            // Проверка на дубликат refund - возвращаем существующую транзакцию
+            // Проверка #1: дубликат по transaction_id (повторный запрос с тем же ID)
             if ($this->isExistingTransaction($data['transaction_id'])) {
-                $this->logger->info('Duplicate refund detected', [
+                $this->logger->info('Duplicate refund detected (same transaction_id)', [
                     'refund_transaction_id' => $data['transaction_id']
                 ]);
-                // КРИТИЧЕСКИ: Используем существующую транзакцию, а не текущий баланс!
                 $existingTransaction = Transaction::where('hash', $data['transaction_id'])->first();
                 return $this->getTransactionResponse($user, $existingTransaction);
+            }
+
+            // Проверка #2: уже существует refund для этой оригинальной транзакции
+            // (другой transaction_id, но тот же bet_transaction_id)
+            $existingRefund = Transaction::where('type', TransactionType::Refund)
+                ->where('user_id', $user->id)
+                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(context, '$.bet_transaction_id')) = ?", [$data['bet_transaction_id']])
+                ->first();
+            
+            if ($existingRefund) {
+                $this->logger->warning('Refund already exists for this bet transaction', [
+                    'bet_transaction_id' => $data['bet_transaction_id'],
+                    'existing_refund_id' => $existingRefund->hash,
+                    'new_refund_id' => $data['transaction_id']
+                ]);
+                return $this->getTransactionResponse($user, $existingRefund);
             }
 
             // Ищем ОРИГИНАЛЬНУЮ транзакцию
