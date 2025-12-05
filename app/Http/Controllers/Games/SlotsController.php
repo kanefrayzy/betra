@@ -314,7 +314,7 @@ class SlotsController extends Controller
     protected function handleTransaction($data, $type)
     {
         return DB::transaction(function () use ($data, $type) {
-            $amount = round($data['amount'], 2);
+            $amount = $data['amount']; // Используем точную сумму без округления
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
 
             // Проверка валюты
@@ -442,7 +442,7 @@ class SlotsController extends Controller
                 ]);
             }
 
-            $amount = round($data['amount'], 2);
+            $amount = $data['amount']; // Используем точную сумму без округления
             $balanceBefore = $user->balance;
             
             // КРИТИЧНО: Refund работает ТОЛЬКО для BET транзакций
@@ -563,8 +563,9 @@ class SlotsController extends Controller
      */
     protected function rollback($data)
     {
-        return DB::transaction(function () use ($data) {
-            $rollbackTransactions = $data['rollback_transactions'];
+        try {
+            return DB::transaction(function () use ($data) {
+                $rollbackTransactions = $data['rollback_transactions'];
             $answerArrRollbackTransactions = [];
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
             $balanceBefore = round($user->balance, 2);
@@ -612,7 +613,15 @@ class SlotsController extends Controller
                 'transaction_id' => $this->hash($rollbackTransaction->id),
                 'rollback_transactions' => $answerArrRollbackTransactions,
             ]);
-        });
+            });
+        } catch (\Exception $e) {
+            $this->logger->error('Rollback error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data
+            ]);
+            return $this->errorResponse('Rollback failed');
+        }
     }
 
     /**
