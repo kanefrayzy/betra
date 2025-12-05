@@ -388,21 +388,50 @@ class SlotsController extends Controller
                 return $this->getTransactionResponse($user, $existingTransaction);
             }
 
-            // Проверка #2: уже существует refund для этой оригинальной транзакции
-            // (другой transaction_id, но тот же bet_transaction_id)
-            $existingRefund = Transaction::where('type', TransactionType::Refund)
-                ->where('user_id', $user->id)
-                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(context, '$.bet_transaction_id')) = ?", [$data['bet_transaction_id']])
-                ->first();
+            // Проверка #2: Используем Redis для атомарной проверки/блокировки
+            // Это работает ДАЖЕ если транзакция в БД еще не закоммичена
+            $refundKey = "refund:{$data['player_id']}:{$data['bet_transaction_id']}";
             
-            if ($existingRefund) {
-                $this->logger->warning('Refund already exists for this bet transaction', [
+            // SETNX - Set if Not eXists - атомарная операция
+            // Вернёт true только для ПЕРВОГО запроса
+            $isFirstRefund = Redis::setnx($refundKey, $data['transaction_id']);
+            
+            if (!$isFirstRefund) {
+                // Уже есть refund для этой bet_transaction_id
+                $existingRefundHash = Redis::get($refundKey);
+                
+                $this->logger->warning('Refund already exists (detected via Redis)', [
                     'bet_transaction_id' => $data['bet_transaction_id'],
-                    'existing_refund_id' => $existingRefund->hash,
+                    'existing_refund_id' => $existingRefundHash,
                     'new_refund_id' => $data['transaction_id']
                 ]);
-                return $this->getTransactionResponse($user, $existingRefund);
+                
+                // Пытаемся найти существующую транзакцию
+                $existingRefund = Transaction::where('hash', $existingRefundHash)->first();
+                
+                if ($existingRefund) {
+                    return $this->getTransactionResponse($user, $existingRefund);
+                }
+                
+                // Если транзакция еще не закоммичена, ждём и пробуем снова
+                sleep(1);
+                $existingRefund = Transaction::where('hash', $existingRefundHash)->first();
+                
+                if ($existingRefund) {
+                    return $this->getTransactionResponse($user, $existingRefund);
+                }
+                
+                // Если всё равно не нашли - что-то не так, но не даём создать дубликат
+                $this->logger->error('Refund marked in Redis but not found in DB', [
+                    'bet_transaction_id' => $data['bet_transaction_id'],
+                    'existing_refund_id' => $existingRefundHash
+                ]);
+                
+                return $this->errorResponse('Refund already processed');
             }
+            
+            // Устанавливаем TTL на ключ (1 час)
+            Redis::expire($refundKey, 3600);
 
             // Ищем ОРИГИНАЛЬНУЮ транзакцию
             $originalTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
