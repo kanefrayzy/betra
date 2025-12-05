@@ -232,6 +232,13 @@ class SlotsController extends Controller
     protected function handleTransaction($data, $type)
     {
         $startTime = microtime(true);
+        
+        $existingTransaction = Transaction::where('hash', $data['transaction_id'])->first();
+        if ($existingTransaction) {
+            $user = User::findOrFail($data['player_id']);
+            return $this->getExistingTransactionResponse($user, $data['transaction_id']);
+        }
+        
         return DB::transaction(function () use ($data, $type, $startTime) {
             $amount = round($data['amount'], 2);
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
@@ -244,7 +251,7 @@ class SlotsController extends Controller
                 ]);
                 return $this->errorResponse('Currency mismatch');
             }
-            // Проверка минимальной ставки для TRY
+            
             if ($type === 'bet' && $user->currency_id === 4 && $amount < 1) {
                 $this->logger->warning('Bet amount below minimum for TRY', [
                     'user_id' => $user->id,
@@ -256,20 +263,8 @@ class SlotsController extends Controller
                     'error_description' => 'Minimum bet amount is 10 TRY'
                 ]);
             }
-            // $this->logger->info('Processing transaction', [
-            //     'type' => $type,
-            //     'amount' => $amount,
-            //     'user_id' => $user->id,
-            //     'transaction_id' => $data['transaction_id']
-            // ]);
-
-            if ($this->isExistingTransaction($data['transaction_id'])) {
-                // $this->logger->info('Existing transaction found', ['transaction_id' => $data['transaction_id']]);
-                return $this->getExistingTransactionResponse($user, $data['transaction_id']);
-            }
 
             if ($errorDescription = $this->checkTokenValidity($user, $data)) {
-                // $this->logger->warning('Invalid token', ['user_id' => $user->id, 'error' => $errorDescription]);
                 return $this->errorResponse("Token fail: {$errorDescription}");
             }
 
@@ -277,13 +272,19 @@ class SlotsController extends Controller
                 return $this->insufficientFundsResponse();
             }
 
-            $originalBalance = $user->balance;
-            $this->updateUserBalance($user, $type, $amount);
+            try {
+                $originalBalance = $user->balance;
+                $this->updateUserBalance($user, $type, $amount);
 
-            $transaction = $this->createTransaction($user, $data, $type, $amount, $originalBalance);
+                $transaction = $this->createTransaction($user, $data, $type, $amount, $originalBalance);
 
-
-            $this->storeTransactionInRedis($transaction, $user, $data);
+                $this->storeTransactionInRedis($transaction, $user, $data);
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() == 23000) {
+                    return $this->getExistingTransactionResponse($user, $data['transaction_id']);
+                }
+                throw $e;
+            }
 
             $endTime = microtime(true);
             // $this->logger->info('Transaction processed successfully', [
