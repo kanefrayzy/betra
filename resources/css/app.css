@@ -25,6 +25,18 @@
     pointer-events: none;
 }
 
+/* Image lazy loading skeleton */
+img[loading="lazy"] {
+    background: linear-gradient(90deg, #1a2c38 0%, #2a3c48 50%, #1a2c38 100%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 body {
     margin: 0;
     background-color: #0f1419;
