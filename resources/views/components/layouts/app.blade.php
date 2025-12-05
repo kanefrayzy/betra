@@ -48,7 +48,6 @@
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     </noscript>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -424,205 +423,20 @@
                 telegramError: '{{ __("Ошибка при генерации ссылки Telegram") }}'
             }
         };
+        
+        @if(request()->header('User-Agent') && (str_contains(request()->header('User-Agent'), 'Telegram') || str_contains(request()->header('User-Agent'), 'TelegramBot')))
+        // Telegram WebApp config
+        window.telegramWebAppConfig = {
+            stylesUrl: '{{ asset('css/telegram-webapp.css') }}?v=1.0'
+        };
+        @endif
     </script>
 
     @livewireScripts
 
-    <!-- Telegram Auth Component - остается для Alpine x-data -->
-    <script data-navigate-once>
-        // Telegram Auth Component
-        function telegramAuth(type) {
-            return {
-                loading: false,
-                token: '',
-                deepLink: '',
-                checkInterval: null,
-                checkAttempts: 0,
-                maxAttempts: 300,
-                
-                init() {
-                    const navigatingHandler = () => this.stopChecking();
-                    document.addEventListener('livewire:navigating', navigatingHandler);
-                    this._navigatingHandler = navigatingHandler;
-                },
-                
-                destroy() {
-                    this.stopChecking();
-                    if (this._navigatingHandler) {
-                        document.removeEventListener('livewire:navigating', this._navigatingHandler);
-                    }
-                },
-                
-                async generateDeepLink() {
-                    const config = window.appConfig || {};
-                    try {
-                        const response = await fetch(config.routes?.telegramGenerate || '', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({ type: type })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            this.token = data.token;
-                            this.deepLink = data.deep_link;
-                            return true;
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error generating token:', error);
-                        return false;
-                    }
-                },
-                
-                async handleTelegramAuth(event) {
-                    event.preventDefault();
-                    
-                    if (this.loading) return;
-                    
-                    this.loading = true;
-                    
-                    if (!this.deepLink) {
-                        const success = await this.generateDeepLink();
-                        
-                        if (!success || !this.deepLink) {
-                            this.loading = false;
-                            const config = window.appConfig || {};
-                            alert(config.i18n?.telegramError || 'Error');
-                            return;
-                        }
-                    }
-                    
-                    window.open(this.deepLink, '_blank');
-                    this.startChecking();
-                },
-                
-                startChecking() {
-                    this.checkAttempts = 0;
-                    this.scheduleNextCheck();
-                },
-                
-                scheduleNextCheck() {
-                    if (this.checkAttempts >= this.maxAttempts) {
-                        this.stopChecking();
-                        return;
-                    }
-                    
-                    const delay = this.checkAttempts < 5 ? 2000 : 
-                                  this.checkAttempts < 15 ? 4000 : 
-                                  this.checkAttempts < 30 ? 8000 : 15000;
-                    
-                    this.checkInterval = setTimeout(async () => {
-                        await this.checkStatus();
-                        this.checkAttempts++;
-                        this.scheduleNextCheck();
-                    }, delay);
-                },
-                
-                async checkStatus() {
-                    const config = window.appConfig || {};
-                    try {
-                        const response = await fetch(config.routes?.telegramCheck || '', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({ token: this.token })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (data.success && data.status === 'completed') {
-                            this.stopChecking();
-                            
-                            if (data.action === 'login' && data.redirect) {
-                                window.location.href = data.redirect;
-                            } else if (data.data?.action === 'register') {
-                                window.dispatchEvent(new CustomEvent('open-currency-select', {
-                                    detail: {
-                                        authType: 'telegram-code',
-                                        authData: data.data
-                                    }
-                                }));
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Error checking status:', error);
-                    }
-                },
-                
-                stopChecking() {
-                    if (this.checkInterval) {
-                        clearTimeout(this.checkInterval);
-                        this.checkInterval = null;
-                    }
-                    this.loading = false;
-                    this.checkAttempts = 0;
-                }
-            }
-        }
-    </script>
-
     @guest
         <script src="//ulogin.ru/js/ulogin.js" defer></script>
     @endguest
-
-    <!-- Telegram WebApp - только если открыто в TG -->
-    @if(request()->header('User-Agent') && (str_contains(request()->header('User-Agent'), 'Telegram') || str_contains(request()->header('User-Agent'), 'TelegramBot')))
-    <script defer>
-        // Функция проверки Telegram WebApp
-        function checkAndLoadTelegramStyles() {
-            const isTelegram = (typeof window.isTelegramWebApp === 'function') 
-                ? window.isTelegramWebApp() 
-                : false;
-            
-            if (isTelegram) {
-                if (!document.getElementById('telegram-webapp-styles')) {
-                    const link = document.createElement('link');
-                    link.id = 'telegram-webapp-styles';
-                    link.rel = 'stylesheet';
-                    link.href = '{{ asset('css/telegram-webapp.css') }}?v=1.0';
-                    document.head.appendChild(link);
-                }
-            }
-        }
-        
-        let isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-        
-        if (isGamePage) {
-            document.addEventListener('DOMContentLoaded', checkAndLoadTelegramStyles);
-        } else {
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(checkAndLoadTelegramStyles, 50);
-            });
-        }
-        
-        document.addEventListener('livewire:navigated', function() {
-            const isGamePage = window.location.pathname.includes('/slots/play/') || window.location.pathname.includes('/slots/fun/');
-            
-            if (isGamePage) {
-                checkAndLoadTelegramStyles();
-                if (typeof window.applyTelegramWebAppSettings === 'function') {
-                    window.applyTelegramWebAppSettings();
-                }
-            } else {
-                setTimeout(checkAndLoadTelegramStyles, 50);
-                if (typeof window.applyTelegramWebAppSettings === 'function') {
-                    setTimeout(() => {
-                        window.applyTelegramWebAppSettings();
-                    }, 150);
-                }
-            }
-        });
-    </script>
-    @endif
  
 </body>
 </html>

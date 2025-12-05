@@ -63,10 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
 // Import chat system - прямая загрузка для быстрого подключения
 import './chat/main.js';
 
-// Import Telegram auth - условная загрузка
+// Import Telegram auth component - всегда нужен для Alpine x-data
+import './telegram-auth.js';
+
+// Import Telegram auth global - условная загрузка
 if (document.querySelector('[data-telegram-auth]') || 
     navigator.userAgent.includes('Telegram')) {
     import('./telegram-auth-global.js');
+}
+
+// Import Telegram WebApp - только если User-Agent содержит Telegram
+if (navigator.userAgent.includes('Telegram')) {
+    import('./telegram-webapp.js').then(() => {
+        // Конфиг будет установлен из blade
+    });
 }
 
 
