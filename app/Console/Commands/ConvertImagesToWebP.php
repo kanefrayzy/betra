@@ -17,7 +17,7 @@ class ConvertImagesToWebP extends Command
 
     public function handle()
     {
-        $path = $this->argument('path') ?? public_path('assets/images');
+        $path = $this->argument('path') ?? public_path('assets/images/slots');
         $quality = (int) $this->option('quality');
 
         if (!is_dir($path)) {
