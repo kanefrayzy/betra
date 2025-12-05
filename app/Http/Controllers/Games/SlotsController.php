@@ -589,6 +589,8 @@ class SlotsController extends Controller
     public function selfValidate()
     {
         try {
+            Log::info('Self-validate started - NEW VERSION');
+            
             $user = Auth::user();
             
             if (!$user) {
@@ -600,6 +602,7 @@ class SlotsController extends Controller
 
             // Проверяем, есть ли игры в базе
             $gamesCount = \App\Models\SlotegratorGame::count();
+            Log::info("Games in database: {$gamesCount}");
             
             if ($gamesCount === 0) {
                 return response()->json([
@@ -611,7 +614,13 @@ class SlotsController extends Controller
 
             // Получаем список доступных провайдеров напрямую из API
             try {
+                Log::info('Fetching games from Slotegrator API...');
                 $response = $this->client->get('/games', ['page' => 1, 'per-page' => 10]);
+                
+                Log::info('API Response received', [
+                    'items_count' => count($response['items'] ?? []),
+                    'first_game' => $response['items'][0] ?? null
+                ]);
                 
                 if (!isset($response['items']) || empty($response['items'])) {
                     return response()->json([
@@ -623,19 +632,28 @@ class SlotsController extends Controller
                 
                 // Берем первую игру из API (она точно доступна)
                 $apiGame = $response['items'][0];
+                Log::info('Selected game from API', [
+                    'uuid' => $apiGame['uuid'],
+                    'name' => $apiGame['name'],
+                    'provider' => $apiGame['provider']
+                ]);
                 
                 // Ищем эту игру в нашей базе или используем её UUID
                 $game = \App\Models\SlotegratorGame::where('uuid', $apiGame['uuid'])->first();
                 
                 if (!$game) {
+                    Log::info('Game not found in database, creating temporary object');
                     // Если игры нет в базе, создаем временную запись
                     $game = new \App\Models\SlotegratorGame();
                     $game->uuid = $apiGame['uuid'];
                     $game->name = $apiGame['name'];
                     $game->provider = $apiGame['provider'] ?? 'Unknown';
+                } else {
+                    Log::info('Game found in database', ['id' => $game->id]);
                 }
                 
                 $sessionToken = Str::uuid()->toString();
+                Log::info('Initializing game session', ['session_token' => $sessionToken]);
                 
                 // Инициализируем игру
                 $initResponse = $this->initGame([
@@ -648,6 +666,8 @@ class SlotsController extends Controller
                     'language' => 'en',
                 ]);
                 
+                Log::info('Game initialized successfully');
+                
                 // Обновляем сессию пользователя
                 $user->gameSession()->updateOrCreate(
                     ['user_id' => $user->id],
@@ -657,8 +677,11 @@ class SlotsController extends Controller
                     ]
                 );
 
+                Log::info('Running self-validate...');
                 // Запускаем self-validate
                 $result = $this->client->selfValidate();
+                
+                Log::info('Self-validate completed', ['result' => $result]);
                 
                 return response()->json([
                     'validation' => $result,
@@ -671,6 +694,11 @@ class SlotsController extends Controller
                 ]);
                 
             } catch (\Exception $e) {
+                Log::error('Failed to initialize game', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
                 return response()->json([
                     'error' => 'Failed to initialize game for validation',
                     'message' => $e->getMessage(),
