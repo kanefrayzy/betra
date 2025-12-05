@@ -101,9 +101,6 @@
         }
         
     </style>
-    
-    {{-- Подключение Telegram WebView авторизации --}}
-    @include('components.telegram-auth')
 </head>
 <body x-data="{ 
     sidebarOpen: false,
@@ -425,13 +422,6 @@
                 telegramError: '{{ __("Ошибка при генерации ссылки Telegram") }}'
             }
         };
-        
-        @if(request()->header('User-Agent') && (str_contains(request()->header('User-Agent'), 'Telegram') || str_contains(request()->header('User-Agent'), 'TelegramBot')))
-        // Telegram WebApp config
-        window.telegramWebAppConfig = {
-            stylesUrl: '{{ asset('css/telegram-webapp.css') }}?v=1.0'
-        };
-        @endif
     </script>
 
     @livewireScripts

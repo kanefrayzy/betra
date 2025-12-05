@@ -72,10 +72,15 @@ if (document.querySelector('[data-telegram-auth]') ||
     import('./telegram-auth-global.js');
 }
 
-// Import Telegram WebApp - только если User-Agent содержит Telegram
-if (navigator.userAgent.includes('Telegram')) {
-    import('./telegram-webapp.js').then(() => {
-        // Конфиг будет установлен из blade
+// Import Telegram WebApp FULL - только если реально в Telegram
+const isTelegramEnv = window.location.search.includes('tgWebAppPlatform') 
+    || window.location.hash.includes('tgWebAppData')
+    || document.referrer.includes('telegram.org')
+    || navigator.userAgent.includes('Telegram');
+
+if (isTelegramEnv) {
+    import('./telegram-webapp-full.js').then(() => {
+        console.log('✅ Telegram WebApp Full loaded');
     });
 }
 
