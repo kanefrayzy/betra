@@ -38,7 +38,7 @@
                                         </div>
                                         <div>
                                             <p class="text-white font-bold">{{ moneyFormat($transaction->amount) }}</p>
-                                            <p class="text-gray-500 text-sm">{{ $transaction->currency->symbol }}</p>
+                                            <p class="text-gray-500 text-sm">{{ $transaction->currency?->symbol ?? 'N/A' }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -112,7 +112,7 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="text-white font-bold">{{ moneyFormat($transaction->amount) }} {{ $transaction->currency->symbol }}</p>
+                                    <p class="text-white font-bold">{{ moneyFormat($transaction->amount) }} {{ $transaction->currency?->symbol ?? '' }}</p>
                                     <p class="text-gray-500 text-sm">{{ $transaction->created_at->format('d.m.Y H:i') }}</p>
                                 </div>
                             </div>

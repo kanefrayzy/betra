@@ -50,7 +50,7 @@
                                             <p class="font-bold {{ $isWin ? 'text-green-400' : 'text-white' }}">
                                                 {{ moneyFormat($transaction->amount) }}
                                             </p>
-                                            <p class="text-gray-500 text-sm">{{ $transaction->currency->symbol }}</p>
+                                            <p class="text-gray-500 text-sm">{{ $transaction->currency?->symbol ?? 'N/A' }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -158,7 +158,7 @@
                                 </div>
                                 <div>
                                     <p class="font-bold {{ $isWin ? 'text-green-400' : 'text-white' }}">
-                                        {{ moneyFormat($transaction->amount) }} {{ $transaction->currency->symbol }}
+                                        {{ moneyFormat($transaction->amount) }} {{ $transaction->currency?->symbol ?? '' }}
                                     </p>
                                     <p class="text-gray-500 text-sm">{{ $transaction->created_at->format('d.m.Y H:i') }}</p>
                                 </div>
