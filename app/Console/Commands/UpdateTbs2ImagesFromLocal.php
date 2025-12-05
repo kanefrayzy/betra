@@ -39,8 +39,6 @@ class UpdateTbs2ImagesFromLocal extends Command
 
             // Ищем по разным вариантам
             $variants = [
-                "{$slug}.jpg",
-                "{$slug}.png",
                 "{$slug}.webp",
                 str_replace('-', '_', $slug) . ".jpg",
                 strtolower(str_replace(' ', '-', $game->name)) . ".jpg",

@@ -20,7 +20,9 @@ if (!function_exists('webp_url')) {
         
         // Проверяем существование WebP файла
         if (file_exists(public_path($webpUrl))) {
-            return $webpUrl;
+            // Добавляем timestamp файла для cache busting
+            $timestamp = filemtime(public_path($webpUrl));
+            return $webpUrl . '?v=' . $timestamp;
         }
 
         return $url;
