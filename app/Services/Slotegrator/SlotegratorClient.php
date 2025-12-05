@@ -35,7 +35,7 @@ class SlotegratorClient
             $headers = $this->generateHeaders($params);
             
             // Логируем запрос
-            Log::channel('slots')->info('Slotegrator GET Request', [
+            Log::info('Slotegrator GET Request', [
                 'url' => $this->baseUrl . $endpoint,
                 'endpoint' => $endpoint,
                 'params' => $params,
@@ -53,7 +53,7 @@ class SlotegratorClient
             $body = $response->getBody()->getContents();
             
             // Логируем ответ
-            Log::channel('slots')->info('Slotegrator GET Response', [
+            Log::info('Slotegrator GET Response', [
                 'endpoint' => $endpoint,
                 'status' => $statusCode,
                 'response' => $body,
@@ -88,7 +88,7 @@ class SlotegratorClient
             $headers = $this->generateHeaders($params);
             
             // Логируем запрос
-            Log::channel('slots')->info('Slotegrator POST Request', [
+            Log::info('Slotegrator POST Request', [
                 'url' => $this->baseUrl . $endpoint,
                 'endpoint' => $endpoint,
                 'params' => $params,
@@ -109,7 +109,7 @@ class SlotegratorClient
             $body = $response->getBody()->getContents();
             
             // Логируем ответ
-            Log::channel('slots')->info('Slotegrator POST Response', [
+            Log::info('Slotegrator POST Response', [
                 'endpoint' => $endpoint,
                 'status' => $statusCode,
                 'response' => $body,
@@ -158,7 +158,7 @@ class SlotegratorClient
         $xSign = hash_hmac('sha1', $hashString, $this->merchantKey);
         
         // Логируем процесс генерации подписи (без ключа!)
-        Log::channel('slots')->debug('Slotegrator signature generation', [
+        Log::debug('Slotegrator signature generation', [
             'timestamp' => $timestamp,
             'nonce' => $nonce,
             'merchant_id' => $this->merchantId,

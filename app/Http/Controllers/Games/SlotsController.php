@@ -667,19 +667,29 @@ class SlotsController extends Controller
     public function selfValidate()
     {
         try {
+            $this->logger->info('=== Self-validate started ===');
+            
             $user = Auth::user();
             
             if (!$user) {
+                $this->logger->warning('Self-validate: No authenticated user');
                 return response()->json([
                     'error' => 'Authentication required for self-validation',
                     'hint' => 'Please login first'
                 ], 401);
             }
 
+            $this->logger->info('Self-validate: User authenticated', [
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'currency' => $user->currency->symbol
+            ]);
+
             // Проверяем, есть ли игры в базе
             $gamesCount = \App\Models\SlotegratorGame::count();
             
             if ($gamesCount === 0) {
+                $this->logger->warning('Self-validate: No games in database');
                 return response()->json([
                     'error' => 'No games found in database',
                     'hint' => 'Please import games first',
@@ -687,11 +697,15 @@ class SlotsController extends Controller
                 ], 400);
             }
 
+            $this->logger->info("Self-validate: Found {$gamesCount} games in database");
+
             // Получаем список доступных провайдеров напрямую из API
             try {
+                $this->logger->info('Self-validate: Fetching games from API');
                 $response = $this->client->get('/games', ['page' => 1, 'per-page' => 10]);
                 
                 if (!isset($response['items']) || empty($response['items'])) {
+                    $this->logger->error('Self-validate: No games in API response', ['response' => $response]);
                     return response()->json([
                         'error' => 'No games available from Slotegrator API',
                         'hint' => 'No providers are enabled in your contract',
@@ -702,10 +716,17 @@ class SlotsController extends Controller
                 // Берем первую игру из API (она точно доступна)
                 $apiGame = $response['items'][0];
                 
+                $this->logger->info('Self-validate: Selected game from API', [
+                    'game_uuid' => $apiGame['uuid'],
+                    'game_name' => $apiGame['name'],
+                    'provider' => $apiGame['provider'] ?? 'Unknown'
+                ]);
+                
                 // Ищем эту игру в нашей базе или используем её UUID
                 $game = \App\Models\SlotegratorGame::where('uuid', $apiGame['uuid'])->first();
                 
                 if (!$game) {
+                    $this->logger->info('Self-validate: Game not in DB, creating temporary object');
                     // Если игры нет в базе, создаем временную запись
                     $game = new \App\Models\SlotegratorGame();
                     $game->uuid = $apiGame['uuid'];
@@ -714,6 +735,13 @@ class SlotsController extends Controller
                 }
                 
                 $sessionToken = Str::uuid()->toString();
+                
+                $this->logger->info('Self-validate: Initializing game session', [
+                    'game_uuid' => $game->uuid,
+                    'player_id' => $user->id,
+                    'session_token' => $sessionToken,
+                    'currency' => $user->currency->symbol
+                ]);
                 
                 // Инициализируем игру
                 $initResponse = $this->initGame([
@@ -726,6 +754,8 @@ class SlotsController extends Controller
                     'language' => 'en',
                 ]);
                 
+                $this->logger->info('Self-validate: Game initialized successfully', ['init_response' => $initResponse]);
+                
                 // Обновляем сессию пользователя
                 $user->gameSession()->updateOrCreate(
                     ['user_id' => $user->id],
@@ -735,8 +765,12 @@ class SlotsController extends Controller
                     ]
                 );
 
+                $this->logger->info('Self-validate: Calling self-validate endpoint');
+                
                 // Запускаем self-validate
                 $result = $this->client->selfValidate();
+                
+                $this->logger->info('Self-validate: Success', ['result' => $result]);
                 
                 return response()->json([
                     'validation' => $result,
@@ -745,27 +779,35 @@ class SlotsController extends Controller
                         'provider' => $game->provider,
                         'session_id' => $sessionToken,
                         'player_id' => $user->id,
-                    ]
+                    ],
+                    'logs_hint' => 'Check storage/logs/slots.log for detailed request/response logs'
                 ]);
                 
             } catch (\Exception $e) {
+                $this->logger->error('Self-validate: Failed to initialize game', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
                 return response()->json([
                     'error' => 'Failed to initialize game for validation',
                     'message' => $e->getMessage(),
                     'hint' => 'This might mean no providers are enabled in your contract',
-                    'action_required' => 'Contact Slotegrator support or check: php artisan slotegrator:check-providers'
+                    'action_required' => 'Contact Slotegrator support or check: php artisan slotegrator:check-providers',
+                    'logs_hint' => 'Check storage/logs/slots.log for detailed request/response logs'
                 ], 400);
             }
 
         } catch (\Exception $e) {
-            Log::error('Self-validate error', [
+            $this->logger->error('Self-validate error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'error' => 'Self-validation failed',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'logs_hint' => 'Check storage/logs/slots.log for detailed request/response logs'
             ], 500);
         }
     }
