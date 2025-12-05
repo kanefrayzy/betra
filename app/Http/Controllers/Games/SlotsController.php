@@ -500,9 +500,13 @@ class SlotsController extends Controller
             return $this->errorResponse('Transaction not found');
         }
         
-        // Возвращаем ТЕКУЩИЙ баланс пользователя
+        // КРИТИЧНО: возвращаем balance_before из оригинальной транзакции!
+        // Duplicate request = баланс не должен измениться = вернуть баланс ДО первой транзакции
+        $context = json_decode($transaction->context, true);
+        $balanceBefore = $context['balance_before'] ?? $user->balance;
+        
         return response()->json([
-            'balance' => round($user->balance, 2),
+            'balance' => round($balanceBefore, 2),
             'transaction_id' => $this->hash($transaction->id)
         ]);
     }
