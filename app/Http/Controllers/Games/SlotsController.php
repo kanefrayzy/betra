@@ -380,6 +380,9 @@ class SlotsController extends Controller
             
             // Проверка на дубликат refund
             if ($this->isExistingTransaction($data['transaction_id'])) {
+                $this->logger->info('Duplicate refund detected', [
+                    'refund_transaction_id' => $data['transaction_id']
+                ]);
                 return $this->getExistingTransactionResponse($user, $data['transaction_id']);
             }
 
@@ -387,7 +390,10 @@ class SlotsController extends Controller
             $originalTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
 
             if (!$originalTransaction) {
-                // Транзакция не найдена - сохраняем refund без изменения баланса
+                $this->logger->warning('Original transaction not found for refund', [
+                    'bet_transaction_id' => $data['bet_transaction_id'],
+                    'refund_transaction_id' => $data['transaction_id']
+                ]);
                 $refundTransaction = $this->createRefundTransactionForNonExistentBet($user, $data);
                 return $this->getTransactionResponse($user, $refundTransaction);
             }
@@ -399,9 +405,26 @@ class SlotsController extends Controller
             if ($originalTransaction->type === 'bet') {
                 // Возврат ставки - возвращаем деньги
                 $user->balance += $amount;
+                $this->logger->info('Refund for BET', [
+                    'original_tx' => $data['bet_transaction_id'],
+                    'amount' => $amount,
+                    'balance_before' => $originalBalance,
+                    'balance_after' => $user->balance
+                ]);
             } elseif ($originalTransaction->type === 'win') {
                 // Отмена выигрыша - забираем деньги
                 $user->balance -= $amount;
+                $this->logger->info('Refund for WIN', [
+                    'original_tx' => $data['bet_transaction_id'],
+                    'amount' => $amount,
+                    'balance_before' => $originalBalance,
+                    'balance_after' => $user->balance
+                ]);
+            } else {
+                $this->logger->error('Refund for unknown type', [
+                    'original_type' => $originalTransaction->type,
+                    'original_tx' => $data['bet_transaction_id']
+                ]);
             }
             
             $user->save();
