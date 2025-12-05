@@ -707,11 +707,12 @@ class SlotsController extends Controller
                 ]);
                 
                 // Обновляем сессию пользователя ПЕРЕД валидацией
+                // ВАЖНО: Сохраняем UUID игры (не ID модели!)
                 $user->gameSession()->updateOrCreate(
                     ['user_id' => $user->id],
                     [
                         'token' => $sessionToken,
-                        'game_uuid' => $game->uuid,
+                        'game_uuid' => $game->uuid, // UUID игры из API
                     ]
                 );
 
