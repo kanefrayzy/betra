@@ -676,4 +676,77 @@ class SlotsController extends Controller
             return redirect()->back()->with('error', __('Недоступно'));
         }
     }
+
+    public function launchGameDirect(SlotegratorGame $game)
+    {
+        try {
+            $locale = App::getLocale();
+            $user = Auth::user();
+            $sessionToken = Str::uuid()->toString();
+
+            $user->gamesHistory()->create([
+                'slotegrator_game_id' => $game->id,
+                'session_token' => $sessionToken,
+                'ip' => request()->ip(),
+                'device' => (new Agent())->device(),
+            ]);
+
+            $locale = $locale === 'az' ? 'tr' : $locale;
+
+            try {
+                $response = $this->initGame([
+                    'game_uuid' => $game->uuid,
+                    'player_id' => $user->id,
+                    'player_name' => $user->username,
+                    'currency' => $user->currency->symbol,
+                    'session_id' => $sessionToken,
+                    'return_url' => route('home'),
+                    'language' => $locale,
+                ]);
+
+                $user->gameSession()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'token' => $sessionToken,
+                        'game_uuid' => $game->uuid,
+                        'currency' => $user->currency->symbol,
+                    ]
+                );
+
+                $gameUrl = $response['url'] ?? null;
+
+                if (!$gameUrl) {
+                    return redirect()->back()->with('error', __('Недоступно'));
+                }
+
+                $view = (new Agent())->isMobile() ? 'games.mobile' : 'games.play';
+                return view($view, ['game' => $game, 'gameUrl' => $gameUrl]);
+
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+                return redirect()->back()->with('error', __('Недоступно'));
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', __('Недоступно'));
+        }
+    }
+
+    public function launchDemoGameDirect(SlotegratorGame $game)
+    {
+        $locale = App::getLocale();
+        $locale = $locale === 'az' ? 'tr' : $locale;
+        $return_url = route('home');
+
+        $response = $this->initDemoGame([
+            'game_uuid' => $game->uuid,
+            'return_url' => $return_url,
+            'language' => $locale,
+        ]);
+
+        $gameUrl = is_array($response) ? $response['url'] : null;
+
+        $agent = new Agent();
+        $isMobile = $agent->isMobile();
+        return view($isMobile ? 'games.mobile' : 'games.play', ['game' => $game, 'gameUrl' => $gameUrl]);
+    }    
 }
