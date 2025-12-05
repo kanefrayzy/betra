@@ -69,13 +69,13 @@
                          @mouseleave="window.innerWidth >= 768 && (showActions = false)">
 
                         <div class="relative aspect-[3/4]">
-                            <img src="{{$game->image}}" 
-                                 alt="{{$game->title ?? $game->name}}" 
-                                 loading="lazy" 
-                                 decoding="async" 
-                                 width="176" 
-                                 height="235" 
-                                 class="w-full h-full object-cover">
+                            <x-optimized-image 
+                                :src="$game->image" 
+                                :alt="$game->title ?? $game->name"
+                                width="176"
+                                height="235"
+                                class="w-full h-full object-cover"
+                            />
 
                             <div class="absolute top-2 left-2">
                                 <span class="px-2 py-0.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-bold rounded flex items-center gap-1">
@@ -149,13 +149,13 @@
                          @mouseleave="window.innerWidth >= 768 && (showActions = false)">
 
                         <div class="relative aspect-[3/4]">
-                            <img src="{{$game->image}}" 
-                                 alt="{{$game->title ?? $game->name}}" 
-                                 loading="lazy" 
-                                 decoding="async" 
-                                 width="176" 
-                                 height="235" 
-                                 class="w-full h-full object-cover">
+                            <x-optimized-image 
+                                :src="$game->image" 
+                                :alt="$game->title ?? $game->name"
+                                width="176"
+                                height="235"
+                                class="w-full h-full object-cover"
+                            />
 
                             <div class="absolute top-2 left-2 flex flex-col gap-1">
                                 @if(isset($game->is_new) && $game->is_new)

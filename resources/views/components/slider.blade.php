@@ -9,19 +9,25 @@
                         <div class="swiper-slide">
                             @if($banner->link)
                                 <a href="{{ $banner->link }}" class="block relative h-full rounded-2xl overflow-hidden border border-gray-800">
-                                    <img src="{{ $banner->image_url }}" 
-                                         alt="{{ $banner->title }}" 
-                                         loading="lazy" 
-                                         decoding="async" 
-                                         class="w-full h-full object-cover">
+                                    <picture>
+                                        <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', $banner->image_url) }}" type="image/webp">
+                                        <img src="{{ $banner->image_url }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
+                                    </picture>
                                 </a>
                             @else
                                 <div class="relative h-full rounded-2xl overflow-hidden border border-gray-800">
-                                    <img src="{{ $banner->image_url }}" 
-                                         alt="{{ $banner->title }}" 
-                                         loading="lazy" 
-                                         decoding="async" 
-                                         class="w-full h-full object-cover">
+                                    <picture>
+                                        <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', $banner->image_url) }}" type="image/webp">
+                                        <img src="{{ $banner->image_url }}" 
+                                             alt="{{ $banner->title }}" 
+                                             loading="lazy" 
+                                             decoding="async" 
+                                             class="w-full h-full object-cover">
+                                    </picture>
                                 </div>
                             @endif
                         </div>
@@ -66,19 +72,25 @@
                             <div class="swiper-slide h-full">
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" 
-                                             alt="{{ $banner->title }}" 
-                                             loading="lazy" 
-                                             decoding="async" 
-                                             class="w-full h-full object-cover">
+                                        <picture>
+                                            <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', asset($banner->image)) }}" type="image/webp">
+                                            <img src="{{ asset($banner->image) }}" 
+                                                 alt="{{ $banner->title }}" 
+                                                 loading="lazy" 
+                                                 decoding="async" 
+                                                 class="w-full h-full object-cover">
+                                        </picture>
                                     </a>
                                 @else
                                     <div class="h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" 
-                                             alt="{{ $banner->title }}" 
-                                             loading="lazy" 
-                                             decoding="async" 
-                                             class="w-full h-full object-cover">
+                                        <picture>
+                                            <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', asset($banner->image)) }}" type="image/webp">
+                                            <img src="{{ asset($banner->image) }}" 
+                                                 alt="{{ $banner->title }}" 
+                                                 loading="lazy" 
+                                                 decoding="async" 
+                                                 class="w-full h-full object-cover">
+                                        </picture>
                                     </div>
                                 @endif
                             </div>
@@ -97,19 +109,25 @@
                             <div class="swiper-slide h-full">
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" 
-                                             alt="{{ $banner->title }}" 
-                                             loading="lazy" 
-                                             decoding="async" 
-                                             class="w-full h-full object-cover">
+                                        <picture>
+                                            <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', asset($banner->image)) }}" type="image/webp">
+                                            <img src="{{ asset($banner->image) }}" 
+                                                 alt="{{ $banner->title }}" 
+                                                 loading="lazy" 
+                                                 decoding="async" 
+                                                 class="w-full h-full object-cover">
+                                        </picture>
                                     </a>
                                 @else
                                     <div class="h-full rounded-2xl overflow-hidden hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" 
-                                             alt="{{ $banner->title }}" 
-                                             loading="lazy" 
-                                             decoding="async" 
-                                             class="w-full h-full object-cover">
+                                        <picture>
+                                            <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', asset($banner->image)) }}" type="image/webp">
+                                            <img src="{{ asset($banner->image) }}" 
+                                                 alt="{{ $banner->title }}" 
+                                                 loading="lazy" 
+                                                 decoding="async" 
+                                                 class="w-full h-full object-cover">
+                                        </picture>
                                     </div>
                                 @endif
                             </div>
@@ -128,19 +146,25 @@
                             <div class="swiper-slide h-full">
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block h-full rounded-2xl overflow-hidden border border-gray-800 hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" 
-                                             alt="{{ $banner->title }}" 
-                                             loading="lazy" 
-                                             decoding="async" 
-                                             class="w-full h-full object-cover">
+                                        <picture>
+                                            <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', asset($banner->image)) }}" type="image/webp">
+                                            <img src="{{ asset($banner->image) }}" 
+                                                 alt="{{ $banner->title }}" 
+                                                 loading="lazy" 
+                                                 decoding="async" 
+                                                 class="w-full h-full object-cover">
+                                        </picture>
                                     </a>
                                 @else
                                     <div class="h-full rounded-2xl overflow-hidden border border-gray-800 hover:-translate-y-2 transition-transform duration-300">
-                                        <img src="{{ asset($banner->image) }}" 
-                                             alt="{{ $banner->title }}" 
-                                             loading="lazy" 
-                                             decoding="async" 
-                                             class="w-full h-full object-cover">
+                                        <picture>
+                                            <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', asset($banner->image)) }}" type="image/webp">
+                                            <img src="{{ asset($banner->image) }}" 
+                                                 alt="{{ $banner->title }}" 
+                                                 loading="lazy" 
+                                                 decoding="async" 
+                                                 class="w-full h-full object-cover">
+                                        </picture>
                                     </div>
                                 @endif
                             </div>
@@ -185,19 +209,25 @@
                 <div class="flex-shrink-0 w-40 snap-start">
                     @if($banner->link)
                         <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="block relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                            <img src="{{ $banner->mobile_image_url }}" 
-                                 alt="{{ $banner->title }}" 
-                                 loading="lazy" 
-                                 decoding="async" 
-                                 class="w-full h-full object-cover">
+                            <picture>
+                                <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', $banner->mobile_image_url) }}" type="image/webp">
+                                <img src="{{ $banner->mobile_image_url }}" 
+                                     alt="{{ $banner->title }}" 
+                                     loading="lazy" 
+                                     decoding="async" 
+                                     class="w-full h-full object-cover">
+                            </picture>
                         </a>
                     @else
                         <div class="relative aspect-[162/104] rounded-2xl overflow-hidden border border-gray-800">
-                            <img src="{{ $banner->mobile_image_url }}" 
-                                 alt="{{ $banner->title }}" 
-                                 loading="lazy" 
-                                 decoding="async" 
-                                 class="w-full h-full object-cover">
+                            <picture>
+                                <source srcset="{{ str_replace(['.jpg', '.jpeg', '.png'], '.webp', $banner->mobile_image_url) }}" type="image/webp">
+                                <img src="{{ $banner->mobile_image_url }}" 
+                                     alt="{{ $banner->title }}" 
+                                     loading="lazy" 
+                                     decoding="async" 
+                                     class="w-full h-full object-cover">
+                            </picture>
                         </div>
                     @endif
                 </div>
