@@ -40,8 +40,8 @@ class UpdateTbs2ImagesFromLocal extends Command
             // Ищем по разным вариантам
             $variants = [
                 "{$slug}.webp",
-                str_replace('-', '_', $slug) . ".jpg",
-                strtolower(str_replace(' ', '-', $game->name)) . ".jpg",
+                str_replace('-', '_', $slug) . ".webp",
+                strtolower(str_replace(' ', '-', $game->name)) . ".webp",
             ];
 
             foreach ($variants as $variant) {
