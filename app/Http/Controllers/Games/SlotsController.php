@@ -423,17 +423,17 @@ class SlotsController extends Controller
 
     protected function isExistingTransaction($transactionId)
     {
-        $cacheKey = "transaction_exists:{$transactionId}";
-        return Cache::remember($cacheKey, 3600, function () use ($transactionId) {
-            return Transaction::where('hash', $transactionId)->exists();
-        });
+        // НЕ кешируем проверку существования - иначе повторные запросы создадут дубликаты
+        return Transaction::where('hash', $transactionId)->exists();
     }
 
     private function getExistingTransactionResponse($user, $transactionId)
     {
+        $transaction = Transaction::where('hash', $transactionId)->first();
+        
         return response()->json([
             'balance' => round($user->balance, 2),
-            'transaction_id' => $this->hash($transactionId)
+            'transaction_id' => $transaction ? $this->hash($transaction->id) : $this->hash($transactionId)
         ]);
     }
 
