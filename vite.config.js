@@ -20,8 +20,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    'vendor': ['noty'],
-                    'alpine-livewire': ['livewire', 'alpinejs']
+                    'vendor': ['noty']
                 },
                 chunkFileNames: 'js/[name]-[hash].js',
                 entryFileNames: 'js/[name]-[hash].js',
@@ -33,7 +32,7 @@ export default defineConfig({
         assetsInlineLimit: 4096
     },
     optimizeDeps: {
-        include: ['livewire', 'alpinejs', 'noty'],
+        include: ['noty'],
         exclude: ['socket.io-client']
     },
     server: {

@@ -1,5 +1,5 @@
 {
-    "name": "bigcrash",
+    "name": "betra",
     "version": "0.1.0",
     "type": "module",
     "private": true,
@@ -10,13 +10,11 @@
         "tailwind:init": "tailwindcss init -p"
     },
     "dependencies": {
-        "alpinejs": "^3.14.1",
         "body-parser": "^1.20.2",
         "express": "^4.19.2",
         "ioredis": "^5.4.1",
         "jquery": "^3.7.1",
         "laravel-echo": "^1.16.1",
-        "livewire": "^0.6.1",
         "mysql2": "^3.10.0",
         "noty": "^3.2.0-beta",
         "pusher-js": "^8.4.0-rc2",

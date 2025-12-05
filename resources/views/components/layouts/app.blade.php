@@ -438,7 +438,7 @@
     </script>
 
     @guest
-        <script src="//ulogin.ru/js/ulogin.js"></script>
+        <script src="//ulogin.ru/js/ulogin.js" defer></script>
     @endguest
 
 
