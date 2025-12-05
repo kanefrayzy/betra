@@ -564,16 +564,31 @@ class SlotsController extends Controller
 protected function rollback($data)
 {
     try {
+        $rollbackTimeout = 5; // 5 секунд для rollback операций
+        
         return DB::transaction(function () use ($data) {
             $rollbackTransactions = $data['rollback_transactions'];
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
             $balanceBefore = $user->balance;
+
+            // Логируем начало rollback
+            $this->logger->info('Processing rollback', [
+                'transaction_id' => $data['transaction_id'],
+                'player_id' => $data['player_id'],
+                'transactions_count' => count($rollbackTransactions),
+                'balance_before' => $balanceBefore
+            ]);
 
             // Проверка на дубликат rollback
             $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
             if ($existingRollbackTransaction) {
                 $context = json_decode($existingRollbackTransaction->context, true);
                 $rollbackTxIds = $context['rollback_transactions'] ?? [];
+
+                $this->logger->info('Duplicate rollback detected', [
+                    'transaction_id' => $data['transaction_id'],
+                    'balance' => $user->balance
+                ]);
 
                 return response()->json([
                     'balance' => round($user->balance, 2),
@@ -619,21 +634,40 @@ protected function rollback($data)
                 ])
             ]);
 
+            // Логируем успешное завершение
+            $this->logger->info('Rollback completed', [
+                'transaction_id' => $data['transaction_id'],
+                'balance_before' => $balanceBefore,
+                'balance_after' => $user->balance,
+                'rolled_back_transactions' => $rollbackTxIds
+            ]);
+
             return response()->json([
                 'balance' => round($user->balance, 2),
                 'transaction_id' => $this->hash($rollbackTransaction->id),
                 'rollback_transactions' => $rollbackTxIds,
             ]);
             
-        }, $this->transactionTimeout);
+        }, $rollbackTimeout);
         
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Специфичная обработка DB ошибок (timeout, deadlock)
+        $this->logger->error('Rollback database error', [
+            'error' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'transaction_id' => $data['transaction_id'] ?? null,
+            'player_id' => $data['player_id'] ?? null
+        ]);
+        return $this->errorResponse('Database error during rollback');
     } catch (\Exception $e) {
+        // Общие ошибки без деталей для Slotegrator
         $this->logger->error('Rollback error', [
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
-            'data' => $data
+            'transaction_id' => $data['transaction_id'] ?? null,
+            'player_id' => $data['player_id'] ?? null
         ]);
-        return $this->errorResponse('Rollback failed: ' . $e->getMessage());
+        return $this->errorResponse('Rollback failed');
     }
 }
 
@@ -668,6 +702,14 @@ protected function rollback($data)
     {
         $amount = $transaction->amount; // БЕЗ round()!
         
+        // Логируем начало обработки
+        $this->logger->info('Processing rollback for transaction', [
+            'transaction_id' => $transaction->hash,
+            'type' => $transaction->type->value,
+            'amount' => $amount,
+            'balance_before' => $user->balance
+        ]);
+        
         if ($transaction->type->value === 'bet') {
             $user->balance += $amount;
         } elseif ($transaction->type->value === 'win') {
@@ -686,6 +728,12 @@ protected function rollback($data)
             'amount' => 0,
             'status' => 'rollback',
             'context' => json_encode($context)
+        ]);
+
+        // Логируем завершение
+        $this->logger->info('Transaction rolled back', [
+            'transaction_id' => $transaction->hash,
+            'balance_after' => $user->balance
         ]);
     }
 
