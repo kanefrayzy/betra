@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <div class="bg-[#0f212e] min-h-screen flex items-center justify-center px-4 py-8">
+    <div class="min-h-screen flex items-center justify-center px-4 py-8">
         <div class="max-w-lg w-full">
 
             <div class="bg-[#1a2c38] border border-[#2d3748] rounded-2xl p-8 md:p-12 text-center">
