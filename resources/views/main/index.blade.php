@@ -91,7 +91,6 @@
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
                                  @click.stop>
                                 <a href="{{ route('slots.play', $game->slug) }}"
-                                   @auth wire:navigate @endauth
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 bg-[#40c920] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all">
                                     {{__('Играть')}}
@@ -178,7 +177,6 @@
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
                                  @click.stop>
                                 <a href="{{ route('slots.play', $game->slug) }}"
-                                   @auth wire:navigate @endauth
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 rounded-lg text-sm font-bold text-center transition-all text-black hover:opacity-90"
                                    style="background-color: {{ $category->color }}">

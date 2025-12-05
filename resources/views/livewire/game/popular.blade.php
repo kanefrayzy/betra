@@ -104,7 +104,7 @@
                                     </div>
 
                                     <a href="{{ route('slots.play', $game->slug ?? $game->name) }}"
-                                       wire:navigate
+                                       
                                        class="w-full py-2.5 bg-[#ffb300] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all"
                                        @click.stop="if (!requireAuth(null, $event)) return false">
                                         {{__('Играть')}}

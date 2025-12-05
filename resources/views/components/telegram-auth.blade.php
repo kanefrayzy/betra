@@ -136,7 +136,7 @@
         }
     });
     
-    // При навигации Livewire - ТОЛЬКО если в Telegram
+    // При навигации Livewire
     document.addEventListener('livewire:navigated', function() {
         if (typeof window.isTelegramWebApp === 'function' && window.isTelegramWebApp()) {
             console.log('Livewire навигация - переинициализация Telegram WebApp');

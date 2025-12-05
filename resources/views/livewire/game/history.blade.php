@@ -60,7 +60,7 @@
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
                                  @click.stop>
                                 <a href="{{ route('slots.play', $game->slug ?? $game->name) }}"
-                                   wire:navigate
+                                   
                                    class="w-full py-2.5 bg-[#ffb300] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all"
                                    @click.stop="if (!requireAuth(null, $event)) return false">
                                     {{__('Играть снова')}}
@@ -89,7 +89,7 @@
             </p>
             <a
                 href="/"
-                wire:navigate
+                
                 class="mt-6 bg-[#ffb300] hover:bg-[#f5a300] text-black py-3 px-6 rounded-lg font-bold transition-all duration-200 flex items-center"
             >
                 <i class="fas fa-gamepad mr-2"></i>{{ __('Перейти к играм') }}

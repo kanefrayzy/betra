@@ -251,24 +251,24 @@
                                     <li><a href="javascript:void(0);" onclick="openRakebackModal()" class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Бонус') }}</a></li>
                                     <li><a href="javascript:void(0);" onclick="openRankModal()" class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Уровень') }}</a></li>
                                     <li><a href="javascript:void(0);" onclick="openPromoModal()" class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Промокод') }}</a></li>
-                                    <li><a href="{{ route('account.referrals') }}" wire:navigate class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Партнерам') }}</a></li>
+                                    <li><a href="{{ route('account.referrals') }}"  class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Партнерам') }}</a></li>
                                     <li><a href="javascript:void(0);" onclick="window.openModalWithMyInfo()" class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Статистика') }}</a></li>
-                                    <li><a href="{{ route('transaction') }}" wire:navigate class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Транзакции') }}</a></li>
-                                    <li><a href="{{ route('account') }}" wire:navigate class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Настройки') }}</a></li>
+                                    <li><a href="{{ route('transaction') }}"  class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Транзакции') }}</a></li>
+                                    <li><a href="{{ route('account') }}"  class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Настройки') }}</a></li>
                                 @else
                                     <li><a href="#" onclick="openLoginModal()" class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Вход') }}</a></li>
                                     <li><a href="#" onclick="openRegisterModal()" class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Регистрация') }}</a></li>
                                 @endauth
-                                    <li><a href="{{ route('rules') }}" wire:navigate class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Правила') }}</a></li>
+                                    <li><a href="{{ route('rules') }}"  class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Правила') }}</a></li>
                             </ul>
                         </div>
 
                         <div>
                             <h3 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">{{ __('Казино') }}</h3>
                             <ul class="space-y-2">
-                                <li><a href="{{ route('slots.lobby') }}" wire:navigate class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Все слоты') }}</a></li>
+                                <li><a href="{{ route('slots.lobby') }}"  class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __('Все слоты') }}</a></li>
                                 @foreach($sidebarCategories as $cat)
-                                <li><a href="{{ route('slots.category', $cat->slug) }}" wire:navigate class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __($cat->name) }}</a></li>
+                                <li><a href="{{ route('slots.category', $cat->slug) }}"  class="text-gray-400 hover:text-[#3b82f6] transition text-sm">{{ __($cat->name) }}</a></li>
                                 @endforeach
                             </ul>
                         </div>
@@ -312,27 +312,27 @@
                                     x-transition:enter-end="opacity-100 transform translate-y-0"
                                     x-cloak
                                     class="absolute bottom-full mb-2 left-0 w-full bg-[#1a2c38] rounded-lg shadow-xl border border-[#2d3748] overflow-hidden">
-                                    <a href="/setlocale/ru" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
+                                    <a href="/setlocale/ru"  class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
                                         <img src="/assets/images/lang/ru.png" alt="RU" class="w-5 h-5 rounded">
                                         <span>RU</span>
                                     </a>
-                                    <a href="/setlocale/en" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
+                                    <a href="/setlocale/en"  class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
                                         <img src="/assets/images/lang/en.png" alt="EN" class="w-5 h-5 rounded">
                                         <span>EN</span>
                                     </a>
-                                    <a href="/setlocale/tr" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
+                                    <a href="/setlocale/tr"  class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
                                         <img src="/assets/images/lang/tr.png" alt="TR" class="w-5 h-5 rounded">
                                         <span>TR</span>
                                     </a>
-                                    <a href="/setlocale/az" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
+                                    <a href="/setlocale/az"  class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
                                         <img src="/assets/images/lang/az.png" alt="AZ" class="w-5 h-5 rounded">
                                         <span>AZ</span>
                                     </a>
-                                    <a href="/setlocale/kz" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
+                                    <a href="/setlocale/kz"  class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
                                         <img src="/assets/images/lang/kz.png" alt="KZ" class="w-5 h-5 rounded">
                                         <span>KZ</span>
                                     </a>
-                                    <a href="/setlocale/uz" wire:navigate class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
+                                    <a href="/setlocale/uz"  class="flex items-center gap-2 px-3 py-2 hover:bg-[#2d3748] transition text-sm text-gray-300">
                                         <img src="/assets/images/lang/uz.png" alt="UZ" class="w-5 h-5 rounded">
                                         <span>UZ</span>
                                     </a>                        

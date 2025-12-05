@@ -59,7 +59,7 @@
                              class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
                              @click.stop>
                             <a href="{{ route('slots.play', $game->slug) }}"
-                               wire:navigate
+                               
                                class="w-full py-2.5 bg-[#ffb300] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all"
                                @click.stop="if (!requireAuth(null, $event)) return false">
                                 {{__('Играть')}}
