@@ -224,20 +224,38 @@ class SlotsController extends Controller
             // Верификация подписи
             $this->client->verifySignature($request->headers->all(), $data);
             
-            // КРИТИЧЕСКИ: Проверяем session_id ДО обработки
+            // Проверяем/создаём сессию при первом callback
             if (isset($data['session_id'])) {
+                $user = User::find($data['player_id']);
+                
                 $session = DB::table('game_sessions')
                     ->where('user_id', $data['player_id'])
                     ->where('token', $data['session_id'])
                     ->first();
                     
                 if (!$session) {
-                    $this->logger->error('Session not found in DB', [
+                    // Создаём сессию автоматически при первом callback от Slotegrator
+                    $this->logger->info('Auto-creating session from callback', [
                         'player_id' => $data['player_id'],
                         'session_id' => $data['session_id'],
+                        'game_uuid' => $data['game_uuid'] ?? null,
+                        'currency' => $data['currency'],
                         'action' => $action
                     ]);
-                    return $this->errorResponse('Invalid session');
+                    
+                    $user->gameSession()->updateOrCreate(
+                        ['user_id' => $user->id],
+                        [
+                            'token' => $data['session_id'],
+                            'game_uuid' => $data['game_uuid'] ?? null,
+                            'currency' => $data['currency'],
+                        ]
+                    );
+                    
+                    $session = (object)[
+                        'currency' => $data['currency'],
+                        'game_uuid' => $data['game_uuid'] ?? null
+                    ];
                 }
                 
                 // Проверка валюты сессии (защита от смены валюты во время игры)
