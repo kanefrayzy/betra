@@ -111,7 +111,7 @@ class ImportSlotegratorGames extends Command
                         // Обновляем данные существующей игры
                         $existingGame->update([
                             'name' => $gameData['name'],
-                            'image' => !empty($gameData['image']) ? $gameData['image'] : '/assets/images/avatar-placeholder.png',
+                            'image' => !empty($gameData['image']) ? $gameData['image'] : '/assets/images/game-placeholder.jpg',
                             'type' => $gameData['type'] ?? null,
                             'provider' => $gameData['provider'] ?? null,
                             'technology' => $gameData['technology'] ?? null,
@@ -127,7 +127,7 @@ class ImportSlotegratorGames extends Command
                         SlotegratorGame::create([
                             'uuid' => $gameData['uuid'],
                             'name' => $gameData['name'],
-                            'image' => !empty($gameData['image']) ? $gameData['image'] : '/assets/images/avatar-placeholder.png',
+                            'image' => !empty($gameData['image']) ? $gameData['image'] : '/assets/images/game-placeholder.jpg',
                             'type' => $gameData['type'] ?? null,
                             'provider' => $gameData['provider'] ?? null,
                             'technology' => $gameData['technology'] ?? null,
