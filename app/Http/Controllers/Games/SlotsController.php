@@ -445,11 +445,12 @@ class SlotsController extends Controller
             $amount = round($data['amount'], 2);
             $balanceBefore = $user->balance;
             
-            // КРИТИЧЕСКАЯ ЛОГИКА: Направление refund зависит от типа оригинальной транзакции
-            // ВАЖНО: type из БД = enum объект, используем ->value для получения строки
+            // КРИТИЧНО: Refund работает ТОЛЬКО для BET транзакций
+            // Для WIN/REFUND/других типов - баланс НЕ меняем (некорректный refund)
             if ($originalTransaction->type->value === 'bet') {
-                // Refund для BET = возврат ставки = возвращаем деньги
+                // Возврат ставки - возвращаем деньги
                 $user->balance += $amount;
+                $user->save();
                 
                 $this->logger->info('Refund for BET', [
                     'original_tx' => $data['bet_transaction_id'],
@@ -457,25 +458,17 @@ class SlotsController extends Controller
                     'balance_before' => $balanceBefore,
                     'balance_after' => $user->balance
                 ]);
-                
-            } elseif ($originalTransaction->type->value === 'win') {
-                // Refund для WIN = отмена выигрыша = забираем деньги
-                $user->balance -= $amount;
-                
-                $this->logger->info('Refund for WIN', [
-                    'original_tx' => $data['bet_transaction_id'],
-                    'amount' => $amount,
-                    'balance_before' => $balanceBefore,
-                    'balance_after' => $user->balance
-                ]);
             } else {
-                $this->logger->error('Refund for unknown transaction type', [
-                    'original_type' => $originalTransaction->type,
-                    'original_tx' => $data['bet_transaction_id']
+                // Некорректный refund (для WIN/REFUND) - НЕ МЕНЯЕМ БАЛАНС
+                $this->logger->warning('Invalid refund for non-BET transaction', [
+                    'original_type' => $originalTransaction->type->value,
+                    'original_tx' => $data['bet_transaction_id'],
+                    'refund_tx' => $data['transaction_id'],
+                    'amount' => $amount,
+                    'balance_unchanged' => $user->balance
                 ]);
+                // Баланс не меняем - просто сохраняем запись транзакции
             }
-            
-            $user->save();
 
             // Создаём refund транзакцию
             $transaction = $this->createTransaction(
