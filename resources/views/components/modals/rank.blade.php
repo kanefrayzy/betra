@@ -1,4 +1,3 @@
-@auth
 <div x-data="{
     open: false,
     type: 'rank',
@@ -257,4 +256,3 @@ function closeRankModal() {
     window.dispatchEvent(new CustomEvent('close-rank-modal'));
 }
 </script>
-@endauth

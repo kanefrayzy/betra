@@ -1,4 +1,3 @@
-@auth
 <div class="modal" id="tg-modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -33,4 +32,4 @@
         </div>
     </div>
 </div>
-@endauth
+

@@ -1,4 +1,3 @@
-@auth
 <div x-data="{
     open: false,
     type: 'rake',
@@ -224,4 +223,3 @@ function handleRakebackSubmit(e) {
 document.addEventListener('DOMContentLoaded', initRakebackForm);
 document.addEventListener('livewire:navigated', initRakebackForm);
 </script>
-@endauth

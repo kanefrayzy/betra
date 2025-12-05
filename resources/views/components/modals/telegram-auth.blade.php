@@ -1,4 +1,3 @@
-<!-- Модальное окно Telegram авторизации -->
 <div x-data="{ 
         open: false, 
         selectedCurrency: '',
@@ -223,7 +222,6 @@
     <script>
         // Глобальная функция для открытия модала
         window.openTelegramAuthModal = function(userData) {
-            console.log('Opening Telegram auth modal with user:', userData);
             window.dispatchEvent(new CustomEvent('open-telegram-auth-modal', {
                 detail: { user: userData }
             }));

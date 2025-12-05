@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Import chat system - прямая загрузка для быстрого подключения
 import './chat/main.js';
 
+// Import game sliders management
+import './game-sliders.js';
+
 // Import Telegram auth component - всегда нужен для Alpine x-data
 import './telegram-auth.js';
 

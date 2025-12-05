@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Utility: Hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Alpine.js utilities */
+[x-cloak] { 
+    display: none !important; 
+}
+
+[x-show] {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+[x-show][style*="display: none"] {
+    position: absolute !important;
+    pointer-events: none;
+}
+
 body {
     margin: 0;
     background-color: #0f1419;
