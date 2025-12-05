@@ -384,8 +384,7 @@ class SlotsController extends Controller
                 $this->logger->info('Duplicate refund detected (same transaction_id)', [
                     'refund_transaction_id' => $data['transaction_id']
                 ]);
-                $existingTransaction = Transaction::where('hash', $data['transaction_id'])->first();
-                return $this->getTransactionResponse($user, $existingTransaction);
+                return $this->getExistingTransactionResponse($user, $data['transaction_id']);
             }
 
             // Проверка #2: Используем Redis для атомарной проверки/блокировки
@@ -406,28 +405,9 @@ class SlotsController extends Controller
                     'new_refund_id' => $data['transaction_id']
                 ]);
                 
-                // Пытаемся найти существующую транзакцию
-                $existingRefund = Transaction::where('hash', $existingRefundHash)->first();
-                
-                if ($existingRefund) {
-                    return $this->getTransactionResponse($user, $existingRefund);
-                }
-                
-                // Если транзакция еще не закоммичена, ждём и пробуем снова
-                sleep(1);
-                $existingRefund = Transaction::where('hash', $existingRefundHash)->first();
-                
-                if ($existingRefund) {
-                    return $this->getTransactionResponse($user, $existingRefund);
-                }
-                
-                // Если всё равно не нашли - что-то не так, но не даём создать дубликат
-                $this->logger->error('Refund marked in Redis but not found in DB', [
-                    'bet_transaction_id' => $data['bet_transaction_id'],
-                    'existing_refund_id' => $existingRefundHash
-                ]);
-                
-                return $this->errorResponse('Refund already processed');
+                // КРИТИЧНО: Используем getExistingTransactionResponse
+                // который вернёт баланс из ОРИГИНАЛЬНОЙ транзакции
+                return $this->getExistingTransactionResponse($user, $existingRefundHash);
             }
             
             // Устанавливаем TTL на ключ (1 час)
@@ -516,9 +496,17 @@ class SlotsController extends Controller
     {
         $transaction = Transaction::where('hash', $transactionId)->first();
         
+        if (!$transaction) {
+            return $this->errorResponse('Transaction not found');
+        }
+        
+        // КРИТИЧНО: Возвращаем баланс ИЗ оригинальной транзакции
+        $context = json_decode($transaction->context, true);
+        $balanceAfter = $context['balance_after'] ?? $user->balance;
+        
         return response()->json([
-            'balance' => round($user->balance, 2),
-            'transaction_id' => $transaction ? $this->hash($transaction->id) : $this->hash($transactionId)
+            'balance' => round($balanceAfter, 2),
+            'transaction_id' => $this->hash($transaction->id)
         ]);
     }
 
