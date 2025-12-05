@@ -734,10 +734,13 @@ class SlotsController extends Controller
                     'game_uuid' => $savedSession->game_uuid
                 ]);
 
-                // ВАЖНО: Пауза чтобы Slotegrator успел зарегистрировать сессию
-                sleep(2);
+                // КРИТИЧЕСКИ: Slotegrator нужно время чтобы зарегистрировать сессию в своей системе
+                // После /games/init сессия еще НЕ активна на их стороне
+                Log::info('Waiting for Slotegrator to register session...');
+                sleep(5); // Увеличиваем паузу до 5 секунд
 
                 // Запускаем self-validate
+                Log::info('Starting self-validate process');
                 $result = $this->client->selfValidate();
                 
                 return response()->json([
