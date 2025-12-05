@@ -387,19 +387,21 @@
     <div id="overlay" class="fixed inset-0 z-40 hidden bg-black/75 backdrop-blur-sm"></div>
 
     <!-- Modals -->
-    @auth
-        <x-modals.u-info/>
-        <x-modals.cash/>
-        <x-modals.rank/>
-        <x-modals.promocode/>
-        <x-modals.chat-rules/>
-    @endauth
+    @auth   
+    <x-modals.cash/>
+    <x-modals.rank/>
+    <x-modals.promocode/>       
     <x-modals.rakeback/>
+    @endauth
+    <x-modals.chat-rules/>
+    <x-modals.u-info/>
+    @guest
     <x-modals.register/>
     <x-modals.login/>
     <x-modals.forgot-password/>
     <x-modals.telegram-auth/>
     <x-modals.currency-select/>
+    @endguest
 
     <!-- PHP Config Injection for JavaScript -->
     <script>
