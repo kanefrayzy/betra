@@ -726,6 +726,22 @@ class SlotsController extends Controller
                     'language' => 'en',
                 ]);
                 
+                // Проверяем что игра успешно инициализирована
+                if (!isset($initResponse['url']) || empty($initResponse['url'])) {
+                    return response()->json([
+                        'error' => 'Game initialization failed',
+                        'response' => $initResponse,
+                        'hint' => 'Provider may not be enabled or game is unavailable'
+                    ], 400);
+                }
+                
+                Log::info('Slotegrator self-validate: Game initialized', [
+                    'game_uuid' => $game->uuid,
+                    'session_id' => $sessionToken,
+                    'game_url_received' => true,
+                    'player_id' => $user->id
+                ]);
+                
                 // Обновляем сессию пользователя
                 $user->gameSession()->updateOrCreate(
                     ['user_id' => $user->id],
@@ -734,6 +750,9 @@ class SlotsController extends Controller
                         'game_uuid' => $game->uuid,
                     ]
                 );
+
+                // ВАЖНО: Пауза чтобы Slotegrator успел зарегистрировать сессию
+                sleep(3);
 
                 // Запускаем self-validate
                 $result = $this->client->selfValidate();
@@ -745,6 +764,7 @@ class SlotsController extends Controller
                         'provider' => $game->provider,
                         'session_id' => $sessionToken,
                         'player_id' => $user->id,
+                        'game_url_received' => true,
                     ]
                 ]);
                 
