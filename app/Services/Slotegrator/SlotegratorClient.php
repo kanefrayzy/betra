@@ -32,41 +32,20 @@ class SlotegratorClient
     public function get($endpoint, $params = [])
     {
         try {
-            $headers = $this->generateHeaders($params);
-            
-            // Логируем запрос
-            Log::info('Slotegrator GET Request', [
-                'url' => $this->baseUrl . $endpoint,
-                'endpoint' => $endpoint,
-                'params' => $params,
-                'headers' => $headers,
-                'timestamp' => now()->toDateTimeString()
-            ]);
-            
             $response = $this->client->get($this->baseUrl . $endpoint, [
                 'query' => $params,
-                'headers' => $headers,
+                'headers' => $this->generateHeaders($params),
                 'http_errors' => false
             ]);
 
             $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();
-            
-            // Логируем ответ
-            Log::info('Slotegrator GET Response', [
-                'endpoint' => $endpoint,
-                'status' => $statusCode,
-                'response' => $body,
-                'response_headers' => $response->getHeaders()
-            ]);
 
             if ($statusCode !== 200) {
                 Log::error('Slotegrator GET error', [
                     'endpoint' => $endpoint,
                     'status' => $statusCode,
-                    'response' => $body,
-                    'request_params' => $params,
-                    'request_headers' => $headers
+                    'response' => $body
                 ]);
                 throw new Exception("API GET request failed with status {$statusCode}: {$body}");
             }
@@ -85,21 +64,10 @@ class SlotegratorClient
     public function post(string $endpoint, array $params = [])
     {
         try {
-            $headers = $this->generateHeaders($params);
-            
-            // Логируем запрос
-            Log::info('Slotegrator POST Request', [
-                'url' => $this->baseUrl . $endpoint,
-                'endpoint' => $endpoint,
-                'params' => $params,
-                'headers' => $headers,
-                'timestamp' => now()->toDateTimeString()
-            ]);
-            
             // application/x-www-form-urlencoded
             $options = [
                 'form_params' => $params,
-                'headers' => $headers,
+                'headers' => $this->generateHeaders($params),
                 'http_errors' => false
             ];
 
@@ -107,22 +75,13 @@ class SlotegratorClient
 
             $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();
-            
-            // Логируем ответ
-            Log::info('Slotegrator POST Response', [
-                'endpoint' => $endpoint,
-                'status' => $statusCode,
-                'response' => $body,
-                'response_headers' => $response->getHeaders()
-            ]);
 
             if ($statusCode !== 200) {
                 Log::error('Slotegrator POST error', [
                     'endpoint' => $endpoint,
                     'status' => $statusCode,
                     'response' => $body,
-                    'request_params' => $params,
-                    'request_headers' => $headers
+                    'params' => $params
                 ]);
                 throw new Exception("API POST request failed with status {$statusCode}: {$body}");
             }
@@ -156,16 +115,6 @@ class SlotegratorClient
 
         $hashString = http_build_query($mergedParams);
         $xSign = hash_hmac('sha1', $hashString, $this->merchantKey);
-        
-        // Логируем процесс генерации подписи (без ключа!)
-        Log::debug('Slotegrator signature generation', [
-            'timestamp' => $timestamp,
-            'nonce' => $nonce,
-            'merchant_id' => $this->merchantId,
-            'hash_string' => $hashString,
-            'signature' => $xSign,
-            'request_params' => $requestParams
-        ]);
 
         return [
             'X-Merchant-Id' => $this->merchantId,
@@ -224,6 +173,17 @@ class SlotegratorClient
     public function selfValidate()
     {
         $params = [];
+        $headers = $this->generateHeaders($params);
+        
+        // Вывод полного запроса для саппорта
+        dd([
+            'url' => $this->baseUrl . '/self-validate',
+            'method' => 'POST',
+            'headers' => $headers,
+            'parameters' => $params,
+            'merchant_id' => $this->merchantId,
+        ]);
+        
         return $this->post('/self-validate', $params);
     }
 
