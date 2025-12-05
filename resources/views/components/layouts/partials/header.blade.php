@@ -16,11 +16,11 @@
         @auth
             <!-- Баланс на мобильных -->
             <div class="md:hidden">
-                <livewire:balance lazy />
+                <livewire:balance wire:init />
             </div>
       
             <div class="hidden md:block">
-                <livewire:balance lazy />
+                <livewire:balance wire:init />
             </div>
         @endauth
 
@@ -28,7 +28,7 @@
         <div class="flex items-center space-x-3">
             @auth
                 <div class="hidden md:block">
-                    <livewire:notifications lazy/>
+                    <livewire:notifications wire:init/>
                 </div>
 
 
