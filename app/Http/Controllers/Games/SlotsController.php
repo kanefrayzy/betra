@@ -379,12 +379,14 @@ class SlotsController extends Controller
         return DB::transaction(function () use ($data) {
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
             
-            // Проверка на дубликат refund
+            // Проверка на дубликат refund - возвращаем существующую транзакцию
             if ($this->isExistingTransaction($data['transaction_id'])) {
                 $this->logger->info('Duplicate refund detected', [
                     'refund_transaction_id' => $data['transaction_id']
                 ]);
-                return $this->getExistingTransactionResponse($user, $data['transaction_id']);
+                // КРИТИЧЕСКИ: Используем существующую транзакцию, а не текущий баланс!
+                $existingTransaction = Transaction::where('hash', $data['transaction_id'])->first();
+                return $this->getTransactionResponse($user, $existingTransaction);
             }
 
             // Ищем ОРИГИНАЛЬНУЮ транзакцию
