@@ -4,10 +4,10 @@ if (!function_exists('webp_url')) {
     /**
      * Get WebP URL if exists, otherwise return original
      */
-    function webp_url(string $url): string
+    function webp_url(?string $url): string
     {
         if (empty($url)) {
-            return $url;
+            return '/assets/images/game-placeholder.png'; // Возвращаем placeholder
         }
 
         // Если это внешний URL, возвращаем как есть
