@@ -546,15 +546,16 @@ class SlotsController extends Controller
         
         $context = json_decode($transaction->context, true);
         
-        // КРИТИЧНО: Возвращаем баланс из оригинальной транзакции (balance_after)
-        // НЕ текущий баланс пользователя, т.к. между транзакциями могли быть другие операции
-        $balance = $context['balance_after'] ?? $user->balance;
+        // КРИТИЧНО: Возвращаем balance_before из оригинальной транзакции!
+        // "Balance should not be changed" = баланс как ДО выполнения первой транзакции
+        // Duplicate не должен применить операцию повторно
+        $balance = $context['balance_before'] ?? $user->balance;
         
         $this->logger->info('Duplicate transaction detected', [
             'hash' => $transactionId,
             'type' => $transaction->type->value ?? 'unknown',
-            'current_user_balance' => $user->balance,
-            'returned_historical_balance' => $balance
+            'balance_before_original' => $balance,
+            'current_user_balance' => $user->balance
         ]);
         
         return response()->json([
