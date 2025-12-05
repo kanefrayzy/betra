@@ -195,7 +195,7 @@ Route::any('games/tbs2/test', function() {
 
 # Slotegraotr
 Route::post('games/slotegrator/callback', [SlotsController::class, 'callback'])->name('slots.callback');
-Route::get('games/slotegrator/self-validate', [SlotsController::class, 'selfValidate'])->name('slots.selfValidate');
+Route::get('games/slotegrator/self-validate', [SlotsController::class, 'selfValidate'])->middleware('auth')->name('slots.selfValidate');
 
 # B2B
 Route::post('games/b2b-slots/callback', [B2bSlotsController::class, 'callback'])->name('b2b-slots.callback');

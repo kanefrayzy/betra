@@ -588,11 +588,72 @@ class SlotsController extends Controller
 
     public function selfValidate()
     {
-        $result = $this->client->selfValidate();
-        if ($result) {
-            return response()->json($result);
-        } else {
-            return response()->json(['error' => 'No response from server'], 500);
+        try {
+            // Для self-validate нужна активная игровая сессия
+            // Создаем временную сессию для валидации
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'error' => 'Authentication required for self-validation',
+                    'hint' => 'Please login first'
+                ], 401);
+            }
+
+            // Получаем первую доступную игру для тестовой сессии
+            $game = \App\Models\SlotegratorGame::first();
+            
+            if (!$game) {
+                return response()->json([
+                    'error' => 'No games available for validation',
+                    'hint' => 'Please sync games first'
+                ], 400);
+            }
+
+            $sessionToken = Str::uuid()->toString();
+            
+            // Создаем тестовую игровую сессию
+            $initResponse = $this->initGame([
+                'game_uuid' => $game->uuid,
+                'player_id' => $user->id,
+                'player_name' => $user->username,
+                'currency' => $user->currency->symbol,
+                'session_id' => $sessionToken,
+                'return_url' => route('home'),
+                'language' => 'en',
+            ]);
+
+            // Обновляем сессию пользователя
+            $user->gameSession()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'token' => $sessionToken,
+                    'game_uuid' => $game->uuid,
+                ]
+            );
+
+            // Теперь запускаем self-validate
+            $result = $this->client->selfValidate();
+            
+            return response()->json([
+                'validation' => $result,
+                'test_session' => [
+                    'game' => $game->name,
+                    'session_id' => $sessionToken,
+                    'player_id' => $user->id,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Self-validate error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Self-validation failed',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
