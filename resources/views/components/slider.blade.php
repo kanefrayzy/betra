@@ -1,13 +1,3 @@
-@php
-    use App\Models\Banner;
-    $currentLocale = app()->getLocale() ?? 'ru';
-    $mainBanners = Banner::getMainSliderBanners($currentLocale);
-    $smallBanners = Banner::getSmallBanners($currentLocale);
-    
-    if ($mainBanners->isEmpty()) $mainBanners = Banner::getMainSliderBanners('ru');
-    if ($smallBanners->isEmpty()) $smallBanners = Banner::getSmallBanners('ru');
-@endphp
-
 <!-- Hero Banners -->
 <div class="container mx-auto px-3 sm:px-4 lg:px-6 pb-6 pt-2 sm:pt-4 lg:pt-6">
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">

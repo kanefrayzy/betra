@@ -65,31 +65,49 @@ class Banner extends Model
         return $query->orderBy('order')->orderBy('created_at');
     }
 
-    // Получить активные баннеры для главного слайдера
     public static function getMainSliderBanners(string $locale = null): \Illuminate\Database\Eloquent\Collection
     {
         $locale = $locale ?: app()->getLocale();
         
         return \Cache::remember("main_banners_{$locale}", 3600, function () use ($locale) {
-            return self::active()
+            $banners = self::active()
                 ->mainSlider()
                 ->forLocale($locale)
                 ->ordered()
                 ->get();
+            
+            if ($banners->isEmpty() && $locale !== 'ru') {
+                return self::active()
+                    ->mainSlider()
+                    ->forLocale('ru')
+                    ->ordered()
+                    ->get();
+            }
+            
+            return $banners;
         });
     }
 
-    // Получить активные маленькие баннеры
     public static function getSmallBanners(string $locale = null): \Illuminate\Database\Eloquent\Collection
     {
         $locale = $locale ?: app()->getLocale();
         
         return \Cache::remember("small_banners_{$locale}", 3600, function () use ($locale) {
-            return self::active()
+            $banners = self::active()
                 ->smallBanners()
                 ->forLocale($locale)
                 ->ordered()
                 ->get();
+            
+            if ($banners->isEmpty() && $locale !== 'ru') {
+                return self::active()
+                    ->smallBanners()
+                    ->forLocale('ru')
+                    ->ordered()
+                    ->get();
+            }
+            
+            return $banners;
         });
     }
 

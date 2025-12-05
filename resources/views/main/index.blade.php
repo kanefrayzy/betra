@@ -207,10 +207,6 @@
         </div><!-- End Tab Content Wrapper -->
     </div>
 
-    @else
-    <!-- Fallback to old system if no categories exist -->
-    @include('main.index_old')
-    @endif
 
-        <x-layouts.partials.footer/>
+    <x-layouts.partials.footer/>
 </x-layouts.app>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SlotegratorGame;
 use App\Models\GameCategory;
+use App\Models\Banner;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -11,7 +12,6 @@ class MainController extends Controller
 {
     public function index()
     {
-        // Получаем категории для главной страницы с их играми
         $categories = Cache::remember('homepage_categories', 60 * 60, function () {
             return GameCategory::where('is_active', true)
                 ->where('show_on_homepage', true)
@@ -22,13 +22,14 @@ class MainController extends Controller
                 ->get();
         });
 
-        // Получаем недавние игры для авторизованных пользователей
         $recentGames = null;
         if (Auth::check()) {
             $recentGames = $this->getRecentGames();
         }
 
-        // Для обратной совместимости (если категорий еще нет)
+        $mainBanners = Banner::getMainSliderBanners();
+        $smallBanners = Banner::getSmallBanners();
+
         if ($categories->isEmpty()) {
             $slots = $this->getPopularGames();
             $lives = $this->getLiveGames();
@@ -36,10 +37,10 @@ class MainController extends Controller
             $tables = $this->getTableGames();
             $history = null;
 
-            return view('main.index', compact('slots', 'lives', 'roulettes', 'tables', 'history'));
+            return view('main.index', compact('slots', 'lives', 'roulettes', 'tables', 'history', 'mainBanners', 'smallBanners'));
         }
 
-        return view('main.index', compact('categories', 'recentGames'));
+        return view('main.index', compact('categories', 'recentGames', 'mainBanners', 'smallBanners'));
     }
 
     private function getRecentGames()
