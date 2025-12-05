@@ -780,7 +780,7 @@ class SlotsController extends Controller
                         'session_id' => $sessionToken,
                         'player_id' => $user->id,
                     ],
-                    'logs_hint' => 'Check storage/logs/slots.log for detailed request/response logs'
+                    'logs_hint' => 'Check storage/logs/laravel.log for detailed request/response logs'
                 ]);
                 
             } catch (\Exception $e) {
@@ -794,7 +794,7 @@ class SlotsController extends Controller
                     'message' => $e->getMessage(),
                     'hint' => 'This might mean no providers are enabled in your contract',
                     'action_required' => 'Contact Slotegrator support or check: php artisan slotegrator:check-providers',
-                    'logs_hint' => 'Check storage/logs/slots.log for detailed request/response logs'
+                    'logs_hint' => 'Check storage/logs/laravel.log for detailed request/response logs'
                 ], 400);
             }
 
@@ -807,7 +807,7 @@ class SlotsController extends Controller
             return response()->json([
                 'error' => 'Self-validation failed',
                 'message' => $e->getMessage(),
-                'logs_hint' => 'Check storage/logs/slots.log for detailed request/response logs'
+                'logs_hint' => 'Check storage/logs/laravel.log for detailed request/response logs'
             ], 500);
         }
     }
