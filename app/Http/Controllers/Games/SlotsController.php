@@ -589,7 +589,7 @@ class SlotsController extends Controller
     public function selfValidate()
     {
         try {
-            Log::info('Self-validate started - NEW VERSION');
+            Log::info('Self-validate started - NEW VERSION v2');
             
             $user = Auth::user();
             
@@ -600,112 +600,184 @@ class SlotsController extends Controller
                 ], 401);
             }
 
-            // Проверяем, есть ли игры в базе
-            $gamesCount = \App\Models\SlotegratorGame::count();
-            Log::info("Games in database: {$gamesCount}");
-            
-            if ($gamesCount === 0) {
-                return response()->json([
-                    'error' => 'No games found in database',
-                    'hint' => 'Please import games first',
-                    'action_required' => 'Run: php artisan slotegrator:import'
-                ], 400);
+            // Сначала получаем список доступных провайдеров через /limits
+            try {
+                Log::info('Fetching provider limits...');
+                $limits = $this->client->get('/limits');
+                Log::info('Limits received', ['limits' => $limits]);
+                
+                if (empty($limits)) {
+                    return response()->json([
+                        'error' => 'No provider limits available',
+                        'hint' => 'Your contract may not have any enabled providers',
+                        'action_required' => 'Contact Slotegrator support'
+                    ], 400);
+                }
+                
+                // Получаем список доступных провайдеров
+                $availableProviders = [];
+                foreach ($limits as $limit) {
+                    if (isset($limit['providers']) && is_array($limit['providers'])) {
+                        $availableProviders = array_merge($availableProviders, $limit['providers']);
+                    }
+                }
+                $availableProviders = array_unique($availableProviders);
+                
+                Log::info('Available providers from limits', ['providers' => $availableProviders]);
+                
+                if (empty($availableProviders)) {
+                    return response()->json([
+                        'error' => 'No providers enabled',
+                        'hint' => 'The limits endpoint returned no providers',
+                        'limits_response' => $limits,
+                        'action_required' => 'Contact Slotegrator support'
+                    ], 400);
+                }
+                
+            } catch (\Exception $e) {
+                Log::warning('Failed to get limits', ['error' => $e->getMessage()]);
+                // Продолжаем без списка провайдеров
+                $availableProviders = null;
             }
 
-            // Получаем список доступных провайдеров напрямую из API
-            try {
+            // Получаем игры из базы данных, отфильтрованные по доступным провайдерам
+            if ($availableProviders) {
+                Log::info('Looking for games from available providers in database');
+                $game = \App\Models\SlotegratorGame::whereIn('provider', $availableProviders)
+                    ->where('has_lobby', 0)
+                    ->first();
+                    
+                if ($game) {
+                    Log::info('Found game in database from available provider', [
+                        'game' => $game->name,
+                        'provider' => $game->provider,
+                        'uuid' => $game->uuid
+                    ]);
+                } else {
+                    Log::warning('No games found in database for available providers', [
+                        'available_providers' => $availableProviders
+                    ]);
+                }
+            } else {
+                $game = null;
+            }
+            
+            // Если не нашли игру в базе, пробуем получить из API
+            if (!$game) {
                 Log::info('Fetching games from Slotegrator API...');
-                $response = $this->client->get('/games', ['page' => 1, 'per-page' => 10]);
+                
+                // Пробуем получить игры с фильтром по провайдеру если знаем доступные
+                $params = ['page' => 1, 'per-page' => 50];
+                $response = $this->client->get('/games', $params);
                 
                 Log::info('API Response received', [
-                    'items_count' => count($response['items'] ?? []),
-                    'first_game' => $response['items'][0] ?? null
+                    'items_count' => count($response['items'] ?? [])
                 ]);
                 
                 if (!isset($response['items']) || empty($response['items'])) {
                     return response()->json([
                         'error' => 'No games available from Slotegrator API',
-                        'hint' => 'No providers are enabled in your contract',
-                        'action_required' => 'Contact Slotegrator support to enable providers'
+                        'hint' => 'API returned empty games list',
+                        'action_required' => 'Contact Slotegrator support'
                     ], 400);
                 }
                 
-                // Берем первую игру из API (она точно доступна)
-                $apiGame = $response['items'][0];
-                Log::info('Selected game from API', [
-                    'uuid' => $apiGame['uuid'],
-                    'name' => $apiGame['name'],
-                    'provider' => $apiGame['provider']
-                ]);
-                
-                // Ищем эту игру в нашей базе или используем её UUID
-                $game = \App\Models\SlotegratorGame::where('uuid', $apiGame['uuid'])->first();
-                
-                if (!$game) {
-                    Log::info('Game not found in database, creating temporary object');
-                    // Если игры нет в базе, создаем временную запись
-                    $game = new \App\Models\SlotegratorGame();
-                    $game->uuid = $apiGame['uuid'];
-                    $game->name = $apiGame['name'];
-                    $game->provider = $apiGame['provider'] ?? 'Unknown';
-                } else {
-                    Log::info('Game found in database', ['id' => $game->id]);
+                // Если знаем доступных провайдеров, ищем игру от них
+                if ($availableProviders) {
+                    foreach ($response['items'] as $apiGame) {
+                        if (in_array($apiGame['provider'] ?? '', $availableProviders)) {
+                            $game = \App\Models\SlotegratorGame::where('uuid', $apiGame['uuid'])->first();
+                            
+                            if (!$game) {
+                                $game = new \App\Models\SlotegratorGame();
+                                $game->uuid = $apiGame['uuid'];
+                                $game->name = $apiGame['name'];
+                                $game->provider = $apiGame['provider'] ?? 'Unknown';
+                            }
+                            
+                            Log::info('Selected game from available provider', [
+                                'game' => $game->name,
+                                'provider' => $game->provider,
+                                'uuid' => $game->uuid
+                            ]);
+                            break;
+                        }
+                    }
                 }
                 
-                $sessionToken = Str::uuid()->toString();
-                Log::info('Initializing game session', ['session_token' => $sessionToken]);
-                
-                // Инициализируем игру
-                $initResponse = $this->initGame([
-                    'game_uuid' => $game->uuid,
-                    'player_id' => $user->id,
-                    'player_name' => $user->username,
-                    'currency' => $user->currency->symbol,
-                    'session_id' => $sessionToken,
-                    'return_url' => route('home'),
-                    'language' => 'en',
-                ]);
-                
-                Log::info('Game initialized successfully');
-                
-                // Обновляем сессию пользователя
-                $user->gameSession()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'token' => $sessionToken,
-                        'game_uuid' => $game->uuid,
-                    ]
-                );
-
-                Log::info('Running self-validate...');
-                // Запускаем self-validate
-                $result = $this->client->selfValidate();
-                
-                Log::info('Self-validate completed', ['result' => $result]);
-                
-                return response()->json([
-                    'validation' => $result,
-                    'test_session' => [
+                // Если все еще нет игры, берем первую из API
+                if (!$game) {
+                    $apiGame = $response['items'][0];
+                    $game = \App\Models\SlotegratorGame::where('uuid', $apiGame['uuid'])->first();
+                    
+                    if (!$game) {
+                        $game = new \App\Models\SlotegratorGame();
+                        $game->uuid = $apiGame['uuid'];
+                        $game->name = $apiGame['name'];
+                        $game->provider = $apiGame['provider'] ?? 'Unknown';
+                    }
+                    
+                    Log::info('Using first game from API', [
                         'game' => $game->name,
                         'provider' => $game->provider,
-                        'session_id' => $sessionToken,
-                        'player_id' => $user->id,
-                    ]
-                ]);
-                
-            } catch (\Exception $e) {
-                Log::error('Failed to initialize game', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                
+                        'uuid' => $game->uuid
+                    ]);
+                }
+            }
+            
+            if (!$game) {
                 return response()->json([
-                    'error' => 'Failed to initialize game for validation',
-                    'message' => $e->getMessage(),
-                    'hint' => 'This might mean no providers are enabled in your contract',
-                    'action_required' => 'Contact Slotegrator support or check: php artisan slotegrator:check-providers'
+                    'error' => 'No suitable game found',
+                    'hint' => 'Could not find any game to test',
+                    'action_required' => 'Contact Slotegrator support'
                 ], 400);
             }
+            
+            $sessionToken = Str::uuid()->toString();
+            Log::info('Initializing game session', [
+                'session_token' => $sessionToken,
+                'game' => $game->name,
+                'provider' => $game->provider
+            ]);
+            
+            // Инициализируем игру
+            $initResponse = $this->initGame([
+                'game_uuid' => $game->uuid,
+                'player_id' => $user->id,
+                'player_name' => $user->username,
+                'currency' => $user->currency->symbol,
+                'session_id' => $sessionToken,
+                'return_url' => route('home'),
+                'language' => 'en',
+            ]);
+            
+            Log::info('Game initialized successfully');
+            
+            // Обновляем сессию пользователя
+            $user->gameSession()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'token' => $sessionToken,
+                    'game_uuid' => $game->uuid,
+                ]
+            );
+
+            Log::info('Running self-validate...');
+            // Запускаем self-validate
+            $result = $this->client->selfValidate();
+            
+            Log::info('Self-validate completed', ['result' => $result]);
+            
+            return response()->json([
+                'validation' => $result,
+                'test_session' => [
+                    'game' => $game->name,
+                    'provider' => $game->provider,
+                    'session_id' => $sessionToken,
+                    'player_id' => $user->id,
+                    'available_providers' => $availableProviders ?? 'unknown'
+                ]
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Self-validate error', [
@@ -715,7 +787,8 @@ class SlotsController extends Controller
             
             return response()->json([
                 'error' => 'Self-validation failed',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'hint' => 'Check logs for details'
             ], 500);
         }
     }
