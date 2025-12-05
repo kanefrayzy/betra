@@ -10,6 +10,7 @@ use App\Models\UserGameHistory;
 use App\Services\ExchangeService;
 use App\Services\Slotegrator\SlotegratorClient;
 use App\Traits\Hashable;
+use App\Enums\TransactionType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -402,7 +403,7 @@ class SlotsController extends Controller
             $originalBalance = $user->balance;
             
             // КРИТИЧЕСКИ: Определяем направление refund на основе типа оригинальной транзакции
-            if ($originalTransaction->type === 'bet') {
+            if ($originalTransaction->type === TransactionType::Bet) {
                 // Возврат ставки - возвращаем деньги
                 $user->balance += $amount;
                 $this->logger->info('Refund for BET', [
@@ -411,7 +412,7 @@ class SlotsController extends Controller
                     'balance_before' => $originalBalance,
                     'balance_after' => $user->balance
                 ]);
-            } elseif ($originalTransaction->type === 'win') {
+            } elseif ($originalTransaction->type === TransactionType::Win) {
                 // Отмена выигрыша - забираем деньги
                 $user->balance -= $amount;
                 $this->logger->info('Refund for WIN', [
@@ -650,11 +651,11 @@ class SlotsController extends Controller
         $amount = round($transaction->amount, 2);
         
         // Откатываем баланс в зависимости от ИСХОДНОГО типа транзакции
-        if ($transaction->type === 'bet') {
+        if ($transaction->type === TransactionType::Bet) {
             $user->balance += $amount; // Возвращаем ставку
-        } elseif ($transaction->type === 'win') {
+        } elseif ($transaction->type === TransactionType::Win) {
             $user->balance -= $amount; // Забираем выигрыш
-        } elseif ($transaction->type === 'refund') {
+        } elseif ($transaction->type === TransactionType::Refund) {
             $user->balance -= $amount; // Отменяем возврат
         }
         $user->save();
