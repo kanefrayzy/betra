@@ -18,7 +18,7 @@ class UnifiedSlotsController extends Controller
          // Быстрое кэширование с минимальными полями
          $game = Cache::remember("game:{$slug}", 86400, function () use ($slug) {
              return SlotegratorGame::select([
-                 'id', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active'
+                 'id', 'uuid', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active'
              ])
              ->where('slug', $slug)
              ->where('is_active', 1)
@@ -39,7 +39,7 @@ class UnifiedSlotsController extends Controller
          // Быстрое кэширование
          $game = Cache::remember("game:{$slug}", 86400, function () use ($slug) {
              return SlotegratorGame::select([
-                 'id', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active'
+                 'id', 'uuid', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active'
              ])
              ->where('slug', $slug)
              ->where('is_active', 1)
