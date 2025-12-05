@@ -175,8 +175,8 @@ class SlotegratorClient
         $params = [];
         $headers = $this->generateHeaders($params);
         
-        // Вывод полного запроса для саппорта
-        dd([
+        // Логирование полного запроса для саппорта
+        Log::info('Self-validate request details', [
             'url' => $this->baseUrl . '/self-validate',
             'method' => 'POST',
             'headers' => $headers,
