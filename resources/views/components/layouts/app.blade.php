@@ -345,12 +345,6 @@
                             </a>                        
                         </div>
                     </div>
-                                    <!-- License -->
-                <div class="mt-4">
-                    <a class="inline-block opacity-80 hover:opacity-100 transition">
-                        <img src="/assets/images/curacao.png" alt="Curacao License" class="h-16">
-                    </a>
-                </div>
 
                 </div>
             </div>
