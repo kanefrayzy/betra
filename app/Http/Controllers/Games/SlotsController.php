@@ -715,12 +715,12 @@ class SlotsController extends Controller
                 
                 $sessionToken = Str::uuid()->toString();
                 
-                // Инициализируем игру с EUR для stage
+                // Инициализируем игру
                 $initResponse = $this->initGame([
                     'game_uuid' => $game->uuid,
                     'player_id' => $user->id,
                     'player_name' => $user->username,
-                    'currency' => 'EUR',
+                    'currency' => $user->currency->symbol,
                     'session_id' => $sessionToken,
                     'return_url' => route('home'),
                     'language' => 'en',
