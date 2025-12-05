@@ -130,6 +130,13 @@ class SlotegratorClient
         $headers = array_change_key_case($headers, CASE_LOWER);
 
         if (empty($headers['x-merchant-id'][0]) || empty($headers['x-timestamp'][0]) || empty($headers['x-nonce'][0]) || empty($headers['x-sign'][0])) {
+            Log::error('Missing required headers', [
+                'headers' => array_keys($headers),
+                'x-merchant-id' => $headers['x-merchant-id'] ?? 'missing',
+                'x-timestamp' => $headers['x-timestamp'] ?? 'missing',
+                'x-nonce' => $headers['x-nonce'] ?? 'missing',
+                'x-sign' => $headers['x-sign'] ?? 'missing',
+            ]);
             throw new Exception('Missing required headers for signature verification');
         }
 
@@ -139,18 +146,19 @@ class SlotegratorClient
             'X-Nonce' => $headers['x-nonce'][0],
         ];
 
-        // Проверка timestamp (макс 30 секунд разница по документации)
+        // Проверка timestamp (макс 60 секунд для учета retry)
         $timestamp = (int)$headers['x-timestamp'][0];
         $currentTimestamp = Carbon::now()->timestamp;
         $timeDifference = abs($currentTimestamp - $timestamp);
 
-        if ($timeDifference > 30) {
+        if ($timeDifference > 60) {
             Log::warning('Slotegrator request expired', [
                 'request_timestamp' => $timestamp,
                 'current_timestamp' => $currentTimestamp,
-                'difference' => $timeDifference
+                'difference' => $timeDifference,
+                'action' => $requestParams['action'] ?? 'unknown'
             ]);
-            throw new Exception('Request expired - timestamp difference exceeds 30 seconds');
+            throw new Exception('Request expired - timestamp difference exceeds 60 seconds');
         }
 
         // Проверка подписи
@@ -164,7 +172,10 @@ class SlotegratorClient
             Log::error('Slotegrator invalid signature', [
                 'expected' => $expectedSign,
                 'received' => $xSign,
-                'merchant_id' => $headers['x-merchant-id'][0] ?? 'unknown'
+                'merchant_id' => $headers['x-merchant-id'][0] ?? 'unknown',
+                'hash_string' => $hashString,
+                'params' => $requestParams,
+                'headers' => $verificationHeaders
             ]);
             throw new Exception('Invalid signature');
         }
