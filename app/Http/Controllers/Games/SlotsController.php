@@ -544,9 +544,18 @@ class SlotsController extends Controller
             return $this->errorResponse('Transaction not found');
         }
         
-        // КРИТИЧНО: Для duplicate возвращаем ТЕКУЩИЙ баланс игрока
-        // Duplicate = retry от провайдера, нужен актуальный баланс, не исторический
-        $balance = $user->balance;
+        $context = json_decode($transaction->context, true);
+        
+        // КРИТИЧНО: Возвращаем баланс из оригинальной транзакции (balance_after)
+        // НЕ текущий баланс пользователя, т.к. между транзакциями могли быть другие операции
+        $balance = $context['balance_after'] ?? $user->balance;
+        
+        $this->logger->info('Duplicate transaction detected', [
+            'hash' => $transactionId,
+            'type' => $transaction->type->value ?? 'unknown',
+            'current_user_balance' => $user->balance,
+            'returned_historical_balance' => $balance
+        ]);
         
         return response()->json([
             'balance' => round($balance, 2),
