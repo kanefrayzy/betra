@@ -9,4 +9,5 @@ enum TransactionStatus: string
     case Failed = 'failed';
     case Cancelled = 'cancelled';
     case Refund = 'refund';
+    case Rollback = 'rollback';
 }

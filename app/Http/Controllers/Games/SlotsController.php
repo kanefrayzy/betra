@@ -561,115 +561,78 @@ class SlotsController extends Controller
      * 
      * Документация: https://slotegrator.docs.apiary.io/#reference/0/rollback
      */
-protected function rollback($data)
-{
-    try {
-        $rollbackTimeout = 5;
-        
+    protected function rollback($data)
+    {
         return DB::transaction(function () use ($data) {
-            $rollbackTransactions = $data['rollback_transactions'];
-            $user = User::lockForUpdate()->findOrFail($data['player_id']);
-            $balanceBefore = $user->balance;
+            try {
+                $rollbackTransactions = $data['rollback_transactions'];
+                $user = User::lockForUpdate()->findOrFail($data['player_id']);
+                $balanceBefore = $user->balance;
 
-            $this->logger->info('Processing rollback', [
-                'transaction_id' => $data['transaction_id'],
-                'player_id' => $data['player_id'],
-                'transactions_count' => count($rollbackTransactions),
-                'balance_before' => $balanceBefore
-            ]);
+                // Проверка на дубликат rollback
+                $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
+                if ($existingRollbackTransaction) {
+                    $context = json_decode($existingRollbackTransaction->context, true);
+                    $rollbackTxIds = $context['rollback_transactions'] ?? [];
 
-            // Проверка на дубликат rollback
-            $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
-            if ($existingRollbackTransaction) {
-                $context = json_decode($existingRollbackTransaction->context, true);
-                $rollbackTxs = $context['rollback_transactions'] ?? [];
+                    return response()->json([
+                        'balance' => round($user->balance, 2),
+                        'transaction_id' => $this->hash($existingRollbackTransaction->id),
+                        'rollback_transactions' => $rollbackTxIds,
+                    ]);
+                }
 
-                $this->logger->info('Duplicate rollback detected', [
-                    'transaction_id' => $data['transaction_id'],
-                    'balance' => $user->balance
+                // Собираем массив transaction_id для ответа
+                $rollbackTxIds = [];
+                
+                // Обрабатываем каждую транзакцию для отката
+                foreach ($rollbackTransactions as $transactionData) {
+                    $rollbackTxIds[] = $transactionData['transaction_id'];
+                    
+                    $transaction = Transaction::where('hash', $transactionData['transaction_id'])->first();
+
+                    if (!$transaction) {
+                        continue;
+                    }
+
+                    if ($transaction->amount != 0) {
+                        $this->processRollbackForTransaction($user, $transaction);
+                    }
+                }
+
+                // Создаём финальную rollback транзакцию
+                $rollbackTransaction = Transaction::create([
+                    'user_id' => $user->id,
+                    'amount' => 0,
+                    'currency_id' => $user->currency_id,
+                    'type' => 'rollback',
+                    'status' => 'success',
+                    'hash' => $data['transaction_id'],
+                    'context' => json_encode([
+                        'description' => 'Rollback transaction',
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $user->balance,
+                        'rollback_transactions' => $rollbackTxIds,
+                    ])
                 ]);
 
                 return response()->json([
                     'balance' => round($user->balance, 2),
-                    'transaction_id' => $this->hash($existingRollbackTransaction->id),
-                    'rollback_transactions' => $rollbackTxs,
+                    'transaction_id' => $this->hash($rollbackTransaction->id),
+                    'rollback_transactions' => $rollbackTxIds,
                 ]);
-            }
-
-            // Собираем массив транзакций для ответа (ПОЛНЫЕ ОБЪЕКТЫ, не просто ID!)
-            $rollbackTxsResponse = [];
-            
-            foreach ($rollbackTransactions as $transactionData) {
-                // Добавляем в ответ полный объект
-                $rollbackTxsResponse[] = [
-                    'action' => $transactionData['action'],
-                    'amount' => $transactionData['amount'],
-                    'transaction_id' => $transactionData['transaction_id'],
-                    'type' => $transactionData['type']
-                ];
                 
-                $transaction = Transaction::where('hash', $transactionData['transaction_id'])->first();
-
-                if (!$transaction) {
-                    $this->logger->warning('Transaction not found for rollback', [
-                        'transaction_id' => $transactionData['transaction_id']
-                    ]);
-                    continue;
-                }
-
-                if ($transaction->amount != 0) {
-                    $this->processRollbackForTransaction($user, $transaction);
-                }
+            } catch (\Exception $e) {
+                $this->logger->error('Rollback processing error', [
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                    'data' => $data
+                ]);
+                throw $e; // Re-throw для основного catch
             }
-
-            // Создаём финальную rollback транзакцию
-            $rollbackTransaction = Transaction::create([
-                'user_id' => $user->id,
-                'amount' => 0,
-                'currency_id' => $user->currency_id,
-                'type' => 'rollback',
-                'status' => 'success',
-                'hash' => $data['transaction_id'],
-                'context' => json_encode([
-                    'description' => 'Rollback transaction',
-                    'balance_before' => $balanceBefore,
-                    'balance_after' => $user->balance,
-                    'rollback_transactions' => $rollbackTxsResponse,
-                ])
-            ]);
-
-            $this->logger->info('Rollback completed', [
-                'transaction_id' => $data['transaction_id'],
-                'balance_before' => $balanceBefore,
-                'balance_after' => $user->balance,
-                'rolled_back_transactions' => count($rollbackTxsResponse)
-            ]);
-
-            // КРИТИЧНО: возвращаем массив ОБЪЕКТОВ, не просто ID!
-            return response()->json([
-                'balance' => round($user->balance, 2),
-                'transaction_id' => $this->hash($rollbackTransaction->id),
-                'rollback_transactions' => $rollbackTxsResponse,
-            ]);
-            
-        }, $rollbackTimeout);
-        
-    } catch (\Illuminate\Database\QueryException $e) {
-        $this->logger->error('Rollback database error', [
-            'error' => $e->getMessage(),
-            'code' => $e->getCode(),
-            'transaction_id' => $data['transaction_id'] ?? null,
-        ]);
-        return $this->errorResponse('Database error during rollback');
-    } catch (\Exception $e) {
-        $this->logger->error('Rollback error', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-            'transaction_id' => $data['transaction_id'] ?? null,
-        ]);
-        return $this->errorResponse('Rollback failed');
+        }, $this->transactionTimeout);
     }
-}
 
     /**
      * Создаёт пустую rollback транзакцию для не найденной транзакции
