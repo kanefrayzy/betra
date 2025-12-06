@@ -192,20 +192,18 @@ function filterComponent() {
         search: '',
         isOpen: false,
         isProcessing: false,
-        selectedProviders: [],
         providers: @json($providers),
         
+        // Используем геттер для прямого доступа к $wire
+        get selectedProviders() {
+            return this.$wire?.selectedProviders || [];
+        },
+        
         init() {
-            // Ждем пока Livewire будет готов
-            const setupEntangle = () => {
-                if (this.$wire) {
-                    this.selectedProviders = this.$wire.entangle('selectedProviders');
-                } else {
-                    // Если $wire еще нет, пробуем через 50мс
-                    setTimeout(setupEntangle, 50);
-                }
-            };
-            setupEntangle();
+            // Дополнительная проверка готовности Livewire
+            if (!this.$wire) {
+                setTimeout(() => this.$nextTick(() => {}), 100);
+            }
         },
 
         get filteredProviders() {
@@ -239,17 +237,18 @@ function filterComponent() {
         },
 
         toggleProvider(provider) {
-            if (this.isProcessing) return;
+            if (this.isProcessing || !this.$wire) return;
             this.isProcessing = true;
 
             if (window.navigator && window.navigator.vibrate) {
                 window.navigator.vibrate(50);
             }
 
-            if (this.selectedProviders.includes(provider)) {
-                this.selectedProviders = this.selectedProviders.filter(p => p !== provider);
+            const current = this.$wire.selectedProviders || [];
+            if (current.includes(provider)) {
+                this.$wire.selectedProviders = current.filter(p => p !== provider);
             } else {
-                this.selectedProviders.push(provider);
+                this.$wire.selectedProviders = [...current, provider];
             }
 
             this.updateFilters();
@@ -257,26 +256,32 @@ function filterComponent() {
         },
 
         removeProvider(provider) {
+            if (!this.$wire) return;
+            
             if (window.navigator && window.navigator.vibrate) {
                 window.navigator.vibrate(30);
             }
 
-            this.selectedProviders = this.selectedProviders.filter(p => p !== provider);
+            const current = this.$wire.selectedProviders || [];
+            this.$wire.selectedProviders = current.filter(p => p !== provider);
             this.updateFilters();
         },
 
         updateFilters() {
             if (this.$wire && this.$wire.filterByProviders) {
-                this.$wire.filterByProviders(this.selectedProviders);
+                const selected = this.$wire.selectedProviders || [];
+                this.$wire.filterByProviders(selected);
             }
         },
 
         clearFilters() {
+            if (!this.$wire) return;
+            
             if (window.navigator && window.navigator.vibrate) {
                 window.navigator.vibrate([30, 20, 30]);
             }
 
-            this.selectedProviders = [];
+            this.$wire.selectedProviders = [];
             this.updateFilters();
         }
     }
