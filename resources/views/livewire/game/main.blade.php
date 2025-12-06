@@ -35,7 +35,7 @@
                         <div class="absolute top-2 right-2 z-10">
                             <button wire:click="toggleFavorite({{ $game->id }})"
                                     class="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
-                                    @click.stop>
+                                    >
                                 @if($this->isFavorite($game->id))
                                     <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
@@ -55,10 +55,10 @@
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100"
                              class="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2.5"
-                             @click.stop>
+                             >
                             <a href="{{ route('slots.play', $game->slug) }}"
                                class="w-full py-3 bg-[#4dda30] hover:bg-[#3bb825] text-white rounded-lg text-sm font-bold text-center transition-all shadow-lg shadow-[#4dda30]/20"
-                               @click.stop="if (!requireAuth(null, $event)) return false">
+                               @click="if (!requireAuth(null, $event)) return false">
                                 <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                                 </svg>
@@ -66,7 +66,7 @@
                             </a>
                             <a href="{{ route('slots.fun', $game->slug) }}"
                                class="w-full py-3 bg-[#1a2c38] hover:bg-[#2d3748] text-white rounded-lg text-sm font-semibold text-center border border-[#2d3748] transition-all"
-                               @click.stop>
+                               >
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>

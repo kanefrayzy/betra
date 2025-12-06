@@ -89,7 +89,7 @@
                                  x-transition:enter-start="opacity-0"
                                  x-transition:enter-end="opacity-100"
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
-                                 @click.stop>
+                                 >
                                 <a href="{{ route('slots.play', $game->slug) }}"
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 bg-[#40c920] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all">
@@ -175,7 +175,7 @@
                                  x-transition:enter-start="opacity-0"
                                  x-transition:enter-end="opacity-100"
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
-                                 @click.stop>
+                                 >
                                 <a href="{{ route('slots.play', $game->slug) }}"
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 rounded-lg text-sm font-bold text-center transition-all text-black hover:opacity-90"
