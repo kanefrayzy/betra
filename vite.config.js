@@ -19,8 +19,18 @@ export default defineConfig({
         },
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'vendor': ['noty']
+                manualChunks: (id) => {
+                    // Разделяем vendor библиотеки для лучшего кеширования
+                    if (id.includes('node_modules')) {
+                        if (id.includes('noty')) return 'vendor-noty';
+                        if (id.includes('@hotwired/turbo')) return 'vendor-turbo';
+                        if (id.includes('alpinejs')) return 'vendor-alpine';
+                        return 'vendor';
+                    }
+                    // Разделяем чат в отдельный чанк
+                    if (id.includes('/chat/')) return 'chat';
+                    // Telegram в отдельный чанк
+                    if (id.includes('telegram')) return 'telegram';
                 },
                 chunkFileNames: 'js/[name]-[hash].js',
                 entryFileNames: 'js/[name]-[hash].js',
@@ -29,7 +39,11 @@ export default defineConfig({
         },
         chunkSizeWarningLimit: 700,
         cssCodeSplit: true,
-        assetsInlineLimit: 4096
+        assetsInlineLimit: 4096,
+        // Увеличиваем производительность сборки
+        reportCompressedSize: false,
+        // Оптимизация для продакшена
+        target: 'es2018'
     },
     optimizeDeps: {
         include: ['noty'],

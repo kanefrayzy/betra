@@ -35,17 +35,21 @@
     <link rel="apple-touch-icon" href="{{ asset('assets/images/favicons/apple-touch-icon.png') }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicons/favicon.ico') }}">
 
-    <!-- Preconnect  -->
+    <!-- Preconnect для быстрой загрузки -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://telegram.org">
+    
+    <!-- Preload критических навигационных путей для Turbo -->
+    @auth
+        <link rel="prefetch" href="{{ route('slots.lobby') }}" as="document">
+        <link rel="prefetch" href="{{ route('slots.history') }}" as="document">
+        <link rel="prefetch" href="{{ route('slots.popular') }}" as="document">
+    @endauth
 
-    <!-- Шрифты  -->
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" 
-          rel="stylesheet" 
-          media="print" 
-          onload="this.media='all'">
+    <!-- Шрифты с preload для критических весов -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     </noscript>

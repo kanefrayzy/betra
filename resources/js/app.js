@@ -8,11 +8,17 @@ import * as Turbo from '@hotwired/turbo';
 // Конфигурация Turbo для максимальной скорости
 Turbo.session.drive = true;
 Turbo.setProgressBarDelay(0); // Убираем задержку прогресс-бара
+Turbo.setFormMode('on'); // Ускоряем формы
+
+// Настройка кеша для мгновенных возвратов
+Turbo.config.cache.enabled = true;
 
 // Включаем prefetch для мгновенных переходов
 document.addEventListener('turbo:before-fetch-request', (event) => {
     // Добавляем заголовок для определения Turbo запросов
     event.detail.fetchOptions.headers['X-Turbo-Request'] = 'true';
+    // Приоритизируем критические запросы
+    event.detail.fetchOptions.priority = 'high';
 });
 
 // Предотвращаем множественную инициализацию Livewire/Alpine
@@ -169,43 +175,73 @@ document.addEventListener('turbo:load', () => {
     // Обновляем активные ссылки в сайдбаре
     updateSidebarActiveLinks();
     
-    // Даем Livewire время для инициализации компонентов
-    setTimeout(() => {
-        // Реинициализируем Alpine только для элементов без __x
-        if (typeof Alpine !== 'undefined') {
-            document.querySelectorAll('[x-data]').forEach(el => {
-                if (!el.hasAttribute('data-turbo-permanent') && !el.__x) {
-                    try {
-                        Alpine.initTree(el);
-                    } catch (e) {
-                        // Игнорируем ошибки повторной инициализации
-                    }
-                }
-            });
-        }
-    }, 50);
-    
-    // Скролл вверх
+    // Скролл вверх (мгновенно)
     window.scrollTo({ top: 0, behavior: 'instant' });
 });
 
-// Prefetch при наведении для мгновенных переходов
-let prefetchTimer;
+// Агрессивный prefetch для моментальной загрузки
+const prefetchedUrls = new Set();
+
+function shouldPrefetch(link) {
+    return link && 
+           link.href && 
+           link.href.startsWith(window.location.origin) && 
+           !link.hasAttribute('data-turbo="false"') &&
+           !prefetchedUrls.has(link.href);
+}
+
+function prefetchLink(link) {
+    if (shouldPrefetch(link)) {
+        prefetchedUrls.add(link.href);
+        // Используем встроенный Turbo prefetch
+        const url = new URL(link.href);
+        Turbo.visit(url, { action: 'prefetch' });
+    }
+}
+
+// Prefetch при наведении (быстрее - без задержки)
 document.addEventListener('mouseover', (e) => {
     const link = e.target.closest('a[href]');
-    if (link && !link.hasAttribute('data-turbo-prefetch') && 
-        link.href.startsWith(window.location.origin) && 
-        !link.hasAttribute('data-turbo="false"')) {
-        
-        clearTimeout(prefetchTimer);
-        prefetchTimer = setTimeout(() => {
-            Turbo.navigator.view.snapshotCache.put(
-                new URL(link.href),
-                Turbo.navigator.view.getCachedSnapshotForLocation(new URL(link.href))
-            );
-        }, 100);
+    if (shouldPrefetch(link)) {
+        prefetchLink(link);
     }
-});
+}, { passive: true });
+
+// Prefetch при mousedown/touchstart - предзагрузка ДО клика
+document.addEventListener('mousedown', (e) => {
+    const link = e.target.closest('a[href]');
+    if (shouldPrefetch(link)) {
+        prefetchLink(link);
+    }
+}, { passive: true });
+
+document.addEventListener('touchstart', (e) => {
+    const link = e.target.closest('a[href]');
+    if (shouldPrefetch(link)) {
+        prefetchLink(link);
+    }
+}, { passive: true });
+
+// Prefetch видимых ссылок в сайдбаре при загрузке
+if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const link = entry.target;
+                if (shouldPrefetch(link)) {
+                    prefetchLink(link);
+                }
+            }
+        });
+    }, { rootMargin: '50px' });
+    
+    // Наблюдаем за ссылками в сайдбаре
+    document.addEventListener('turbo:load', () => {
+        document.querySelectorAll('.sidebar-item, .sidebar-nav-buttons a').forEach(link => {
+            observer.observe(link);
+        });
+    });
+}
 
 // Import chat system - прямая загрузка для быстрого подключения
 import './chat/main.js';
