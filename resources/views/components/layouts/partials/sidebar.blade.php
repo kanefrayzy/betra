@@ -8,7 +8,7 @@
             </svg>
         </button>
         
-        <button @click="toggleSidebar()" 
+        <button @click="$store.ui.toggleSidebar()" 
                 class="hidden xl:block p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400 hover:text-white flex-shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -209,6 +209,8 @@
                 </a>
 
                 <a href="{{ route('auth.logout') }}" 
+                   data-turbo="false"
+                   onclick="sessionStorage.setItem('clearSWCache', 'true')"
                    class="sidebar-item text-red-400 hover:text-red-300"
                    x-tooltip="$root.sidebarCollapsed ? '{{ __('Выход') }}' : ''">
                     <svg class="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

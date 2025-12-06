@@ -1,37 +1,49 @@
 // Service Worker для кеширования страниц и ресурсов
-const CACHE_VERSION = 'betra-v1';
+const CACHE_VERSION = 'betra-v2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
+const PAGE_CACHE_AUTH = `${CACHE_VERSION}-pages-auth`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
-// Критические ресурсы для кеширования при установке
-const CRITICAL_ASSETS = [
+// 🔓 ПУБЛИЧНЫЕ МАРШРУТЫ - кешировать всегда (доступны без авторизации)
+const PUBLIC_ROUTES = [
     '/',
     '/slots/lobby',
-    '/slots/history',
     '/slots/popular',
+    '/slots/new',
+    '/rules',
+    '/setlocale/',
 ];
 
-// Статические ресурсы (JS, CSS, изображения)
-const STATIC_PATTERNS = [
-    '/build/assets/',
-    '/assets/images/logo.png',
-    '/assets/images/logo-mobile.png',
-    '/assets/images/favicons/',
+// 🔒 АВТОРИЗОВАННЫЕ МАРШРУТЫ - кешировать ТОЛЬКО если авторизован
+const AUTH_ROUTES = [
+    '/slots/history',
+    '/slots/favorites',
+    '/account',
+    '/transaction',
+    '/account/referrals',
+];
+
+// ❌ ОПАСНЫЕ ПУТИ - НЕ КЕШИРОВАТЬ НИКОГДА!
+const DANGEROUS_PATHS = [
+    '/logout',
+    '/auth/logout',
+    '/slots/play',
+    '/slots/mobile',
+    '/game/',
+    '/play/',
+    '/api/',
+    '/livewire/',
 ];
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
     event.waitUntil(
         Promise.all([
-            // Кешируем критические страницы
-            caches.open(STATIC_CACHE).then(cache => {
-                return cache.addAll(
-                    CRITICAL_ASSETS.map(url => new Request(url, { credentials: 'same-origin' }))
-                ).catch(err => console.log('Critical assets cache error:', err));
-            }),
-            // Предварительно открываем остальные кеши
+            // Предварительно открываем все кеши
+            caches.open(STATIC_CACHE),
             caches.open(PAGE_CACHE),
+            caches.open(PAGE_CACHE_AUTH),
             caches.open(ASSET_CACHE)
         ])
     );
@@ -52,6 +64,34 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
+// Вспомогательная функция - проверка авторизации через cookies
+function isAuthenticated(request) {
+    const cookies = request.headers.get('cookie') || '';
+    // Проверяем наличие Laravel session cookie
+    return cookies.includes('laravel_session=') || cookies.includes('XSRF-TOKEN=');
+}
+
+// Вспомогательная функция - определение типа маршрута
+function getRouteType(pathname) {
+    // Проверяем опасные пути
+    if (DANGEROUS_PATHS.some(path => pathname.includes(path))) {
+        return 'dangerous';
+    }
+    
+    // Проверяем авторизованные маршруты
+    if (AUTH_ROUTES.some(route => pathname.startsWith(route))) {
+        return 'auth';
+    }
+    
+    // Проверяем публичные маршруты
+    if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route))) {
+        return 'public';
+    }
+    
+    // По умолчанию - публичный
+    return 'public';
+}
+
 // Стратегия кеширования
 self.addEventListener('fetch', (event) => {
     const { request } = event;
@@ -63,13 +103,15 @@ self.addEventListener('fetch', (event) => {
     // Игнорируем внешние запросы
     if (url.origin !== location.origin) return;
 
-    // Игнорируем Livewire запросы
-    if (url.pathname.includes('/livewire/')) return;
+    // Определяем тип маршрута
+    const routeType = getRouteType(url.pathname);
 
-    // Игнорируем API запросы
-    if (url.pathname.startsWith('/api/')) return;
+    // ❌ ОПАСНЫЕ ПУТИ - пропускаем без кеширования
+    if (routeType === 'dangerous') {
+        return; // Браузер сам обработает
+    }
 
-    // Стратегия для статических ресурсов (JS, CSS, изображения)
+    // 📦 Стратегия для статических ресурсов (JS, CSS, изображения, шрифты)
     if (request.destination === 'script' || 
         request.destination === 'style' || 
         request.destination === 'image' ||
@@ -78,11 +120,30 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Стратегия для HTML страниц - Stale-While-Revalidate для быстрой загрузки
-    if (request.destination === 'document' || request.headers.get('accept')?.includes('text/html')) {
-        event.respondWith(staleWhileRevalidate(request, PAGE_CACHE));
+    // 📄 Стратегия для HTML страниц
+    const isHtmlRequest = request.destination === 'document' || 
+                         request.destination === '' || 
+                         request.headers.get('accept')?.includes('text/html');
+    
+    if (isHtmlRequest) {
+        // Проверяем авторизацию для auth маршрутов
+        if (routeType === 'auth') {
+            if (isAuthenticated(request)) {
+                // Авторизован - кешируем в отдельный кеш
+                event.respondWith(staleWhileRevalidate(request, PAGE_CACHE_AUTH));
+            } else {
+                // Не авторизован - НЕ кешируем (вернёт redirect на login)
+                event.respondWith(fetch(request));
+            }
+        } else {
+            // Публичный маршрут - кешируем всегда
+            event.respondWith(staleWhileRevalidate(request, PAGE_CACHE));
+        }
         return;
     }
+    
+    // Для всех остальных запросов - просто fetch без кеширования
+    // (например, AJAX запросы, которые не попали в категории выше)
 });
 
 // Cache First - приоритет кешу (для статики)

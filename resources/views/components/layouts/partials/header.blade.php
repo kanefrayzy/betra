@@ -156,6 +156,8 @@
                 </div>
 
                     <a href="{{ route('auth.logout') }}" 
+                    data-turbo="false"
+                    onclick="sessionStorage.setItem('clearSWCache', 'true')"
                     @click="isOpen = false"
                     class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors font-medium">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -225,19 +227,11 @@
             @endguest
 
             <!-- Кнопка чата -->
-            <button x-data="{ isChatOpen: false }"
-                    @click="event.preventDefault(); event.stopPropagation(); 
-                           isChatOpen = !isChatOpen; 
-                           if (window.chatSystem) { 
-                               window.chatSystem.toggleChat(); 
-                           } else if (window.toggleChat) { 
-                               window.toggleChat(); 
-                           }"
+            <button @click="$store.ui.toggleChat()"
                     class="relative group chat-toggle-button">
-                <div class="relative p-2 rounded-full hover:bg-gray-800 transition-all duration-200"
-                     :class="isChatOpen ? '' : ''">
+                <div class="relative p-2 rounded-full hover:bg-gray-800 transition-all duration-200">
                     <svg class="h-6 w-6 transition-colors duration-200"
-                         :class="isChatOpen ? 'text-[##44ce26]' : 'text-gray-400 group-hover:text-white'"
+                         :class="$store.ui.chatOpen ? 'text-[##44ce26]' : 'text-gray-400 group-hover:text-white'"
                          fill="none"
                          stroke="currentColor"
                          viewBox="0 0 24 24">
@@ -442,6 +436,8 @@
                     </div>
 
                         <a href="{{ route('auth.logout') }}" 
+                        data-turbo="false"
+                        onclick="sessionStorage.setItem('clearSWCache', 'true')"
                         @click="isOpen = false"
                         class="flex items-center gap-3 px-4 py-3 text-[#2f4553] hover:bg-gray-100 transition-colors font-medium">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

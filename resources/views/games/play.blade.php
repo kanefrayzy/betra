@@ -10,11 +10,13 @@
                         </div>
                     </div>
 
-                    <!-- Game Iframe -->
+                    <!-- Game Iframe - immediate load -->
                     <iframe id="playGameFrame"
-                            src="about:blank"
+                            src="{!! addslashes($gameUrl) !!}"
                             class="border-0 rounded-lg"
                             allow="fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                            loading="eager"
+                            importance="high"
                             style="opacity: 0; display: none;">
                     </iframe>
 
