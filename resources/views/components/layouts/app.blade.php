@@ -4,7 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="turbo-cache-control" content="no-preview">
+    
+    <!-- Turbo кеширование - разрешаем preview для мгновенного возврата -->
+    @if(request()->routeIs('slots.lobby', 'slots.history', 'slots.popular', 'slots.new', 'slots.favorites'))
+        <meta name="turbo-cache-control" content="max-age=300">
+    @else
+        <meta name="turbo-cache-control" content="no-preview">
+    @endif
     
     <!-- Notification messages for JavaScript -->
     @if(session('success'))

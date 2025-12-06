@@ -7,18 +7,14 @@ import * as Turbo from '@hotwired/turbo';
 
 // Конфигурация Turbo для максимальной скорости
 Turbo.session.drive = true;
-Turbo.setProgressBarDelay(0); // Убираем задержку прогресс-бара
-Turbo.setFormMode('on'); // Ускоряем формы
 
-// Настройка кеша для мгновенных возвратов
-Turbo.config.cache.enabled = true;
+// ПОЛНОСТЬЮ отключаем прогресс-бар
+Turbo.setProgressBarDelay(999999); // Никогда не показываем
 
 // Включаем prefetch для мгновенных переходов
 document.addEventListener('turbo:before-fetch-request', (event) => {
     // Добавляем заголовок для определения Turbo запросов
     event.detail.fetchOptions.headers['X-Turbo-Request'] = 'true';
-    // Приоритизируем критические запросы
-    event.detail.fetchOptions.priority = 'high';
 });
 
 // Предотвращаем множественную инициализацию Livewire/Alpine
@@ -104,8 +100,72 @@ document.addEventListener('DOMContentLoaded', () => {
     modalManager.init();
 });
 
+// Показываем прелоадер при начале навигации
+document.addEventListener('turbo:click', (event) => {
+    // Проверяем что это навигационная ссылка
+    const link = event.target.closest('a[href]');
+    if (!link || link.getAttribute('data-turbo') === 'false') return;
+    
+    // Удаляем старый прелоадер если есть
+    const oldLoader = document.querySelector('.page-loader');
+    if (oldLoader) {
+        oldLoader.remove();
+    }
+    
+    // Создаём новый прелоадер
+    const loader = document.createElement('div');
+    loader.className = 'page-loader';
+    loader.innerHTML = `
+        <div class="loader-spinner">
+            <div class="spinner"></div>
+            <div class="loader-text">Загрузка...</div>
+        </div>
+    `;
+    document.body.appendChild(loader);
+    
+    // Показываем прелоадер сразу
+    requestAnimationFrame(() => {
+        loader.classList.add('active');
+    });
+});
+
+// Скрываем прелоадер при завершении загрузки
+document.addEventListener('turbo:render', () => {
+    const loader = document.querySelector('.page-loader');
+    if (loader) {
+        // Небольшая задержка для плавности
+        setTimeout(() => {
+            loader.classList.remove('active');
+            setTimeout(() => loader.remove(), 200);
+        }, 100);
+    }
+    
+    // Анимация появления контента
+    const mainContent = document.querySelector('#main-content-wrapper');
+    if (mainContent) {
+        mainContent.style.opacity = '0';
+        mainContent.style.transform = 'translateY(10px)';
+        requestAnimationFrame(() => {
+            mainContent.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+            mainContent.style.opacity = '1';
+            mainContent.style.transform = 'translateY(0)';
+        });
+    }
+});
+
+// Скрываем прелоадер если произошла ошибка
+document.addEventListener('turbo:load', () => {
+    const loader = document.querySelector('.page-loader');
+    if (loader) {
+        loader.remove();
+    }
+});
+
 // Turbo Events - для работы с Alpine и Livewire
 document.addEventListener('turbo:before-cache', () => {
+    // Помечаем страницу как кешированную
+    document.body.dataset.turboCached = 'true';
+    
     // Закрываем все дропдауны и модалы перед кешированием
     document.querySelectorAll('[x-data]').forEach(el => {
         if (el.__x && !el.hasAttribute('data-turbo-permanent')) {
@@ -132,6 +192,12 @@ document.addEventListener('turbo:before-cache', () => {
 });
 
 document.addEventListener('turbo:before-render', (event) => {
+    // Проверяем загрузку из кеша
+    const isFromCache = event.detail.newBody.dataset.turboCached === 'true';
+    if (isFromCache) {
+        console.log('⚡ Загружено из кеша (0ms)');
+    }
+    
     // Сохраняем состояние sidebar и chat
     const sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
     const chatOpen = localStorage.getItem('chatOpen');
@@ -193,9 +259,19 @@ function shouldPrefetch(link) {
 function prefetchLink(link) {
     if (shouldPrefetch(link)) {
         prefetchedUrls.add(link.href);
-        // Используем встроенный Turbo prefetch
-        const url = new URL(link.href);
-        Turbo.visit(url, { action: 'prefetch' });
+        // Используем fetch для предзагрузки в фоне
+        fetch(link.href, {
+            method: 'GET',
+            headers: {
+                'X-Turbo-Request': 'true',
+                'Accept': 'text/html, application/xhtml+xml'
+            },
+            credentials: 'same-origin',
+            priority: 'low' // Низкий приоритет чтобы не мешать основным запросам
+        }).catch(() => {
+            // Игнорируем ошибки prefetch
+            prefetchedUrls.delete(link.href);
+        });
     }
 }
 
@@ -270,6 +346,8 @@ if (isTelegramEnv) {
     });
 }
 
+// Service Worker для кеширования страниц
+import('./service-worker-register.js');
 
 // Livewire SPA Navigation (оставляем для совместимости)
 document.addEventListener('livewire:navigated', () => {
