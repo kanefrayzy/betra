@@ -1,9 +1,22 @@
 ﻿import './bootstrap.js';
-import Noty from 'noty';
-import 'noty/lib/noty.css';
 
 // Turbo для мгновенных переходов между страницами
 import * as Turbo from '@hotwired/turbo';
+
+// Ленивая загрузка Noty - загружаем только когда нужно
+let NotyLoaded = false;
+const loadNoty = async () => {
+    if (NotyLoaded) return window.Noty;
+    
+    const [Noty, css] = await Promise.all([
+        import('noty'),
+        import('noty/lib/noty.css')
+    ]);
+    
+    window.Noty = Noty.default;
+    NotyLoaded = true;
+    return Noty.default;
+};
 
 // Конфигурация Turbo для максимальной скорости
 Turbo.session.drive = true;
@@ -23,10 +36,16 @@ window.livewireScriptConfig = window.livewireScriptConfig || (() => ({
     navigate: false // Отключаем Livewire Navigate, используем Turbo
 }));
 
-window.Noty = Noty;
-
-import { initNotyTailwindTheme } from './noty-tailwind-theme';
-initNotyTailwindTheme();
+// Ленивая инициализация Noty темы
+let notyThemeInitialized = false;
+const initNotyThemeOnce = async () => {
+    if (notyThemeInitialized) return;
+    
+    await loadNoty();
+    const { initNotyTailwindTheme } = await import('./noty-tailwind-theme');
+    initNotyTailwindTheme();
+    notyThemeInitialized = true;
+};
 
 // Core modules
 import { initializeAppConfig } from './core/app-init.js';
@@ -44,10 +63,24 @@ import {
     setupNotificationEvents,
     setupSidebarController,
     setupChatStore,
+    setupUIStore,
     setupChatGlobals
 } from './core/livewire-hooks.js';
 
-import './banner-sliders.js';
+// Отложенная загрузка некритичных модулей
+const loadNonCriticalModules = () => {
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            import('./banner-sliders.js');
+            import('./game-sliders.js');
+        }, { timeout: 3000 });
+    } else {
+        setTimeout(() => {
+            import('./banner-sliders.js');
+            import('./game-sliders.js');
+        }, 2000);
+    }
+};
 
 // Initialize app config
 initializeAppConfig();
@@ -59,7 +92,11 @@ setupChatPreservation();
 setupNotificationEvents();
 setupSidebarController();
 setupChatStore();
+setupUIStore();
 setupChatGlobals();
+
+// Загружаем некритичные модули после основной инициализации
+loadNonCriticalModules();
 
 // Initialize UI Managers
 const modalManager = new ModalManager();
@@ -98,6 +135,15 @@ function updateSidebarActiveLinks() {
 // Initialize modal manager on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     modalManager.init();
+    
+    // Лениво инициализируем Noty только если есть уведомления
+    const hasNotifications = document.querySelector('meta[name="success-message"]') ||
+                            document.querySelector('meta[name="error-message"]') ||
+                            document.querySelector('meta[name="errors"]');
+    
+    if (hasNotifications) {
+        initNotyThemeOnce();
+    }
 });
 
 // Показываем прелоадер при начале навигации
@@ -235,8 +281,14 @@ document.addEventListener('turbo:load', () => {
     // Реинициализация модалов
     modalManager.init();
     
-    // Реинициализация нотификаций
-    initNotyTailwindTheme();
+    // Ленивая инициализация Noty при необходимости
+    const hasNotifications = document.querySelector('meta[name="success-message"]') ||
+                            document.querySelector('meta[name="error-message"]') ||
+                            document.querySelector('meta[name="errors"]');
+    
+    if (hasNotifications) {
+        initNotyThemeOnce();
+    }
     
     // Обновляем активные ссылки в сайдбаре
     updateSidebarActiveLinks();
@@ -256,22 +308,26 @@ function shouldPrefetch(link) {
            !prefetchedUrls.has(link.href);
 }
 
-function prefetchLink(link) {
+function prefetchLink(link, priority = 'low') {
     if (shouldPrefetch(link)) {
         prefetchedUrls.add(link.href);
-        // Используем fetch для предзагрузки в фоне
-        fetch(link.href, {
-            method: 'GET',
-            headers: {
-                'X-Turbo-Request': 'true',
-                'Accept': 'text/html, application/xhtml+xml'
-            },
-            credentials: 'same-origin',
-            priority: 'low' // Низкий приоритет чтобы не мешать основным запросам
-        }).catch(() => {
-            // Игнорируем ошибки prefetch
+        
+        // Используем браузерный prefetch вместо fetch
+        const prefetchLink = document.createElement('link');
+        prefetchLink.rel = 'prefetch';
+        prefetchLink.href = link.href;
+        prefetchLink.as = 'document';
+        
+        // Для high priority используем prerender
+        if (priority === 'high' && 'prerender' in HTMLLinkElement.prototype) {
+            prefetchLink.rel = 'prerender';
+        }
+        
+        prefetchLink.onerror = () => {
             prefetchedUrls.delete(link.href);
-        });
+        };
+        
+        document.head.appendChild(prefetchLink);
     }
 }
 
@@ -283,11 +339,11 @@ document.addEventListener('mouseover', (e) => {
     }
 }, { passive: true });
 
-// Prefetch при mousedown/touchstart - предзагрузка ДО клика
+// Prefetch при mousedown/touchstart - предзагрузка ДО клика с высоким приоритетом
 document.addEventListener('mousedown', (e) => {
     const link = e.target.closest('a[href]');
     if (shouldPrefetch(link)) {
-        prefetchLink(link);
+        prefetchLink(link, 'high');
     }
 }, { passive: true });
 
@@ -319,11 +375,33 @@ if ('IntersectionObserver' in window) {
     });
 }
 
+// Автоматический prefetch критических страниц при загрузке
+document.addEventListener('turbo:load', () => {
+    // Используем requestIdleCallback для некритичных операций
+    const prefetchCritical = () => {
+        const criticalLinks = [
+            document.querySelector('a[href*="/slots/lobby"]'),
+            document.querySelector('a[href*="/slots/history"]'),
+            document.querySelector('a[href*="/slots/popular"]'),
+            document.querySelector('a[href*="/slots/new"]')
+        ].filter(link => link !== null);
+        
+        criticalLinks.forEach(link => {
+            if (shouldPrefetch(link)) {
+                prefetchLink(link, 'low');
+            }
+        });
+    };
+    
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(prefetchCritical, { timeout: 2000 });
+    } else {
+        setTimeout(prefetchCritical, 1000);
+    }
+});
+
 // Import chat system - прямая загрузка для быстрого подключения
 import './chat/main.js';
-
-// Import game sliders management
-import './game-sliders.js';
 
 // Import Telegram auth component - всегда нужен для Alpine x-data
 import './telegram-auth.js';
@@ -351,16 +429,12 @@ import('./service-worker-register.js');
 
 // Livewire SPA Navigation (оставляем для совместимости)
 document.addEventListener('livewire:navigated', () => {
-    initNotyTailwindTheme();
+    initNotyThemeOnce();
     window.scrollTo({ top: 0, behavior: 'instant' });
 });
 
 // Notifications from meta tags
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof window.showSuccessNotification === 'undefined') {
-        initNotyTailwindTheme();
-    }
-
+document.addEventListener('DOMContentLoaded', async function() {
     function getMetaContent(name, defaultValue = '') {
         const meta = document.querySelector(`meta[name="${name}"]`);
         return meta ? meta.getAttribute('content') : defaultValue;
@@ -376,16 +450,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!Array.isArray(errors)) errors = [];
     } catch (e) {}
 
-    if (successMessage && typeof window.showSuccessNotification === 'function') {
-        window.showSuccessNotification(successMessage);
-    }
+    // Загружаем Noty только если есть уведомления
+    if (successMessage || errorMessage || errors.length > 0) {
+        await initNotyThemeOnce();
+        
+        if (successMessage && typeof window.showSuccessNotification === 'function') {
+            window.showSuccessNotification(successMessage);
+        }
 
-    if (errorMessage && typeof window.showErrorNotification === 'function') {
-        window.showErrorNotification(errorMessage);
-    }
+        if (errorMessage && typeof window.showErrorNotification === 'function') {
+            window.showErrorNotification(errorMessage);
+        }
 
-    if (errors.length > 0 && typeof window.showErrorsNotification === 'function') {
-        window.showErrorsNotification(errors);
+        if (errors.length > 0 && typeof window.showErrorsNotification === 'function') {
+            window.showErrorsNotification(errors);
+        }
     }
 });
 

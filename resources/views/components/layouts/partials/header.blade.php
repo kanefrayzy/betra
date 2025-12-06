@@ -255,7 +255,7 @@
 
     <div class="relative flex items-center justify-around h-16 px-2">
         <div class="flex flex-col items-center justify-center flex-1" x-data="{ isMenuOpen: false }" x-init="$watch('sidebarOpen', value => isMenuOpen = value)">
-            <button @click="sidebarOpen = !sidebarOpen"
+            <button @click="$store.ui.sidebarOpen = !$store.ui.sidebarOpen"
                     class="group text-gray-400 hover:text-[#4bd52d] transition-all duration-200">
                 <div class="relative">
                     <div class="w-10 h-10 flex items-center justify-center rounded-xl group-hover:bg-gray-800 transition-colors">

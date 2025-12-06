@@ -101,6 +101,62 @@ export function setupChatStore() {
 }
 
 /**
+ * Alpine UI Store для глобального состояния интерфейса
+ */
+export function setupUIStore() {
+    document.addEventListener('alpine:init', () => {
+        if (typeof Alpine === 'undefined' || !Alpine.store) return;
+        
+        // Инициализируем UI store только если его еще нет
+        if (!Alpine.store('ui')) {
+            Alpine.store('ui', {
+                sidebarCollapsed: (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true'),
+                chatOpen: (window.innerWidth >= 768 && localStorage.getItem('chatOpen') === 'true'),
+                
+                toggleSidebar() {
+                    this.sidebarCollapsed = !this.sidebarCollapsed;
+                    if (window.innerWidth >= 1280) {
+                        localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
+                        
+                        const mainContent = document.querySelector('.main-content');
+                        const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+                        
+                        if (mainContent) mainContent.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+                        if (sidebarWrapper) sidebarWrapper.classList.toggle('collapsed', this.sidebarCollapsed);
+                    }
+                },
+                
+                toggleChat() {
+                    this.chatOpen = !this.chatOpen;
+                    if (window.innerWidth >= 768) {
+                        localStorage.setItem('chatOpen', this.chatOpen.toString());
+                        
+                        if (this.chatOpen) {
+                            document.body.classList.add('chat-open');
+                        } else {
+                            document.body.classList.remove('chat-open');
+                        }
+                    }
+                }
+            });
+            
+            // Применяем начальное состояние
+            const uiStore = Alpine.store('ui');
+            if (uiStore.chatOpen) {
+                document.body.classList.add('chat-open');
+            }
+            if (uiStore.sidebarCollapsed) {
+                const mainContent = document.querySelector('.main-content');
+                const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+                if (mainContent) mainContent.classList.add('sidebar-collapsed');
+                if (sidebarWrapper) sidebarWrapper.classList.add('collapsed');
+            }
+        }
+    });
+}
+
+
+/**
  * Обратная совместимость - глобальные переменные для чата
  */
 export function setupChatGlobals() {

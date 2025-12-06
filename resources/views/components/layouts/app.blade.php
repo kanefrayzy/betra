@@ -6,10 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <!-- Turbo кеширование - разрешаем preview для мгновенного возврата -->
-    @if(request()->routeIs('slots.lobby', 'slots.history', 'slots.popular', 'slots.new', 'slots.favorites'))
-        <meta name="turbo-cache-control" content="max-age=300">
+    @if(request()->routeIs('home', 'slots.lobby', 'slots.history', 'slots.popular', 'slots.new', 'slots.favorites', 'slots.category'))
+        <meta name="turbo-cache-control" content="max-age=600">
     @else
-        <meta name="turbo-cache-control" content="no-preview">
+        <meta name="turbo-cache-control" content="max-age=60">
     @endif
     
     <!-- Notification messages for JavaScript -->
@@ -46,12 +46,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://telegram.org">
+
+    @livewireStyles
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- Preload критических навигационных путей для Turbo -->
+    <!-- Prefetch навигационных путей для Turbo -->
+    <link rel="prefetch" href="{{ route('home') }}" as="document">
+    <link rel="prefetch" href="{{ route('slots.lobby') }}" as="document">
     @auth
-        <link rel="prefetch" href="{{ route('slots.lobby') }}" as="document">
         <link rel="prefetch" href="{{ route('slots.history') }}" as="document">
         <link rel="prefetch" href="{{ route('slots.popular') }}" as="document">
+        <link rel="prefetch" href="{{ route('slots.new') }}" as="document">
     @endauth
 
     <!-- Шрифты с preload для критических весов -->
@@ -113,115 +118,44 @@
         
     </style>
 </head>
-<body x-data="{ 
-    sidebarOpen: false,
-    sidebarCollapsed: (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true'),
-    chatOpen: (window.innerWidth >= 768 && localStorage.getItem('chatOpen') === 'true'),
-    init() {
-        // Синхронизируем начальное состояние с body классами
-        if (this.chatOpen) {
-            document.body.classList.add('chat-open');
-        }
-        if (this.sidebarCollapsed) {
-            const mainContent = document.querySelector('.main-content');
-            const sidebarWrapper = document.querySelector('.sidebar-wrapper');
-            if (mainContent) mainContent.classList.add('sidebar-collapsed');
-            if (sidebarWrapper) sidebarWrapper.classList.add('collapsed');
-        }
-        
-        // Синхронизируем изменения чата с localStorage и body классом
-        this.$watch('chatOpen', (value) => {
-            if (value) {
-                document.body.classList.add('chat-open');
-                if (window.innerWidth >= 768) {
-                    localStorage.setItem('chatOpen', 'true');
-                }
-            } else {
-                document.body.classList.remove('chat-open');
-                if (window.innerWidth >= 768) {
-                    localStorage.setItem('chatOpen', 'false');
-                }
-            }
-        });
-
-        // Синхронизируем состояние sidebar
-        this.$watch('sidebarCollapsed', (value) => {
-            if (window.innerWidth >= 1280) {
-                localStorage.setItem('sidebarCollapsed', value.toString());
-                const mainContent = document.querySelector('.main-content');
-                const sidebarWrapper = document.querySelector('.sidebar-wrapper');
-                
-                if (mainContent) {
-                    if (value) {
-                        mainContent.classList.add('sidebar-collapsed');
-                    } else {
-                        mainContent.classList.remove('sidebar-collapsed');
-                    }
-                }
-                
-                if (sidebarWrapper) {
-                    if (value) {
-                        sidebarWrapper.classList.add('collapsed');
-                    } else {
-                        sidebarWrapper.classList.remove('collapsed');
-                    }
-                }
-            }
-        });
-
-        // Блокируем/разблокируем скролл при открытии/закрытии мобильного меню
-        this.$watch('sidebarOpen', (value) => {
-            if (window.innerWidth < 1280) {
-                if (value) {
-                    document.body.style.overflow = 'hidden';
-                    document.documentElement.style.overflow = 'hidden';
-                    document.body.classList.add('sidebar-scroll-locked');
-                } else {
-                    document.body.style.overflow = '';
-                    document.documentElement.style.overflow = '';
-                    document.body.classList.remove('sidebar-scroll-locked');
-                }
-            }
-        });
-
-        // Сбрасываем collapsed при переходе на мобильные размеры
-        window.addEventListener('resize', () => {
-            if (window.innerWidth < 1280) {
-                this.sidebarCollapsed = false;
-                document.body.classList.remove('sidebar-collapsed-initial');
-                const mainContent = document.querySelector('.main-content');
-                const sidebarWrapper = document.querySelector('.sidebar-wrapper');
-                if (mainContent) {
-                    mainContent.classList.remove('sidebar-collapsed');
-                }
-                if (sidebarWrapper) {
-                    sidebarWrapper.classList.remove('collapsed');
-                }
-            }
-        });
-    },
-    toggleSidebar() {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-    }
-}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" 
-   class="app-layout"
-   x-init="$nextTick(() => { 
-       document.querySelector('.sidebar-wrapper')?.classList.add('alpine-initialized'); 
-       document.querySelector('.main-content')?.classList.add('alpine-initialized'); 
-   })">
-    
-
-    <script>
-        // Синхронная инициализация состояния чата ДО Alpine и рендеринга
-        (function() {
-            const isTablet = window.innerWidth >= 768;
-            
-            // Применяем состояние чата
-            if (isTablet && localStorage.getItem('chatOpen') === 'true') {
-                document.body.classList.add('chat-open');
-            }
-        })();
-    </script>
+<body x-data="{ sidebarOpen: false }" 
+      :class="{ 'chat-open': $store.ui?.chatOpen, 'sidebar-open': sidebarOpen }" 
+      class="app-layout"
+      x-init="
+          // Синхронизируем изменения из Alpine Store
+          $watch('$store.ui?.chatOpen', (value) => {
+              if (value) {
+                  document.body.classList.add('chat-open');
+              } else {
+                  document.body.classList.remove('chat-open');
+              }
+          });
+          
+          $watch('$store.ui?.sidebarCollapsed', (value) => {
+              if (window.innerWidth >= 1280) {
+                  const mainContent = document.querySelector('.main-content');
+                  const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+                  
+                  if (mainContent) mainContent.classList.toggle('sidebar-collapsed', value);
+                  if (sidebarWrapper) sidebarWrapper.classList.toggle('collapsed', value);
+              }
+          });
+          
+          // Блокируем/разблокируем скролл при открытии/закрытии мобильного меню
+          $watch('sidebarOpen', (value) => {
+              if (window.innerWidth < 1280) {
+                  document.body.style.overflow = value ? 'hidden' : '';
+                  document.documentElement.style.overflow = value ? 'hidden' : '';
+                  document.body.classList.toggle('sidebar-scroll-locked', value);
+              }
+          });
+          
+          // Инициализация Alpine компонентов
+          $nextTick(() => { 
+              document.querySelector('.sidebar-wrapper')?.classList.add('alpine-initialized'); 
+              document.querySelector('.main-content')?.classList.add('alpine-initialized'); 
+          });
+      ">
 
     <div class="flex h-screen overflow-hidden">
       <div x-show="sidebarOpen"
@@ -239,33 +173,17 @@
         <div class="sidebar-wrapper pb-14 xl:pb-0 overflow-y-auto bg-[#0f1419] sidebar-mobile-hidden custom-scrollbar"
              data-turbo-permanent
              id="sidebar-permanent"
-             :class="{ 'translate-x-0': sidebarOpen }"
+             :class="{ 'translate-x-0': sidebarOpen, 'collapsed': $store.ui?.sidebarCollapsed }"
              style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;"
              @touchmove.stop
              @wheel.stop>
-            <script>
-                (function() {
-                    var wrapper = document.currentScript.parentElement;
-                    // Применяем класс collapsed МГНОВЕННО
-                    if (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true') {
-                        wrapper.classList.add('collapsed');
-                    }
-                })();
-            </script>
             <x-layouts.partials.sidebar />
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden main-content relative" id="main-content-permanent">
-            <script>
-                (function() {
-                    var mainContent = document.currentScript.parentElement;
-                    // Применяем класс sidebar-collapsed МГНОВЕННО
-                    if (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true') {
-                        mainContent.classList.add('sidebar-collapsed');
-                    }
-                })();
-            </script>
+        <div class="flex-1 flex flex-col overflow-hidden main-content relative" 
+             id="main-content-permanent"
+             :class="{ 'sidebar-collapsed': $store.ui?.sidebarCollapsed }">
             <x-layouts.partials.header />
 
             <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1 transition-opacity duration-300">

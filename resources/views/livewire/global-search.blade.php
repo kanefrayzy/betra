@@ -66,7 +66,7 @@
                     <a href="{{ route('slots.play', $game->slug) }}"
                        
                        wire:click="clearSearch"
-                       @click="sidebarOpen = false"
+                       @click="$store.ui.sidebarOpen = false"
                        class="flex items-center gap-3 p-3 hover:bg-gray-800/50 transition-all duration-200 border-b border-gray-800 last:border-b-0 group">
 
                         <!-- Изображение игры -->

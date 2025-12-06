@@ -12,15 +12,28 @@ const CRITICAL_ASSETS = [
     '/slots/popular',
 ];
 
+// Статические ресурсы (JS, CSS, изображения)
+const STATIC_PATTERNS = [
+    '/build/assets/',
+    '/assets/images/logo.png',
+    '/assets/images/logo-mobile.png',
+    '/assets/images/favicons/',
+];
+
 // Установка Service Worker
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(STATIC_CACHE)
-            .then(cache => {
-                // Кешируем критические страницы
-                return cache.addAll(CRITICAL_ASSETS.map(url => new Request(url, { credentials: 'same-origin' })));
-            })
-            .catch(err => console.log('Cache install error:', err))
+        Promise.all([
+            // Кешируем критические страницы
+            caches.open(STATIC_CACHE).then(cache => {
+                return cache.addAll(
+                    CRITICAL_ASSETS.map(url => new Request(url, { credentials: 'same-origin' }))
+                ).catch(err => console.log('Critical assets cache error:', err));
+            }),
+            // Предварительно открываем остальные кеши
+            caches.open(PAGE_CACHE),
+            caches.open(ASSET_CACHE)
+        ])
     );
     self.skipWaiting();
 });
@@ -65,9 +78,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Стратегия для HTML страниц
+    // Стратегия для HTML страниц - Stale-While-Revalidate для быстрой загрузки
     if (request.destination === 'document' || request.headers.get('accept')?.includes('text/html')) {
-        event.respondWith(networkFirstStrategy(request, PAGE_CACHE));
+        event.respondWith(staleWhileRevalidate(request, PAGE_CACHE));
         return;
     }
 });
@@ -130,6 +143,23 @@ async function networkFirstStrategy(request, cacheName) {
             })
         });
     }
+}
+
+// Stale-While-Revalidate - мгновенная загрузка из кеша с обновлением в фоне
+async function staleWhileRevalidate(request, cacheName) {
+    const cache = await caches.open(cacheName);
+    const cached = await cache.match(request);
+    
+    // Запускаем fetch в фоне для обновления кеша
+    const fetchPromise = fetch(request).then(response => {
+        if (response?.status === 200) {
+            cache.put(request, response.clone());
+        }
+        return response;
+    }).catch(() => cached); // Возвращаем кеш при ошибке
+    
+    // Возвращаем кеш немедленно или ждем fetch если кеша нет
+    return cached || fetchPromise;
 }
 
 // Очистка старого кеша при достижении лимита
