@@ -57,12 +57,13 @@
                              class="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2.5"
                              @click.stop>
                             <a href="{{ route('slots.play', $game->slug) }}"
+                               data-turbo="false"
                                class="w-full py-3 bg-[#4dda30] hover:bg-[#3bb825] text-white rounded-lg text-sm font-bold text-center transition-all shadow-lg shadow-[#4dda30]/20"
                                @click.stop="if (!requireAuth(null, $event)) return false">
                                 <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                                 </svg>
-                                {{__('Играть')}}
+                                {{__(''Играть'')}}
                             </a>
                             <a href="{{ route('slots.fun', $game->slug) }}"
                                class="w-full py-3 bg-[#1a2c38] hover:bg-[#2d3748] text-white rounded-lg text-sm font-semibold text-center border border-[#2d3748] transition-all"

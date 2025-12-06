@@ -91,9 +91,10 @@
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
                                  @click.stop>
                                 <a href="{{ route('slots.play', $game->slug) }}"
+                                   data-turbo="false"
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 bg-[#40c920] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all">
-                                    {{__('Играть')}}
+                                    {{__(''Играть'')}}
                                 </a>
                                 <a href="{{ route('slots.fun', $game->slug) }}"
                                    class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all">
@@ -177,10 +178,11 @@
                                  class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2"
                                  @click.stop>
                                 <a href="{{ route('slots.play', $game->slug) }}"
+                                   data-turbo="false"
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 rounded-lg text-sm font-bold text-center transition-all text-black hover:opacity-90"
                                    style="background-color: {{ $category->color }}">
-                                    {{__('Играть')}}
+                                    {{__(''Играть'')}}
                                 </a>
                                 <a href="#" onclick="handleGameClick('{{ route('slots.fun', $game->slug) }}', event)"
                                    class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all">

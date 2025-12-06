@@ -212,6 +212,11 @@ document.addEventListener('turbo:load', () => {
 
 // Turbo Events - для работы с Alpine и Livewire
 document.addEventListener('turbo:before-cache', () => {
+    // НЕ кэшируем страницы игр - они должны загружаться свежими
+    if (window.location.pathname.includes('/slots/play')) {
+        return; // Пропускаем кэширование
+    }
+    
     // Помечаем страницу как кешированную
     document.body.dataset.turboCached = 'true';
     
@@ -312,8 +317,9 @@ function protectDangerousLinks() {
         link.setAttribute('data-no-prefetch', '');
     });
     
-    // Игровые ссылки
+    // Игровые ссылки - ПОЛНАЯ перезагрузка для мгновенной загрузки iframe
     document.querySelectorAll('a[href*="/slots/play"], a[href*="/game/"], a[href*="/play/"]').forEach(link => {
+        link.setAttribute('data-turbo', 'false'); // Полная перезагрузка страницы
         link.setAttribute('data-no-prefetch', '');
     });
     
