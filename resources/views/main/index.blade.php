@@ -93,7 +93,7 @@
                                 <a href="{{ route('slots.play', $game->slug) }}"
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 bg-[#40c920] hover:bg-[#f5a300] text-black rounded-lg text-sm font-bold text-center transition-all">
-                                    {{__(''Играть'')}}
+                                    {{__('Играть')}}
                                 </a>
                                 <a href="{{ route('slots.fun', $game->slug) }}"
                                    class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all">
@@ -180,7 +180,7 @@
                                    @guest onclick="event.preventDefault(); openLoginModal(); return false;" @endguest
                                    class="w-full py-2.5 rounded-lg text-sm font-bold text-center transition-all text-black hover:opacity-90"
                                    style="background-color: {{ $category->color }}">
-                                    {{__(''Играть'')}}
+                                    {{__('Играть')}}
                                 </a>
                                 <a href="#" onclick="handleGameClick('{{ route('slots.fun', $game->slug) }}', event)"
                                    class="w-full py-2.5 bg-dark-700/80 hover:bg-dark-600/80 text-white rounded-lg text-sm font-medium text-center border border-dark-600 transition-all">

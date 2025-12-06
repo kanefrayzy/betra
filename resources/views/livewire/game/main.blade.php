@@ -62,7 +62,7 @@
                                 <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                                 </svg>
-                                {{__(''Играть'')}}
+                                {{__('Играть')}}
                             </a>
                             <a href="{{ route('slots.fun', $game->slug) }}"
                                class="w-full py-3 bg-[#1a2c38] hover:bg-[#2d3748] text-white rounded-lg text-sm font-semibold text-center border border-[#2d3748] transition-all"
