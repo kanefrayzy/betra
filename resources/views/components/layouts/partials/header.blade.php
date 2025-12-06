@@ -4,12 +4,12 @@
         <div class="flex items-center">
             <div class="hidden lg:flex">
                 <a href="/"  class="mr-8">
-                    <img src="/assets/images/logo.png?v1" alt="Flash" class="h-10">
+                    <img src="/assets/images/logo.png" alt="Flash" class="h-10">
                 </a>
             </div>
             <div class="lg:hidden">
                 <a href="/" >
-                    <img src="/assets/images/logo-mobile.png?v1" alt="Flash" class="h-8">
+                    <img src="/assets/images/logo-mobile.png" alt="Flash" class="h-8">
                 </a>
             </div>
         </div>
