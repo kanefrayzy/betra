@@ -6,7 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         
         <!-- Turbo кеширование - разрешаем preview для мгновенного возврата -->
-        @if(request()->routeIs('home', 'slots.lobby', 'slots.history', 'slots.popular', 'slots.new', 'slots.favorites', 'slots.category'))
+        @if(request()->routeIs('slots.play', 'slots.fun'))
+            <meta name="turbo-cache-control" content="no-preview">
+        @elseif(request()->routeIs('home', 'slots.lobby', 'slots.history', 'slots.popular', 'slots.new', 'slots.favorites', 'slots.category'))
             <meta name="turbo-cache-control" content="max-age=600">
         @else
             <meta name="turbo-cache-control" content="max-age=60">

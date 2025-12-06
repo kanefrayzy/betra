@@ -163,14 +163,13 @@
                 loading: true,
                 error: false,
                 fullscreen: false,
-                gameUrl: '{!! addslashes($gameUrl) !!}',
+                gameSlug: '{{ $gameSlug }}',
+                gameUrl: null,
                 loadTimeout: null,
                 
                 init() {
-                    // Загружаем игру сразу при инициализации
-                    this.$nextTick(() => {
-                        this.loadGame();
-                    });
+                    // Загружаем URL игры через API мгновенно
+                    this.fetchGameUrl();
                     
                     // Слушаем сообщения от игры
                     window.addEventListener('message', (event) => {
@@ -183,6 +182,37 @@
                     document.addEventListener('fullscreenchange', () => {
                         this.fullscreen = !!document.fullscreenElement;
                     });
+                },
+                
+                async fetchGameUrl() {
+                    try {
+                        const response = await fetch(`/slots/api/game-url/${this.gameSlug}`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to load game');
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.success && data.url) {
+                            this.gameUrl = data.url;
+                            this.$nextTick(() => {
+                                this.loadGame();
+                            });
+                        } else {
+                            this.error = true;
+                            this.loading = false;
+                        }
+                    } catch (err) {
+                        console.error('Game URL fetch error:', err);
+                        this.error = true;
+                        this.loading = false;
+                    }
                 },
                 
                 loadGame() {
@@ -211,9 +241,10 @@
                 retry() {
                     this.error = false;
                     this.loading = true;
+                    this.gameUrl = null;
                     this.$refs.iframe.src = 'about:blank';
                     setTimeout(() => {
-                        this.loadGame();
+                        this.fetchGameUrl();
                     }, 100);
                 },
                 

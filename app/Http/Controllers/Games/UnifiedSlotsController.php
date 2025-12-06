@@ -18,7 +18,7 @@ class UnifiedSlotsController extends Controller
          // Быстрое кэширование с минимальными полями
          $game = Cache::remember("game:{$slug}", 86400, function () use ($slug) {
              return SlotegratorGame::select([
-                 'id', 'uuid', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active'
+                 'id', 'uuid', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active', 'image'
              ])
              ->where('slug', $slug)
              ->where('is_active', 1)
@@ -30,8 +30,62 @@ class UnifiedSlotsController extends Controller
              return redirect()->route('home')->with('error', __('Игра не найдена'));
          }
 
-         // Прямой запуск без лишних проверок
-         return $this->routeToProvider($game, false);
+         // МГНОВЕННЫЙ ОТВЕТ - возвращаем страницу без ожидания URL
+         // URL будет загружен через Alpine.js асинхронно
+         return view('games.play', [
+             'game' => $game,
+             'gameSlug' => $slug,
+             'settings' => \App\Models\Settings::first()
+         ]);
+     }
+     
+     /**
+      * API endpoint для получения URL игры (вызывается асинхронно)
+      */
+     public function getGameUrl($slug)
+     {
+         $game = Cache::remember("game:{$slug}", 86400, function () use ($slug) {
+             return SlotegratorGame::select([
+                 'id', 'uuid', 'name', 'slug', 'provider_type', 'provider', 'game_code', 'is_active'
+             ])
+             ->where('slug', $slug)
+             ->where('is_active', 1)
+             ->first();
+         });
+
+         if (!$game) {
+             return response()->json(['error' => 'Game not found'], 404);
+         }
+
+         try {
+             // Получаем view с URL игры от провайдера
+             $result = $this->routeToProvider($game, false);
+             
+             // Извлекаем данные из view response
+             if ($result instanceof \Illuminate\View\View) {
+                 $gameUrl = $result->getData()['gameUrl'] ?? null;
+                 
+                 return response()->json([
+                     'success' => true,
+                     'url' => $gameUrl,
+                     'name' => $game->name,
+                     'provider' => $game->provider
+                 ]);
+             }
+             
+             return response()->json(['error' => 'Failed to get game URL'], 500);
+             
+         } catch (\Exception $e) {
+             Log::error('Game URL error', [
+                 'slug' => $slug,
+                 'error' => $e->getMessage()
+             ]);
+             
+             return response()->json([
+                 'error' => 'Game temporarily unavailable',
+                 'message' => $e->getMessage()
+             ], 500);
+         }
      }
 
      public function LaunchdemoGame($slug)

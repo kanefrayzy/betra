@@ -173,6 +173,7 @@ Route::prefix('slots')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('play/{slug}', [UnifiedSlotsController::class, 'launchGame'])->name('slots.play');
         Route::get('play-mobile/{slug}', [UnifiedSlotsController::class, 'launchGame'])->name('slots.mobile');
+        Route::get('api/game-url/{slug}', [UnifiedSlotsController::class, 'getGameUrl'])->name('slots.game-url');
         Route::get('favorites', \App\Livewire\Game\Favorites::class)->name('slots.favorites');
         Route::get('history', \App\Livewire\Game\History::class)->name('slots.history');
     });
