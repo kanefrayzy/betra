@@ -1,5 +1,5 @@
 <!-- Hero Banners -->
-<div class="container mx-auto px-3 sm:px-4 lg:px-6 pb-2 pt-2 sm:pt-4 lg:pt-6">
+<div class="container mx-auto px-3 pb-2 pt-2 sm:pt-4 lg:pt-6">
     <div class="grid grid-cols-1 gap-4">
         <div class="grid grid-cols-3 gap-4 max-lg:hidden">
             @php
