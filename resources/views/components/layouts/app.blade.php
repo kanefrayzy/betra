@@ -104,24 +104,18 @@
 </head>
 <body x-data="{ 
     sidebarOpen: false,
-    sidebarCollapsed: false,
-    chatOpen: false,
+    sidebarCollapsed: (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true'),
+    chatOpen: (window.innerWidth >= 768 && localStorage.getItem('chatOpen') === 'true'),
     init() {
-        // Восстанавливаем состояние sidebar из localStorage
-        if (window.innerWidth >= 1280) {
-            const savedSidebarState = localStorage.getItem('sidebarCollapsed');
-            if (savedSidebarState === 'true') {
-                this.sidebarCollapsed = true;
-            }
+        // Синхронизируем начальное состояние с body классами
+        if (this.chatOpen) {
+            document.body.classList.add('chat-open');
         }
-        
-        // Восстанавливаем состояние чата
-        if (window.innerWidth >= 768) {
-            const savedChatState = localStorage.getItem('chatOpen');
-            if (savedChatState === 'true') {
-                this.chatOpen = true;
-                document.body.classList.add('chat-open');
-            }
+        if (this.sidebarCollapsed) {
+            const mainContent = document.querySelector('.main-content');
+            const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+            if (mainContent) mainContent.classList.add('sidebar-collapsed');
+            if (sidebarWrapper) sidebarWrapper.classList.add('collapsed');
         }
         
         // Синхронизируем изменения чата с localStorage и body классом
@@ -143,13 +137,22 @@
         this.$watch('sidebarCollapsed', (value) => {
             if (window.innerWidth >= 1280) {
                 localStorage.setItem('sidebarCollapsed', value.toString());
-                // Добавляем класс к main-content для правильных отступов
                 const mainContent = document.querySelector('.main-content');
+                const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+                
                 if (mainContent) {
                     if (value) {
                         mainContent.classList.add('sidebar-collapsed');
                     } else {
                         mainContent.classList.remove('sidebar-collapsed');
+                    }
+                }
+                
+                if (sidebarWrapper) {
+                    if (value) {
+                        sidebarWrapper.classList.add('collapsed');
+                    } else {
+                        sidebarWrapper.classList.remove('collapsed');
                     }
                 }
             }
@@ -174,9 +177,14 @@
         window.addEventListener('resize', () => {
             if (window.innerWidth < 1280) {
                 this.sidebarCollapsed = false;
+                document.body.classList.remove('sidebar-collapsed-initial');
                 const mainContent = document.querySelector('.main-content');
+                const sidebarWrapper = document.querySelector('.sidebar-wrapper');
                 if (mainContent) {
                     mainContent.classList.remove('sidebar-collapsed');
+                }
+                if (sidebarWrapper) {
+                    sidebarWrapper.classList.remove('collapsed');
                 }
             }
         });
@@ -184,16 +192,22 @@
     toggleSidebar() {
         this.sidebarCollapsed = !this.sidebarCollapsed;
     }
-}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" class="app-layout">
+}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" 
+   class="app-layout"
+   x-init="$nextTick(() => { 
+       document.querySelector('.sidebar-wrapper')?.classList.add('alpine-initialized'); 
+       document.querySelector('.main-content')?.classList.add('alpine-initialized'); 
+   })">
     
 
     <script>
+        // Синхронная инициализация состояния чата ДО Alpine и рендеринга
         (function() {
-            if (window.innerWidth >= 768) {
-                const savedChatState = localStorage.getItem('chatOpen');
-                if (savedChatState === 'true') {
-                    document.body.classList.add('chat-open');
-                }
+            const isTablet = window.innerWidth >= 768;
+            
+            // Применяем состояние чата
+            if (isTablet && localStorage.getItem('chatOpen') === 'true') {
+                document.body.classList.add('chat-open');
             }
         })();
     </script>
@@ -211,20 +225,34 @@
            style="display: none;">
       </div>
         <!-- Sidebar -->
-        <div class="sidebar-wrapper pb-14 xl:pb-0 overflow-y-auto bg-[#0f1419] transition-all duration-300 sidebar-mobile-hidden custom-scrollbar"
-             :class="{
-                'translate-x-0': sidebarOpen,
-                'collapsed': sidebarCollapsed && window.innerWidth >= 1280
-             }"
+        <div class="sidebar-wrapper pb-14 xl:pb-0 overflow-y-auto bg-[#0f1419] sidebar-mobile-hidden custom-scrollbar"
+             :class="{ 'translate-x-0': sidebarOpen }"
              style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;"
              @touchmove.stop
              @wheel.stop>
+            <script>
+                (function() {
+                    var wrapper = document.currentScript.parentElement;
+                    // Применяем класс collapsed МГНОВЕННО
+                    if (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true') {
+                        wrapper.classList.add('collapsed');
+                    }
+                })();
+            </script>
             <x-layouts.partials.sidebar />
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden main-content relative transition-all duration-300"
-             :class="{ 'sidebar-collapsed': sidebarCollapsed && window.innerWidth >= 1280 }">
+        <div class="flex-1 flex flex-col overflow-hidden main-content relative">
+            <script>
+                (function() {
+                    var mainContent = document.currentScript.parentElement;
+                    // Применяем класс sidebar-collapsed МГНОВЕННО
+                    if (window.innerWidth >= 1280 && localStorage.getItem('sidebarCollapsed') === 'true') {
+                        mainContent.classList.add('sidebar-collapsed');
+                    }
+                })();
+            </script>
             <x-layouts.partials.header />
 
             <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1 transition-opacity duration-300" 
