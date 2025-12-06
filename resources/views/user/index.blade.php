@@ -81,38 +81,9 @@
                                     <input type="text" readonly class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" value="{{auth()->user()->username}}">
                                 </div>
 
-                                <div x-data="{ isEditing: false }">
+                                <div>
                                     <label class="block text-gray-400 text-sm font-medium mb-2">E-mail</label>
-                                    <div x-show="!isEditing">
-                                        <div class="flex flex-col sm:flex-row gap-3">
-                                            <input type="email" readonly class="flex-1 bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none" value="{{ auth()->user()->email }}">
-                                            @if(!auth()->user()->email_changed)
-                                                <button @click="isEditing = true" class="px-6 py-3 bg-[#2a3142] hover:bg-[#3a4152] text-white rounded-lg font-semibold transition-colors whitespace-nowrap">
-                                                    {{__('Изменить')}}
-                                                </button>
-                                            @endif
-                                        </div>
-                                        @if(auth()->user()->email_changed)
-                                            <p class="text-gray-500 text-xs mt-2">{{__('Email уже был изменен и больше не может быть изменен.')}}</p>
-                                        @endif
-                                    </div>
-                                    @if(!auth()->user()->email_changed)
-                                        <form x-show="isEditing" action="{{ route('account.update-email') }}" method="POST" class="space-y-3" x-cloak>
-                                            @csrf
-                                            <input type="email" name="email" class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#fbbf24]/50" value="{{ auth()->user()->email }}" required>
-                                            @error('email')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                                            @enderror
-                                            <div class="flex flex-wrap gap-3">
-                                                <button type="submit" class="px-6 py-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-lg font-semibold transition-colors">
-                                                    {{__('Сохранить')}}
-                                                </button>
-                                                <button type="button" @click="isEditing = false" class="px-6 py-2.5 bg-[#2a3142] hover:bg-[#3a4152] text-white rounded-lg font-semibold transition-colors">
-                                                    {{__('Отмена')}}
-                                                </button>
-                                            </div>
-                                        </form>
-                                    @endif
+                                    <input type="email" readonly class="w-full bg-[#0f1419] border border-[#2a3142] rounded-lg px-4 py-3 text-white focus:outline-none" value="{{ auth()->user()->email }}">
                                 </div>
                             </div>
                         </div>
