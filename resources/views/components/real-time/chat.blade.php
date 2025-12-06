@@ -1,5 +1,5 @@
 <div id="right-sidebar"
-    class="fixed inset-y-0 right-0 z-30 flex h-full w-full sm:w-96 md:w-80 lg:w-80 transform flex-col bg-dark-900 transition-all duration-500 ease-in-out shadow-[_-12px_0_24px_rgba(0,0,0,0.35)]"
+    class="fixed inset-y-0 right-0 z-30 flex h-full w-full sm:w-96 md:w-80 lg:w-80 transform flex-col bg-dark-900 transition-all duration-500 ease-in-out"
      :class="{'translate-x-0 opacity-100': chatOpen, 'translate-x-full opacity-0': !chatOpen}"
      x-cloak
      @auth
@@ -13,7 +13,7 @@
      @endauth>
 
 
-    <div class="flex h-16 sm:h-16 items-center justify-between bg-customBoldDark px-3 sm:px-4 shadow-[0_2px_6px_rgba(0,0,0,0.20)] z-10 relative">
+    <div class="flex h-16 sm:h-16 items-center justify-between bg-[#1a2c38] px-3 sm:px-4 z-10 relative">
         <div class="flex items-center">
             <div>
                 <!-- <span class="text-base sm:text-lg font-bold text-white">{{ __('Чат') }}</span> -->

@@ -204,7 +204,6 @@ class SlotsController extends Controller
         $action = $request->input('action');
         $data = $request->all();
 
-        // Проверка существования пользователя
         $userExists = Cache::remember("user_exists:{$data['player_id']}", 3600, function () use ($data) {
             return User::where('id', $data['player_id'])->exists();
         });
@@ -214,10 +213,8 @@ class SlotsController extends Controller
         }
 
         try {
-            // Верификация подписи
             $this->client->verifySignature($request->headers->all(), $data);
             
-            // Проверяем/создаём сессию при первом callback
             if (isset($data['session_id'])) {
                 $user = User::find($data['player_id']);
                 
@@ -227,15 +224,6 @@ class SlotsController extends Controller
                     ->first();
                     
                 if (!$session) {
-                    // Создаём сессию автоматически при первом callback от Slotegrator
-                    $this->logger->info('Auto-creating session from callback', [
-                        'player_id' => $data['player_id'],
-                        'session_id' => $data['session_id'],
-                        'game_uuid' => $data['game_uuid'] ?? null,
-                        'currency' => $data['currency'],
-                        'action' => $action
-                    ]);
-                    
                     $user->gameSession()->updateOrCreate(
                         ['user_id' => $user->id],
                         [
@@ -251,14 +239,7 @@ class SlotsController extends Controller
                     ];
                 }
                 
-                // Проверка валюты сессии
                 if ($session->currency && $data['currency'] !== $session->currency) {
-                    $this->logger->error('Currency mismatch with session', [
-                        'session_currency' => $session->currency,
-                        'transaction_currency' => $data['currency'],
-                        'player_id' => $data['player_id'],
-                        'session_id' => $data['session_id']
-                    ]);
                     return $this->errorResponse('Currency mismatch');
                 }
             }
@@ -274,17 +255,12 @@ class SlotsController extends Controller
             return $result;
             
         } catch (Exception $e) {
-            $this->logger->error('Error processing callback', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return $this->errorResponse('Internal server error');
         }
     }
 
     /**
      * Возвращает текущий баланс игрока
-     * Документация: https://slotegrator.docs.apiary.io/#reference/0/balance
      */
     protected function getBalance($data)
     {
@@ -299,57 +275,35 @@ class SlotsController extends Controller
 
     /**
      * Обрабатывает BET и WIN транзакции
-     * 
-     * BET - списывает деньги со счета игрока
-     * WIN - начисляет выигрыш на счет игрока
-     * 
-     * Документация: 
-     * - BET: https://slotegrator.docs.apiary.io/#reference/0/bet
-     * - WIN: https://slotegrator.docs.apiary.io/#reference/0/win
-     * 
-     * ВАЖНО: При дублирующем запросе (с тем же transaction_id):
-     * - Возвращаем balance_before (баланс ДО оригинальной транзакции)
-     * - Это доказывает Slotegrator что duplicate не изменил баланс
      */
     protected function handleTransaction($data, $type)
     {
         return DB::transaction(function () use ($data, $type) {
-            $amount = $data['amount']; // Используем точную сумму без округления
+            $amount = $data['amount'];
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
 
-            // Проверка валюты
             if ($data['currency'] !== $user->currency->symbol) {
-                $this->logger->error('Currency mismatch', [
-                    'user_currency' => $user->currency->symbol,
-                    'transaction_currency' => $data['currency'],
-                    'user_id' => $user->id
-                ]);
                 return $this->errorResponse('Currency mismatch');
             }
 
-            // ПРОВЕРКА: Дублирующий запрос?
             if ($this->isExistingTransaction($data['transaction_id'])) {
                 return $this->getDuplicateTransactionResponse($user, $data['transaction_id']);
             }
 
-            // Проверка достаточности средств для BET
             if ($type === 'bet' && $user->balance < $amount) {
                 return $this->insufficientFundsResponse();
             }
 
-            // Сохраняем оригинальный баланс ДО изменения
             $balanceBefore = $user->balance;
 
-            // Изменяем баланс
             if ($type === 'bet') {
                 $user->balance -= $amount;
-            } else { // win
+            } else {
                 $user->balance += $amount;
             }
             
             $user->save();
 
-            // Создаём транзакцию с сохранением balance_before и balance_after
             $transaction = $this->createTransaction(
                 $user, 
                 $data, 
@@ -359,7 +313,6 @@ class SlotsController extends Controller
                 $user->balance
             );
 
-            // Сохраняем в Redis для быстрого доступа
             $this->storeTransactionInRedis($transaction, $user, $data);
 
             return response()->json([
@@ -372,69 +325,29 @@ class SlotsController extends Controller
 
     /**
      * Обрабатывает REFUND транзакции
-     * 
-     * REFUND отменяет предыдущую транзакцию (BET или WIN):
-     * - Refund для BET: возвращает деньги игроку (+amount)
-     * - Refund для WIN: забирает выигрыш у игрока (-amount)
-     * 
-     * Документация: https://slotegrator.docs.apiary.io/#reference/0/refund
-     * 
-     * ВАЖНО: При дублирующем REFUND запросе:
-     * - Возвращаем balance_after (баланс ПОСЛЕ оригинального refund)
-     * - Это доказывает что duplicate не изменил баланс
-     * 
-     * ЗАЩИТА ОТ RACE CONDITION:
-     * - Используем Redis SETNX для атомарной блокировки
-     * - Работает даже если транзакция в БД еще не закоммичена
      */
     protected function refund($data)
     {
         return DB::transaction(function () use ($data) {
             $user = User::lockForUpdate()->findOrFail($data['player_id']);
             
-            // ПРОВЕРКА #1: Дублирующий запрос по transaction_id?
             if ($this->isExistingTransaction($data['transaction_id'])) {
-                $this->logger->info('Duplicate refund detected (same transaction_id)', [
-                    'refund_transaction_id' => $data['transaction_id']
-                ]);
                 return $this->getDuplicateTransactionResponse($user, $data['transaction_id']);
             }
 
-            // ПРОВЕРКА #2: Redis атомарная блокировка по bet_transaction_id
-            // Предотвращает duplicate refund ДАЖЕ при race condition
             $refundKey = "refund:{$data['player_id']}:{$data['bet_transaction_id']}";
-            
-            // SETNX = Set if Not eXists - атомарная операция
-            // Вернёт true ТОЛЬКО для первого запроса
             $isFirstRefund = Redis::setnx($refundKey, $data['transaction_id']);
             
             if (!$isFirstRefund) {
-                // Уже есть refund для этой bet_transaction_id
                 $existingRefundHash = Redis::get($refundKey);
-                
-                $this->logger->warning('Refund already exists (detected via Redis)', [
-                    'bet_transaction_id' => $data['bet_transaction_id'],
-                    'existing_refund_id' => $existingRefundHash,
-                    'new_refund_id' => $data['transaction_id']
-                ]);
-                
-                // Возвращаем ответ от ОРИГИНАЛЬНОГО refund
                 return $this->getDuplicateTransactionResponse($user, $existingRefundHash);
             }
             
-            // Устанавливаем TTL на ключ (1 час)
             Redis::expire($refundKey, 3600);
 
-            // Ищем ОРИГИНАЛЬНУЮ транзакцию для refund
             $originalTransaction = Transaction::where('hash', $data['bet_transaction_id'])->first();
 
-            // Если оригинальной транзакции нет - создаём пустой refund
             if (!$originalTransaction) {
-                $this->logger->warning('Original transaction not found for refund', [
-                    'bet_transaction_id' => $data['bet_transaction_id'],
-                    'refund_transaction_id' => $data['transaction_id']
-                ]);
-                
                 $transaction = $this->createRefundWithoutOriginal($user, $data);
                 return response()->json([
                     'balance' => round($user->balance, 2),
@@ -442,35 +355,14 @@ class SlotsController extends Controller
                 ]);
             }
 
-            $amount = $data['amount']; // Используем точную сумму без округления
+            $amount = $data['amount'];
             $balanceBefore = $user->balance;
             
-            // КРИТИЧНО: Refund работает ТОЛЬКО для BET транзакций
-            // Для WIN/REFUND/других типов - баланс НЕ меняем (некорректный refund)
             if ($originalTransaction->type->value === 'bet') {
-                // Возврат ставки - возвращаем деньги
                 $user->balance += $amount;
                 $user->save();
-                
-                $this->logger->info('Refund for BET', [
-                    'original_tx' => $data['bet_transaction_id'],
-                    'amount' => $amount,
-                    'balance_before' => $balanceBefore,
-                    'balance_after' => $user->balance
-                ]);
-            } else {
-                // Некорректный refund (для WIN/REFUND) - НЕ МЕНЯЕМ БАЛАНС
-                $this->logger->warning('Invalid refund for non-BET transaction', [
-                    'original_type' => $originalTransaction->type->value,
-                    'original_tx' => $data['bet_transaction_id'],
-                    'refund_tx' => $data['transaction_id'],
-                    'amount' => $amount,
-                    'balance_unchanged' => $user->balance
-                ]);
-                // Баланс не меняем - просто сохраняем запись транзакции
             }
 
-            // Создаём refund транзакцию
             $transaction = $this->createTransaction(
                 $user,
                 $data,
@@ -491,7 +383,6 @@ class SlotsController extends Controller
 
     /**
      * Создаёт refund транзакцию когда оригинальная транзакция не найдена
-     * Баланс не меняется, т.к. оригинальной ставки не было
      */
     private function createRefundWithoutOriginal($user, $data)
     {
@@ -515,26 +406,6 @@ class SlotsController extends Controller
 
     /**
      * Возвращает ответ для дублирующего запроса
-     * 
-     * КРИТИЧЕСКАЯ ЛОГИКА согласно документации Slotegrator:
-     * 
-     * Для BET/WIN duplicate:
-     * - Возвращаем balance_before = баланс ДО оригинальной операции
-     * - Доказывает что duplicate не изменил баланс
-     * 
-     * Для REFUND duplicate:
-     * - Возвращаем balance_after = баланс ПОСЛЕ оригинального возврата
-     * - Доказывает что duplicate не изменил баланс
-     * 
-     * Пример для BET:
-     * - Баланс был: 100
-     * - BET 10: 100 -> 90 (сохранили: before=100, after=90)
-     * - Duplicate BET: возвращаем 100 (before)
-     * 
-     * Пример для REFUND:
-     * - Баланс был: 90
-     * - REFUND 10: 90 -> 100 (сохранили: before=90, after=100)
-     * - Duplicate REFUND: возвращаем 100 (after)
      */
     private function getDuplicateTransactionResponse($user, $transactionId)
     {
@@ -544,94 +415,69 @@ class SlotsController extends Controller
             return $this->errorResponse('Transaction not found');
         }
         
-        // КРИТИЧНО: Возвращаем ТЕКУЩИЙ баланс пользователя
-        // "Balance should not be changed" = duplicate не изменил баланс от текущего состояния
-        // Показываем что транзакция не выполнилась повторно
-        $balance = $user->balance;
-        
         return response()->json([
-            'balance' => round($balance, 2),
+            'balance' => round($user->balance, 2),
             'transaction_id' => $this->hash($transaction->id)
         ]);
     }
 
     /**
      * Обрабатывает ROLLBACK транзакции
-     * Откатывает несколько предыдущих транзакций
-     * 
-     * Документация: https://slotegrator.docs.apiary.io/#reference/0/rollback
      */
     protected function rollback($data)
     {
+        $rollbackTimeout = 5;
+        
         return DB::transaction(function () use ($data) {
-            try {
-                $rollbackTransactions = $data['rollback_transactions'];
-                $user = User::lockForUpdate()->findOrFail($data['player_id']);
-                $balanceBefore = $user->balance;
+            $rollbackTransactions = $data['rollback_transactions'];
+            $user = User::lockForUpdate()->findOrFail($data['player_id']);
+            $balanceBefore = $user->balance;
 
-                // Проверка на дубликат rollback
-                $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
-                if ($existingRollbackTransaction) {
-                    $context = json_decode($existingRollbackTransaction->context, true);
-                    $rollbackTxIds = $context['rollback_transactions'] ?? [];
-
-                    return response()->json([
-                        'balance' => round($user->balance, 2),
-                        'transaction_id' => $this->hash($existingRollbackTransaction->id),
-                        'rollback_transactions' => $rollbackTxIds,
-                    ]);
-                }
-
-                // Собираем массив transaction_id для ответа
-                $rollbackTxIds = [];
-                
-                // Обрабатываем каждую транзакцию для отката
-                foreach ($rollbackTransactions as $transactionData) {
-                    $rollbackTxIds[] = $transactionData['transaction_id'];
-                    
-                    $transaction = Transaction::where('hash', $transactionData['transaction_id'])->first();
-
-                    if (!$transaction) {
-                        continue;
-                    }
-
-                    if ($transaction->amount != 0) {
-                        $this->processRollbackForTransaction($user, $transaction);
-                    }
-                }
-
-                // Создаём финальную rollback транзакцию
-                $rollbackTransaction = Transaction::create([
-                    'user_id' => $user->id,
-                    'amount' => 0,
-                    'currency_id' => $user->currency_id,
-                    'type' => 'rollback',
-                    'status' => 'success',
-                    'hash' => $data['transaction_id'],
-                    'context' => json_encode([
-                        'description' => 'Rollback transaction',
-                        'balance_before' => $balanceBefore,
-                        'balance_after' => $user->balance,
-                        'rollback_transactions' => $rollbackTxIds,
-                    ])
-                ]);
+            $existingRollbackTransaction = Transaction::where('hash', $data['transaction_id'])->first();
+            if ($existingRollbackTransaction) {
+                $context = json_decode($existingRollbackTransaction->context, true);
+                $rollbackTxIds = $context['rollback_transactions'] ?? [];
 
                 return response()->json([
                     'balance' => round($user->balance, 2),
-                    'transaction_id' => $this->hash($rollbackTransaction->id),
+                    'transaction_id' => $this->hash($existingRollbackTransaction->id),
                     'rollback_transactions' => $rollbackTxIds,
                 ]);
-                
-            } catch (\Exception $e) {
-                $this->logger->error('Rollback processing error', [
-                    'error' => $e->getMessage(),
-                    'line' => $e->getLine(),
-                    'file' => $e->getFile(),
-                    'data' => $data
-                ]);
-                throw $e; // Re-throw для основного catch
             }
-        }, $this->transactionTimeout);
+
+            $rollbackTxIds = [];
+            
+            foreach ($rollbackTransactions as $transactionData) {
+                $rollbackTxIds[] = $transactionData['transaction_id'];
+                
+                $transaction = Transaction::where('hash', $transactionData['transaction_id'])->first();
+
+                if ($transaction && $transaction->amount != 0) {
+                    $this->processRollbackForTransaction($user, $transaction);
+                }
+            }
+
+            $rollbackTransaction = Transaction::create([
+                'user_id' => $user->id,
+                'amount' => 0,
+                'currency_id' => $user->currency_id,
+                'type' => 'rollback',
+                'status' => 'success',
+                'hash' => $data['transaction_id'],
+                'context' => json_encode([
+                    'description' => 'Rollback transaction',
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $user->balance,
+                    'rollback_transactions' => $rollbackTxIds,
+                ])
+            ]);
+
+            return response()->json([
+                'balance' => round($user->balance, 2),
+                'transaction_id' => $this->hash($rollbackTransaction->id),
+                'rollback_transactions' => $rollbackTxIds,
+            ]);
+        }, $rollbackTimeout);
     }
 
     /**
@@ -655,15 +501,10 @@ class SlotsController extends Controller
 
     /**
      * Откатывает конкретную транзакцию
-     * 
-     * Логика отката:
-     * - BET: возвращаем деньги (+amount)
-     * - WIN: забираем выигрыш (-amount)
-     * - REFUND: отменяем возврат (-amount)
      */
     protected function processRollbackForTransaction($user, $transaction)
     {
-        $amount = $transaction->amount; // БЕЗ round()!
+        $amount = $transaction->amount;
         
         if ($transaction->type->value === 'bet') {
             $user->balance += $amount;
@@ -728,9 +569,6 @@ class SlotsController extends Controller
 
     /**
      * Создаёт транзакцию в БД
-     * 
-     * ВАЖНО: Всегда сохраняем balance_before и balance_after в context!
-     * Это необходимо для правильной обработки duplicate requests
      */
     protected function createTransaction($user, $data, $type, $amount, $balanceBefore, $balanceAfter)
     {

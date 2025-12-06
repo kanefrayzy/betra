@@ -78,7 +78,6 @@
                                 <img src="{{ asset('assets/images/curr/'.$currency->symbol.'.png') }}"
                                      alt="{{ $currency->symbol }}"
                                      class="h-5 w-5"
-                                     loading="lazy"
                                      onerror="this.style.display='none';">
                             </div>
                             

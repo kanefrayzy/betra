@@ -4,7 +4,7 @@
             type="text"
             wire:model.live.debounce.300ms="query"
             placeholder="{{ __('Введите название игры...') }}"
-            class="w-full h-12 pl-11 pr-11 bg-[#0f212e] text-white placeholder-gray-600 border-2 border-gray-700 rounded-md focus:outline-none focus:border-gray-500 transition-all text-sm"
+            class="w-full h-12 pl-11 pr-11 bg-[#1a2c38] text-white placeholder-gray-600 border-2 border-gray-700 rounded-md focus:outline-none focus:border-gray-500 transition-all text-sm"
             autocomplete="off"
         >
         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600">

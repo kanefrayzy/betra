@@ -184,7 +184,7 @@
     toggleSidebar() {
         this.sidebarCollapsed = !this.sidebarCollapsed;
     }
-}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" class="bg-customDark app-layout">
+}" :class="{ 'chat-open': chatOpen, 'sidebar-open': sidebarOpen }" class="app-layout">
     
 
     <script>
@@ -227,7 +227,7 @@
              :class="{ 'sidebar-collapsed': sidebarCollapsed && window.innerWidth >= 1280 }">
             <x-layouts.partials.header />
 
-            <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-customDark px-1 transition-opacity duration-300" 
+            <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1 transition-opacity duration-300" 
                   data-navigate-once>
                 {{ $slot }}
             </main>

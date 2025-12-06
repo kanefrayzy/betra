@@ -39,7 +39,7 @@ img[loading="lazy"] {
 
 body {
     margin: 0;
-    background-color: #0f1419;
+    background-color: #0f212e;
     color: #fff;
     font-family: "Manrope", sans-serif;
     font-optical-sizing: auto;
@@ -118,19 +118,21 @@ label {
     gap: 0.75rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    color: #fff;
+    color: #b1bad3;
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .sidebar-item svg {
-    color: #b1b1b1;
+    color: #b1bad3;
     transition: color 0.2s ease;
 }
 
 .sidebar-item:hover {
-    background-color: #1a2c38;
+    background-color: #2f4553;
     color: #fff;
 }
 
@@ -146,19 +148,9 @@ label {
 
 .sidebar-item.active {
     color: #fff;
-    background-color: #1a2c38;
+    background-color: #2f4553;
 }
 
-.sidebar-item.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 3px;
-    height: 100%;
-    background: #4ed930;
-    border-radius: 0 4px 4px 0;
-}
 
 .sidebar-wrapper.collapsed .sidebar-item.active::before {
     display: none;
@@ -1373,9 +1365,12 @@ span.close-button:hover {
 /* Дополнительные стили для чата */
 
 /* Основные стили контейнера чата */
-#right-sidebar {
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+#right-sidebar { 
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#messages {
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Улучшенный фон для чата */

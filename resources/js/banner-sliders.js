@@ -12,21 +12,6 @@ export function initBannerSliders() {
     window.swiperInstances = {};
 
     const configs = [
-        { id: 'main-slider-container', key: 'mainDesktop', opts: {
-            modules: [Navigation, Pagination, Autoplay, EffectFade],
-            effect: 'fade',
-            fadeEffect: { crossFade: true },
-            autoplay: { delay: 5000, disableOnInteraction: false },
-            navigation: { nextEl: '#main-next', prevEl: '#main-prev' },
-            pagination: { el: '#main-pagination', clickable: true }
-        }},
-        { id: 'main-slider-mobile', key: 'mainMobile', opts: {
-            modules: [Pagination, Autoplay, EffectFade],
-            effect: 'fade',
-            fadeEffect: { crossFade: true },
-            autoplay: { delay: 5000, disableOnInteraction: false },
-            pagination: { el: '#main-pagination-mobile', clickable: true }
-        }},
         { id: 'small-slider-1', key: 'small1', opts: {
             modules: [Pagination, Autoplay],
             autoplay: { delay: 6000, disableOnInteraction: false },
@@ -36,6 +21,16 @@ export function initBannerSliders() {
             modules: [Pagination, Autoplay],
             autoplay: { delay: 7000, disableOnInteraction: false },
             pagination: { el: '#small-pagination-2', clickable: true }
+        }},
+        { id: 'small-slider-3', key: 'small3', opts: {
+            modules: [Pagination, Autoplay],
+            autoplay: { delay: 8000, disableOnInteraction: false },
+            pagination: { el: '#small-pagination-3', clickable: true }
+        }},
+        { id: 'mobile-slider', key: 'mobile', opts: {
+            modules: [Pagination, Autoplay],
+            autoplay: { delay: 5000, disableOnInteraction: false },
+            pagination: { el: '#mobile-pagination', clickable: true }
         }}
     ];
 

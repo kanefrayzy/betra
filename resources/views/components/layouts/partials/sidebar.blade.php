@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full bg-[#0f212e] transition-all duration-300" 
+<div class="flex flex-col h-full bg-[#1a2c38] transition-all duration-300" 
      x-data="sidebarState()" 
      :class="{ 'sidebar-collapsed': isCollapsed }">
     
@@ -20,15 +20,15 @@
         <div class="flex items-center gap-2 flex-1">
             <a href="{{ route('slots.lobby') }}" 
                
-               style="background: linear-gradient(135deg, #4dda31 0%, #3bb825 100%); box-shadow: 0 4px 14px rgba(77, 218, 49, 0.3);"
-               class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm"
+               style="background: #2f4553;"
+               class="flex items-center justify-center flex-1 px-3 py-1.5 hover:brightness-110 rounded-3xl text-white font-semibold transition-all text-sm"
                x-show="!isCollapsed || window.innerWidth < 1280" 
                x-transition>
                 {{ __('Казино') }}
             </a>
             <a href="#" 
-               style="background: linear-gradient(135deg, #1e3a4a 0%, #16303d 100%);"
-               class="flex items-center justify-center flex-1 px-4 py-2.5 hover:brightness-110 rounded-lg text-white font-semibold transition-all text-sm border border-white/5"
+               style="background: #2f4553;"
+               class="flex items-center justify-center flex-1 px-3 py-1.5 hover:brightness-110 rounded-3xl text-white font-semibold transition-all text-sm border border-white/5"
                x-show="!isCollapsed || window.innerWidth < 1280" 
                x-transition>
                 {{ __('Live') }}
@@ -38,7 +38,7 @@
 
     <div class="flex-1 overflow-y-auto px-3 pb-6 custom-scrollbar" :class="isCollapsed ? 'mt-4' : ''">
         @auth
-        <div class="mb-4 bg-[#1a2c38] rounded-lg p-2 space-y-1">
+        <div class="mb-4  p-2 space-y-1">
             <a href="{{ route('slots.history') }}"
                
                @click="sidebarOpen = false"
@@ -89,8 +89,8 @@
         </div>
         @endauth
 
-        <div class="mb-4 bg-[#1a2c38] rounded-lg p-2">
-            <h3 class="mb-3 flex items-center px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#4ed930] bg-[#0f212e] rounded-md"
+        <div class="mb-4  p-2">
+            <h3 class="mb-3 flex items-center px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#b1bad3]"
                 x-show="!isCollapsed" x-transition>
                 <svg class="mr-2 h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
@@ -134,8 +134,8 @@
         </div>
 
         @auth
-        <div class="mb-4 bg-[#1a2c38] rounded-lg p-2">
-            <h3 class="mb-3 flex items-center px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#4ed930] bg-[#0f212e] rounded-md"
+        <div class="mb-4  p-2">
+            <h3 class="mb-3 flex items-center px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#b1bad3]"
                 x-show="!isCollapsed" x-transition>
                 <svg class="mr-2 h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.51.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83zM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6zm0 5c-.83 0-1.5-.67-1.5-1.5S11.17 8 12 8s1.5.67 1.5 1.5S12.83 11 12 11z"/>
@@ -283,7 +283,7 @@
             </a>
         </div>
 
-        <div class="bg-[#0f212e] pt-2 pb-4 mb-8">
+        <div class="pt-2 pb-4 mb-8">
             <div x-data="{ open: false }" class="relative">
                 <div x-show="open"
                      @click.away="open = false"
@@ -294,7 +294,7 @@
                      x-transition:leave-start="opacity-100 transform translate-y-0"
                      x-transition:leave-end="opacity-0 transform translate-y-2"
                      style="display: none;"
-                     class="absolute bottom-full left-0 right-0 mb-2 bg-[#1a2c38] rounded-lg overflow-hidden shadow-xl border border-gray-700">
+                     class="absolute bottom-full left-0 right-0 mb-2  overflow-hidden shadow-xl border border-gray-700">
                     <div class="grid gap-1 p-2" :class="isCollapsed ? 'grid-cols-1' : 'grid-cols-3'">
                         <a href="/setlocale/ru"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/ru.png" class="h-6 w-6 rounded mb-1" alt="RU">
@@ -325,7 +325,7 @@
 
                 <button @click.stop="open = !open" 
                         type="button" 
-                        class="flex w-full items-center justify-between px-3 py-2 rounded-lg text-gray-400 hover:bg-[#1a2c38] hover:text-white transition"
+                        class="flex w-full items-center justify-between px-3 py-2 rounded-lg text-gray-400 bg-[#2f4553] hover:bg-[#1a2c38] hover:text-white transition"
                         :class="isCollapsed ? 'justify-center' : ''"
                         x-tooltip="isCollapsed ? 'Language' : ''">
                     <div class="flex items-center gap-2">

@@ -2,7 +2,7 @@
     <x-UI.search/>
     <x-UI.filter :providers="$providers"/>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 2xl:grid-cols-7 gap-2 md:gap-2"
+    <div class="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 2xl:grid-cols-9 gap-2 md:gap-2"
          wire:loading.class="opacity-50"
          wire:target="toggleFavorite, query, filterByProviders, loadMore">
         @foreach($games as $key => $game)
