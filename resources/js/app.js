@@ -200,7 +200,11 @@ document.addEventListener('turbo:click', (event) => {
     const oldLoader = document.querySelector('.page-loader');
     if (oldLoader) oldLoader.remove();
     
-    // Создаём прелоадер в body (fixed позиционирование)
+    // Находим контейнер основного контента
+    const mainContent = document.querySelector('#main-content-wrapper');
+    if (!mainContent) return;
+    
+    // Создаём прелоадер внутри main-content
     const loader = document.createElement('div');
     loader.className = 'page-loader';
     loader.innerHTML = `
@@ -209,7 +213,7 @@ document.addEventListener('turbo:click', (event) => {
             <div class="loader-text">Загрузка...</div>
         </div>
     `;
-    document.body.appendChild(loader);
+    mainContent.appendChild(loader);
     requestAnimationFrame(() => loader.classList.add('active'));
 });
 
