@@ -76,6 +76,23 @@ window.openChat = openChat;
 window.closeChat = closeChat;
 window.toggleChat = toggleChat;
 
+// Функция обновления активных ссылок в сайдбаре
+function updateSidebarActiveLinks() {
+    const currentPath = window.location.pathname;
+    
+    // Находим все ссылки в сайдбаре с классом sidebar-item
+    document.querySelectorAll('.sidebar-item').forEach(link => {
+        const linkPath = new URL(link.href, window.location.origin).pathname;
+        
+        // Проверяем совпадение путей
+        if (linkPath === currentPath) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+}
+
 // Initialize modal manager on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     modalManager.init();
@@ -148,6 +165,9 @@ document.addEventListener('turbo:load', () => {
     
     // Реинициализация нотификаций
     initNotyTailwindTheme();
+    
+    // Обновляем активные ссылки в сайдбаре
+    updateSidebarActiveLinks();
     
     // Даем Livewire время для инициализации компонентов
     setTimeout(() => {
