@@ -39,7 +39,7 @@
                               style="animation: fadeIn 0.3s ease-in {{ $index * 0.05 }}s;"
                               @if(isset($transaction['game_slug']))
                                   @auth
-                                      onclick="window.Livewire.navigate('{{ route('slots.play', $transaction['game_slug']) }}')"
+                                      onclick="window.location.href='{{ route('slots.play', $transaction['game_slug']) }}'"
                                   @else
                                       onclick="if (typeof openLoginModal === 'function') { openLoginModal(); }"
                                   @endauth

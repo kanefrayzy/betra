@@ -1,3 +1,24 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="turbo-visit-control" content="reload">
+    <title>{{ $game->name ?? 'Game' }} - {{ $settings->sitename ?? 'Casino' }}</title>
+    
+    <!-- Preconnect для игровых API -->
+    <link rel="preconnect" href="https://api.softswiss.net">
+    <link rel="preconnect" href="https://cdn.softswiss.net">
+    <link rel="dns-prefetch" href="https://api.softswiss.net">
+    <link rel="dns-prefetch" href="https://cdn.softswiss.net">
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        body { margin: 0; padding: 0; background: #1a1f26; }
+    </style>
+</head>
+<body>
 <x-layouts.app>
     <div class="min-h-screen">
         <div class="relative flex justify-center items-start p-4 play-game-wrapper">
@@ -173,56 +194,23 @@
                         iframe.style.display = 'block';
                         iframe.style.opacity = '1';
                     }
-                }, 500);
+                }, 300); // Уменьшили с 500ms
             }
         };
 
-        // Initialize game
+        // Initialize game - упрощенная версия
         function initPlayGame() {
-            var preloader = document.getElementById('playGameLoader');
             var iframe = document.getElementById('playGameFrame');
             
-            // Сбрасываем состояние загрузки
-            playGameLoaded = false;
-            
-            if (preloader) {
-                preloader.classList.remove('hidden');
-                preloader.style.opacity = '1';
-                preloader.style.visibility = 'visible';
-            }
-            
-            if (iframe) {
-                iframe.style.display = 'none';
-                iframe.style.opacity = '0';
-                
-                // Если iframe уже загружен, сбрасываем его
-                if (iframe.src !== 'about:blank') {
-                    iframe.src = 'about:blank';
-                }
-            }
-            
-            loadPlayGame();
-        }
-
-        // Load game
-        function loadPlayGame() {
-            var iframe = document.getElementById('playGameFrame');
-            
-            if (!playGameUrl || !iframe) {
+            if (!iframe || !playGameUrl) {
                 window.hidePlayGameLoader();
                 return;
             }
-            
-            if (iframe.src !== 'about:blank') {
-                window.hidePlayGameLoader();
-                return;
-            }
-            
             
             // Таймаут на случай если iframe не загрузится
             var loadTimeout = setTimeout(function() {
                 window.hidePlayGameLoader();
-            }, 10000);
+            }, 8000); // Уменьшили с 10s
             
             // Обработчик загрузки
             iframe.onload = function() {
@@ -237,13 +225,14 @@
                 document.getElementById('playGameLoader').classList.add('hidden');
                 document.getElementById('playGameError').classList.remove('hidden');
             };
-            
-            // Загружаем игру
-            iframe.src = playGameUrl;
         }
 
         // Initialize on DOM load
-        document.addEventListener('DOMContentLoaded', initPlayGame);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPlayGame);
+        } else {
+            initPlayGame();
+        }
         
         // Initialize on Livewire navigation
         document.addEventListener('livewire:navigated', initPlayGame);
@@ -306,3 +295,5 @@
         });
     </script>
 </x-layouts.app>
+</body>
+</html>
