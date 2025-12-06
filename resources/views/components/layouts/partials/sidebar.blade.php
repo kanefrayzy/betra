@@ -265,15 +265,15 @@
             <div x-data="{ open: false }" class="relative">
                 <div x-show="open"
                      @click.away="open = false"
-                    :enter="transition ease-out duration-200"
-                    :enter-start="opacity-0 transform translate-y-2"
-                    :enter-end="opacity-100 transform translate-y-0"
-                    :leave="transition ease-in duration-150"
-                    :leave-start="opacity-100 transform translate-y-0"
-                    :leave-end="opacity-0 transform translate-y-2"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 transform translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform translate-y-2"
                      style="display: none;"
                      class="absolute bottom-full left-0 right-0 mb-2 bg-[#1a2c38] rounded-lg overflow-hidden shadow-xl border border-gray-700">
-                    <div class="grid gap-1 p-2" :class="isCollapsed ? 'grid-cols-1' : 'grid-cols-3'">
+                    <div class="grid gap-1 p-2" :class="$root.sidebarCollapsed ? 'grid-cols-1' : 'grid-cols-3'">
                         <a href="/setlocale/ru"  class="flex flex-col items-center p-2 rounded hover:bg-gray-800 text-gray-400 hover:text-white transition">
                             <img src="/assets/images/lang/ru.png" class="h-6 w-6 rounded mb-1" alt="RU">
                             <span class="text-[10px] uppercase" x-show="!$root.sidebarCollapsed">RU</span>
@@ -304,7 +304,7 @@
                 <button @click.stop="open = !open" 
                         type="button" 
                         class="flex w-full items-center justify-between px-3 py-2 rounded-lg text-gray-400 hover:bg-[#1a2c38] hover:text-white transition"
-                        :class="isCollapsed ? 'justify-center' : ''"
+                        :class="$root.sidebarCollapsed ? 'justify-center' : ''"
                         x-tooltip="$root.sidebarCollapsed ? 'Language' : ''">
                     <div class="flex items-center gap-2">
                         <img src="/assets/images/lang/{{ Config::get('app.locale') }}.png" 

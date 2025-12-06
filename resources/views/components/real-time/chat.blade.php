@@ -1,4 +1,5 @@
 <div id="right-sidebar"
+    data-turbo-permanent
     class="fixed inset-y-0 right-0 z-30 flex h-full w-full sm:w-96 md:w-80 lg:w-80 transform flex-col bg-dark-900 transition-all duration-500 ease-in-out"
      :class="{'translate-x-0 opacity-100': chatOpen, 'translate-x-full opacity-0': !chatOpen}"
      x-cloak

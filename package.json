@@ -10,6 +10,7 @@
         "tailwind:init": "tailwindcss init -p"
     },
     "dependencies": {
+        "@hotwired/turbo": "^8.0.20",
         "body-parser": "^1.20.2",
         "express": "^4.19.2",
         "ioredis": "^5.4.1",

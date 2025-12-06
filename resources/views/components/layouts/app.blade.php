@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="turbo-cache-control" content="no-preview">
     
     <!-- Notification messages for JavaScript -->
     @if(session('success'))
@@ -226,6 +227,8 @@
       </div>
         <!-- Sidebar -->
         <div class="sidebar-wrapper pb-14 xl:pb-0 overflow-y-auto bg-[#0f1419] sidebar-mobile-hidden custom-scrollbar"
+             data-turbo-permanent
+             id="sidebar-permanent"
              :class="{ 'translate-x-0': sidebarOpen }"
              style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;"
              @touchmove.stop
@@ -243,7 +246,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden main-content relative">
+        <div class="flex-1 flex flex-col overflow-hidden main-content relative" id="main-content-permanent">
             <script>
                 (function() {
                     var mainContent = document.currentScript.parentElement;
@@ -255,8 +258,7 @@
             </script>
             <x-layouts.partials.header />
 
-            <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1 transition-opacity duration-300" 
-                  data-navigate-once>
+            <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1 transition-opacity duration-300">
                 {{ $slot }}
             </main>
             @if(!in_array(Route::currentRouteName(), ['slots.play', 'slots.mobile']))
@@ -390,24 +392,26 @@
     </div>
 
     <!-- Overlay -->
-    <div id="overlay" class="fixed inset-0 z-40 hidden bg-black/75 backdrop-blur-sm"></div>
+    <div id="overlay" class="fixed inset-0 z-40 hidden bg-black/75 backdrop-blur-sm" data-turbo-permanent></div>
 
     <!-- Modals -->
-    @auth   
-    <x-modals.cash/>
-    <x-modals.rank/>
-    <x-modals.promocode/>       
-    <x-modals.rakeback/>
-    @endauth
-    <x-modals.chat-rules/>
-    <x-modals.u-info/>
-    @guest
-    <x-modals.register/>
-    <x-modals.login/>
-    <x-modals.forgot-password/>
-    <x-modals.telegram-auth/>
-    <x-modals.currency-select/>
-    @endguest
+    <div id="modals-container" data-turbo-permanent>
+        @auth   
+        <x-modals.cash/>
+        <x-modals.rank/>
+        <x-modals.promocode/>       
+        <x-modals.rakeback/>
+        @endauth
+        <x-modals.chat-rules/>
+        <x-modals.u-info/>
+        @guest
+        <x-modals.register/>
+        <x-modals.login/>
+        <x-modals.forgot-password/>
+        <x-modals.telegram-auth/>
+        <x-modals.currency-select/>
+        @endguest
+    </div>
 
     <!-- PHP Config Injection for JavaScript -->
     <script>

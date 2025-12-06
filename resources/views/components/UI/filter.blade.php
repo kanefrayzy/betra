@@ -192,8 +192,21 @@ function filterComponent() {
         search: '',
         isOpen: false,
         isProcessing: false,
-        selectedProviders: @entangle('selectedProviders'),
+        selectedProviders: [],
         providers: @json($providers),
+        
+        init() {
+            // Ждем пока Livewire будет готов
+            const setupEntangle = () => {
+                if (this.$wire) {
+                    this.selectedProviders = this.$wire.entangle('selectedProviders');
+                } else {
+                    // Если $wire еще нет, пробуем через 50мс
+                    setTimeout(setupEntangle, 50);
+                }
+            };
+            setupEntangle();
+        },
 
         get filteredProviders() {
             if (!this.search.trim()) {
@@ -253,7 +266,9 @@ function filterComponent() {
         },
 
         updateFilters() {
-            this.$wire.filterByProviders(this.selectedProviders);
+            if (this.$wire && this.$wire.filterByProviders) {
+                this.$wire.filterByProviders(this.selectedProviders);
+            }
         },
 
         clearFilters() {
