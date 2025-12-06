@@ -5,7 +5,7 @@
       </div>
     <div class="container mx-auto px-3 py-3 sm:py-4 lg:py-2" x-data="{ activeTab: 'all' }">
 
-        <div class="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide bg-[#1a2c38] py-2 rounded-full max-w-full">
+        <div class="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide bg-[#1a2c38] rounded-full max-w-full">
             <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-[#40c920] text-black shadow-lg' : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#1a2c38]'" class="flex items-center gap-2 px-5 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-200 text-sm">
                 <svg class="w-4 h-4" data-ds-icon="AllGames" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                     <path fill="currentColor" d="M9.08 1H3a2 2 0 0 0-2 2v6.08a2 2 0 0 0 2 2h6.08a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2M21 1h-6.08a2 2 0 0 0-2 2v6.08a2 2 0 0 0 2 2H21a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2M9.08 12.92H3a2 2 0 0 0-2 2V21a2 2 0 0 0 2 2h6.08a2 2 0 0 0 2-2v-6.08a2 2 0 0 0-2-2m11.92 0h-6.08a2 2 0 0 0-2 2V21a2 2 0 0 0 2 2H21a2 2 0 0 0 2-2v-6.08a2 2 0 0 0-2-2"></path>
