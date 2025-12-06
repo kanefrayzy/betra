@@ -4,9 +4,9 @@
 
 /* Кастомный прелоадер страницы - только для main-content */
 .page-loader {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: fixed;
+    top: 80px;
+    left: 256px;
     right: 0;
     bottom: 0;
     background: rgba(15, 33, 46, 0.98);
@@ -15,7 +15,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 100px;
+    padding-top: 20vh;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
@@ -26,6 +26,20 @@
     opacity: 1;
     visibility: visible;
     pointer-events: all;
+}
+
+/* Адаптация для collapsed sidebar */
+@media (min-width: 1280px) {
+    .sidebar-wrapper.collapsed ~ * .page-loader {
+        left: 80px;
+    }
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 1279px) {
+    .page-loader {
+        left: 0;
+    }
 }
 
 .loader-spinner {
