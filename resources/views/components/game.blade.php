@@ -1,6 +1,6 @@
 <div class="game bg-dark-900 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:transform hover:scale-105 relative">
   @if(!$isMobile)
-    <a href="{{ route('slots.play', $game->name) }}" data-turbo="false" class="block">
+    <a href="{{ route('slots.play', $game->name) }}" class="block">
         <picture>
             <source srcset="{{ webp_url($game->image) }}" type="image/webp">
             <img src="{{ $game->image }}" alt="{{ $game->name }}" class="w-full h-40 object-cover">

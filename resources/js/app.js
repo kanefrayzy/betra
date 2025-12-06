@@ -311,19 +311,13 @@ document.addEventListener('turbo:render', () => {
 
 // Добавляем data-turbo="false" на все опасные ссылки
 function protectDangerousLinks() {
-    // Logout ссылки
+    // Logout ссылки - ПОЛНАЯ перезагрузка
     document.querySelectorAll('a[href*="/logout"], a[href*="/auth/logout"]').forEach(link => {
         link.setAttribute('data-turbo', 'false');
         link.setAttribute('data-no-prefetch', '');
     });
     
-    // Игровые ссылки - ПОЛНАЯ перезагрузка для мгновенной загрузки iframe
-    document.querySelectorAll('a[href*="/slots/play"], a[href*="/game/"], a[href*="/play/"]').forEach(link => {
-        link.setAttribute('data-turbo', 'false'); // Полная перезагрузка страницы
-        link.setAttribute('data-no-prefetch', '');
-    });
-    
-    // Модальные окна
+    // Модальные окна - НЕ prefetch
     document.querySelectorAll('a[onclick]').forEach(link => {
         const onclick = link.getAttribute('onclick');
         if (onclick) {

@@ -57,7 +57,6 @@
                              class="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 gap-2.5"
                              @click.stop>
                             <a href="{{ route('slots.play', $game->slug) }}"
-                               data-turbo="false"
                                class="w-full py-3 bg-[#4dda30] hover:bg-[#3bb825] text-white rounded-lg text-sm font-bold text-center transition-all shadow-lg shadow-[#4dda30]/20"
                                @click.stop="if (!requireAuth(null, $event)) return false">
                                 <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">

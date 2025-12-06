@@ -64,7 +64,6 @@
             <div class="max-h-80 overflow-y-auto custom-scrollbar">
                 @foreach($results as $game)
                     <a href="{{ route('slots.play', $game->slug) }}"
-                       data-turbo="false"
                        wire:click="clearSearch"
                        @click="$store.ui.sidebarOpen = false"
                        class="flex items-center gap-3 p-3 hover:bg-gray-800/50 transition-all duration-200 border-b border-gray-800 last:border-b-0 group">

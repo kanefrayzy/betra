@@ -1,32 +1,38 @@
 <x-layouts.app>
-    <div class="min-h-screen">
+    <div class="min-h-screen" x-data="gamePlayer" @turbo:before-cache.window="cleanup()">
         <div class="relative flex justify-center items-start p-4 play-game-wrapper">
             <div class="bg-gray-800 overflow-hidden rounded-lg w-full max-w-5xl shadow-2xl">
                 <div class="relative w-full play-game-container">
                     <!-- Loading Overlay -->
-                    <div id="playGameLoader" class="play-game-preloader">
+                    <div x-show="loading" 
+                         x-transition:leave="transition ease-in duration-300"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="play-game-preloader">
                         <div class="text-center">
                             <div class="w-12 h-12 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin mb-4"></div>
                         </div>
                     </div>
 
-                    <!-- Game Iframe - immediate load -->
-                    <iframe id="playGameFrame"
-                            src="{!! addslashes($gameUrl) !!}"
+                    <!-- Game Iframe -->
+                    <iframe x-ref="iframe"
                             class="border-0 rounded-lg"
                             allow="fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             loading="eager"
                             fetchpriority="high"
-                            style="opacity: 0; display: none;">
+                            x-bind:style="loading ? 'opacity: 0; display: none;' : 'opacity: 1; display: block;'"
+                            @load="hideLoader()">
                     </iframe>
 
                     <!-- Error State -->
-                    <div id="playGameError" class="play-game-error hidden">
+                    <div x-show="error" 
+                         x-cloak
+                         class="play-game-error">
                         <div class="text-center">
                             <i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i>
                             <h3 class="text-white font-medium mb-2">Ошибка загрузки</h3>
                             <p class="text-gray-400 text-sm mb-4">Не удалось загрузить игру</p>
-                            <button onclick="retryPlayGame()"
+                            <button @click="retry()"
                                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors">
                                 Попробовать снова
                             </button>
@@ -39,10 +45,10 @@
                     <div class="flex items-center justify-between">
                         <!-- Left Controls -->
                         <div class="flex items-center space-x-3">
-                            <button onclick="togglePlayGameFullscreen()"
+                            <button @click="toggleFullscreen()"
                                     class="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-all duration-200"
                                     title="На весь экран">
-                                <i id="playGameFullscreenIcon" class="fas fa-expand text-sm"></i>
+                                <i class="fas" :class="fullscreen ? 'fa-compress' : 'fa-expand'" class="text-sm"></i>
                             </button>
                         </div>
 
@@ -152,125 +158,94 @@
     </style>
 
     <script>
-        // Game variables
-        var playGameUrl = '{!! addslashes($gameUrl) !!}';
-        var playGameLoaded = false;
-
-        // Глобальная функция для скрытия прелоадера
-        window.hidePlayGameLoader = function() {
-            var preloader = document.getElementById('playGameLoader');
-            var iframe = document.getElementById('playGameFrame');
-            
-            if (preloader && !playGameLoaded) {
-                playGameLoaded = true;
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('gamePlayer', () => ({
+                loading: true,
+                error: false,
+                fullscreen: false,
+                gameUrl: '{!! addslashes($gameUrl) !!}',
+                loadTimeout: null,
                 
-                preloader.style.opacity = '0';
-                preloader.style.visibility = 'hidden';
+                init() {
+                    // Загружаем игру сразу при инициализации
+                    this.$nextTick(() => {
+                        this.loadGame();
+                    });
+                    
+                    // Слушаем сообщения от игры
+                    window.addEventListener('message', (event) => {
+                        if (event.data === 'closeGame' || event.data === 'close' || event.data === 'GAME_MODE:LOBBY') {
+                            window.location.href = '{{ route("slots.lobby") }}';
+                        }
+                    });
+                    
+                    // Отслеживаем fullscreen
+                    document.addEventListener('fullscreenchange', () => {
+                        this.fullscreen = !!document.fullscreenElement;
+                    });
+                },
                 
-                setTimeout(function() {
-                    preloader.classList.add('hidden');
-                    if (iframe) {
-                        iframe.style.display = 'block';
-                        iframe.style.opacity = '1';
+                loadGame() {
+                    if (!this.gameUrl || !this.$refs.iframe) {
+                        this.loading = false;
+                        this.error = true;
+                        return;
                     }
-                }, 300); // Уменьшили с 500ms
-            }
-        };
-
-        // Initialize game - упрощенная версия
-        function initPlayGame() {
-            var iframe = document.getElementById('playGameFrame');
-            
-            if (!iframe || !playGameUrl) {
-                window.hidePlayGameLoader();
-                return;
-            }
-            
-            // Таймаут на случай если iframe не загрузится
-            var loadTimeout = setTimeout(function() {
-                window.hidePlayGameLoader();
-            }, 8000); // Уменьшили с 10s
-            
-            // Обработчик загрузки
-            iframe.onload = function() {
-                clearTimeout(loadTimeout);
-                window.hidePlayGameLoader();
-            };
-            
-            // Обработчик ошибок
-            iframe.onerror = function() {
-                clearTimeout(loadTimeout);
-                console.error('Ошибка загрузки игры');
-                document.getElementById('playGameLoader').classList.add('hidden');
-                document.getElementById('playGameError').classList.remove('hidden');
-            };
-        }
-
-        // Initialize on DOM load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPlayGame);
-        } else {
-            initPlayGame();
-        }
-        
-        // Initialize on Livewire navigation
-        document.addEventListener('livewire:navigated', initPlayGame);
-
-        // Fullscreen toggle
-        function togglePlayGameFullscreen() {
-            var iframe = document.getElementById('playGameFrame');
-            var icon = document.getElementById('playGameFullscreenIcon');
-            
-            if (!document.fullscreenElement) {
-                if (iframe.requestFullscreen) {
-                    iframe.requestFullscreen();
-                } else if (iframe.webkitRequestFullscreen) {
-                    iframe.webkitRequestFullscreen();
-                } else if (iframe.msRequestFullscreen) {
-                    iframe.msRequestFullscreen();
+                    
+                    // Устанавливаем таймаут
+                    this.loadTimeout = setTimeout(() => {
+                        this.loading = false;
+                    }, 8000);
+                    
+                    // Загружаем URL
+                    this.$refs.iframe.src = this.gameUrl;
+                },
+                
+                hideLoader() {
+                    if (this.loadTimeout) {
+                        clearTimeout(this.loadTimeout);
+                    }
+                    this.loading = false;
+                },
+                
+                retry() {
+                    this.error = false;
+                    this.loading = true;
+                    this.$refs.iframe.src = 'about:blank';
+                    setTimeout(() => {
+                        this.loadGame();
+                    }, 100);
+                },
+                
+                toggleFullscreen() {
+                    const iframe = this.$refs.iframe;
+                    
+                    if (!document.fullscreenElement) {
+                        if (iframe.requestFullscreen) {
+                            iframe.requestFullscreen();
+                        } else if (iframe.webkitRequestFullscreen) {
+                            iframe.webkitRequestFullscreen();
+                        } else if (iframe.msRequestFullscreen) {
+                            iframe.msRequestFullscreen();
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        }
+                    }
+                },
+                
+                cleanup() {
+                    // Очистка перед кешированием Turbo
+                    if (this.loadTimeout) {
+                        clearTimeout(this.loadTimeout);
+                    }
                 }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-            }
-        }
-
-        // Update fullscreen icon
-        document.addEventListener('fullscreenchange', function() {
-            var icon = document.getElementById('playGameFullscreenIcon');
-            if (icon) {
-                icon.className = document.fullscreenElement ? 'fas fa-compress text-sm' : 'fas fa-expand text-sm';
-            }
-        });
-
-        // Retry loading game
-        function retryPlayGame() {
-            var iframe = document.getElementById('playGameFrame');
-            var errorState = document.getElementById('playGameError');
-            var loader = document.getElementById('playGameLoader');
-            
-            errorState.classList.add('hidden');
-            loader.classList.remove('hidden');
-            loader.style.opacity = '1';
-            loader.style.visibility = 'visible';
-            playGameLoaded = false;
-            
-            iframe.src = 'about:blank';
-            setTimeout(function() {
-                loadPlayGame();
-            }, 100);
-        }
-
-        // Handle game messages
-        window.addEventListener('message', function(event) {
-            if (event.data === 'closeGame' || event.data === 'close' || event.data === 'GAME_MODE:LOBBY') {
-                window.location.href = '{{ route("slots.lobby") }}';
-            }
+            }));
         });
     </script>
 </x-layouts.app>
