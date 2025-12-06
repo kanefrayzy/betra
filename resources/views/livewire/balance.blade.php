@@ -1,5 +1,7 @@
-<div class="flex items-stretch">
-    <div class="relative" x-data="{ open: false }">
+<div class="flex items-stretch" 
+     x-data="{ open: false }"
+     @currency-changed.window="open = false; $wire.$refresh()">
+    <div class="relative">
         <!-- Mobile Button -->
         <button @click="open = !open" 
                 class="md:hidden flex items-center justify-between h-12 bg-[#0f212e] text-white px-3 py-2 rounded-l-xl border border-r-0 border-[#1a2c38] shadow-lg w-[140px] hover:bg-[#071824] transition-all">

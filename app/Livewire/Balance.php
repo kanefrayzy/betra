@@ -17,7 +17,10 @@ class Balance extends Component
     public string $selectedCurrency = '';
     public $currencies = [];
     
-    protected $listeners = ['balanceUpdated' => 'refreshBalance'];
+    protected $listeners = [
+        'balanceUpdated' => 'refreshBalance',
+        'currencyChanged' => 'handleCurrencyChanged'
+    ];
 
     /**
      * ═══════════════════════════════════════════════════════════
@@ -115,7 +118,11 @@ class Balance extends Component
             $this->balance = $user->balance;
             $this->selectedCurrency = $newCurrencySymbol;
             
+            // Принудительно обновляем компонент для обхода кэша Turbo
             $this->dispatch('balanceUpdated');
+            $this->dispatch('currencyChanged', currency: $newCurrencySymbol);
+            
+            $this->skipRender = false;
             
         } catch (\Exception $e) {
             \Log::error('Currency change error: ' . $e->getMessage(), [
@@ -142,9 +149,23 @@ class Balance extends Component
         $user = Auth::user();
         
         if ($user) {
-            // Обновляем только баланс, валюта уже установлена
-            $this->balance = $user->fresh()->balance;
+            // Перезагружаем пользователя и валюту из БД
+            $user = $user->fresh(['currency']);
+            
+            // Обновляем баланс И валюту (на случай если изменилась в другой вкладке)
+            $this->balance = $user->balance;
+            $this->selectedCurrency = $user->currency->symbol ?? '';
         }
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
+     *  Handle Currency Changed Event (для синхронизации между компонентами)
+     * ═══════════════════════════════════════════════════════════
+     */
+    public function handleCurrencyChanged(): void
+    {
+        $this->refreshBalance();
     }
 
     /**
