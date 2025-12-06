@@ -41,6 +41,7 @@ class UnifiedSlotsController extends Controller
      
      /**
       * API endpoint для получения URL игры (вызывается асинхронно)
+      * ОПТИМИЗИРОВАНО: напрямую вызывает Slotegrator без промежуточных слоев
       */
      public function getGameUrl($slug)
      {
@@ -58,8 +59,9 @@ class UnifiedSlotsController extends Controller
          }
 
          try {
-             // Получаем view с URL игры от провайдера
-             $result = $this->routeToProvider($game, false);
+             // ПРЯМОЙ ВЫЗОВ SLOTEGRATOR без лишних проверок провайдера
+             $slotsController = app(SlotsController::class);
+             $result = $slotsController->launchGameDirect($game);
              
              // Извлекаем данные из view response
              if ($result instanceof \Illuminate\View\View) {

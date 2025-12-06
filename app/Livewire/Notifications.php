@@ -12,6 +12,7 @@ class Notifications extends Component
     public Collection $notifications;
     public int $newNotificationsCount = 0;
     public bool $showNotifications = false;
+    public bool $isOpen = false; // Для Alpine привязки
 
     protected $listeners = [
         'notificationUpdated' => 'refreshNotifications',
@@ -83,6 +84,7 @@ class Notifications extends Component
     public function toggleNotifications()
     {
         $this->showNotifications = !$this->showNotifications;
+        $this->isOpen = $this->showNotifications; // Синхронизируем с Alpine
 
         if ($this->showNotifications) {
             $this->markAllAsRead();

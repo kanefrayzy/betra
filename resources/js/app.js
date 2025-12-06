@@ -231,13 +231,21 @@ document.addEventListener('turbo:load', () => {
 
 // Turbo Events - для работы с Alpine и Livewire
 document.addEventListener('turbo:before-cache', () => {
-    // НЕ кэшируем страницы игр - они должны загружаться свежими
-    if (window.location.pathname.includes('/slots/play')) {
-        return; // Пропускаем кэширование
-    }
-    
     // Помечаем страницу как кешированную
     document.body.dataset.turboCached = 'true';
+    
+    // Сбрасываем состояние игрового плеера перед кэшированием
+    document.querySelectorAll('[x-data*="gamePlayer"]').forEach(el => {
+        if (el.__x?.$data) {
+            el.__x.$data.loading = true;
+            el.__x.$data.error = false;
+            el.__x.$data.gameUrl = null;
+            if (el.__x.$data.loadTimeout) {
+                clearTimeout(el.__x.$data.loadTimeout);
+                el.__x.$data.loadTimeout = null;
+            }
+        }
+    });
     
     // Закрываем все дропдауны и модалы перед кешированием (только сбрасываем состояние)
     document.querySelectorAll('[x-data]').forEach(el => {

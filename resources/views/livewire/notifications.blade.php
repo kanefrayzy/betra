@@ -1,8 +1,4 @@
-<div x-data="{
-    open: false,
-    showNotifications: false
- }"
- x-init="
+<div x-init="
     Livewire.on('notificationUpdated', () => {
         $wire.refreshNotifications();
     });
@@ -13,7 +9,7 @@
 
     <div class="relative">
         <button
-            @click.stop.prevent="$event.stopPropagation(); $wire.toggleNotifications(); showNotifications = !showNotifications; $nextTick(() => { if(typeof adjustNotificationsPosition === 'function') adjustNotificationsPosition(); })"
+            @click.stop.prevent="$event.stopPropagation(); $wire.toggleNotifications(); $nextTick(() => { if(typeof adjustNotificationsPosition === 'function') adjustNotificationsPosition(); })"
             class="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-[#1a2c38] transition-colors notifications-toggle-button"
             id="notifications-button"
         >
@@ -27,8 +23,8 @@
             </div>
         </button>
 
-        <div x-show="showNotifications"
-             @click.away="showNotifications = false; $wire.toggleNotifications()"
+        <div x-show="$wire.isOpen"
+             @click.away="$wire.toggleNotifications()"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-y-1"
              x-transition:enter-end="opacity-100 translate-y-0"
@@ -47,7 +43,7 @@
                         </svg>
                         <h3 class="text-base font-bold text-white">{{ __('Уведомления') }}</h3>
                     </div>
-                    <button @click="showNotifications = false; $wire.toggleNotifications()"
+                    <button @click="$wire.toggleNotifications()"
                             class="text-gray-400 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
