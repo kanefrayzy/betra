@@ -168,64 +168,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Показываем прелоадер при начале навигации
+// Показываем прелоадер при начале навигации (только для медленных переходов)
+let navigationStartTime = 0;
+const LOADER_DELAY = 150; // Показываем прелоадер только если переход > 150ms
+
 document.addEventListener('turbo:click', (event) => {
     // Проверяем что это навигационная ссылка
     const link = event.target.closest('a[href]');
     if (!link || link.getAttribute('data-turbo') === 'false') return;
     
-    // Удаляем старый прелоадер если есть
-    const oldLoader = document.querySelector('.page-loader');
-    if (oldLoader) {
-        oldLoader.remove();
-    }
+    navigationStartTime = Date.now();
     
-    // Создаём новый прелоадер
-    const loader = document.createElement('div');
-    loader.className = 'page-loader';
-    loader.innerHTML = `
-        <div class="loader-spinner">
-            <div class="spinner"></div>
-            <div class="loader-text">Загрузка...</div>
-        </div>
-    `;
-    document.body.appendChild(loader);
+    // Отложенный показ прелоадера (только для медленных переходов)
+    const loaderTimeout = setTimeout(() => {
+        const loader = document.createElement('div');
+        loader.className = 'page-loader';
+        loader.dataset.delayed = 'true';
+        loader.innerHTML = `
+            <div class="loader-spinner">
+                <div class="spinner"></div>
+                <div class="loader-text">Загрузка...</div>
+            </div>
+        `;
+        document.body.appendChild(loader);
+        
+        requestAnimationFrame(() => {
+            loader.classList.add('active');
+        });
+    }, LOADER_DELAY);
     
-    // Показываем прелоадер сразу
-    requestAnimationFrame(() => {
-        loader.classList.add('active');
-    });
+    // Сохраняем timeout для отмены
+    link.dataset.loaderTimeout = loaderTimeout;
 });
 
 // Скрываем прелоадер при завершении загрузки
-document.addEventListener('turbo:render', () => {
-    const loader = document.querySelector('.page-loader');
-    if (loader) {
-        // Небольшая задержка для плавности
-        setTimeout(() => {
-            loader.classList.remove('active');
-            setTimeout(() => loader.remove(), 200);
-        }, 100);
-    }
-    
-    // Анимация появления контента
-    const mainContent = document.querySelector('#main-content-wrapper');
-    if (mainContent) {
-        mainContent.style.opacity = '0';
-        mainContent.style.transform = 'translateY(10px)';
-        requestAnimationFrame(() => {
-            mainContent.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
-            mainContent.style.opacity = '1';
-            mainContent.style.transform = 'translateY(0)';
-        });
-    }
-});
-
-// Скрываем прелоадер если произошла ошибка
 document.addEventListener('turbo:load', () => {
+    // Отменяем отложенный прелоадер если он еще не показан
+    const timeouts = document.querySelectorAll('a[data-loader-timeout]');
+    timeouts.forEach(link => {
+        if (link.dataset.loaderTimeout) {
+            clearTimeout(parseInt(link.dataset.loaderTimeout));
+            delete link.dataset.loaderTimeout;
+        }
+    });
+    
+    // Убираем прелоадер если он был показан
     const loader = document.querySelector('.page-loader');
     if (loader) {
-        loader.remove();
+        loader.classList.remove('active');
+        setTimeout(() => loader.remove(), 200);
     }
 });
 
@@ -324,12 +315,6 @@ document.addEventListener('turbo:before-render', (event) => {
 document.addEventListener('turbo:render', () => {
     // ❌ НЕ реинициализируем Alpine вручную - Livewire сам это делает!
     // Livewire автоматически управляет Alpine компонентами при Turbo навигации
-    
-    // Добавляем класс alpine-initialized для transitions
-    requestAnimationFrame(() => {
-        document.querySelector('.sidebar-wrapper')?.classList.add('alpine-initialized');
-        document.querySelector('.main-content')?.classList.add('alpine-initialized');
-    });
 });
 
 // ============================================

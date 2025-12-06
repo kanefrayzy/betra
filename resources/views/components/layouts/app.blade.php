@@ -196,7 +196,7 @@
                 :class="{ 'sidebar-collapsed': $store.ui?.sidebarCollapsed }">
                 <x-layouts.partials.header />
 
-                <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1 transition-opacity duration-300">
+                <main id="main-content-wrapper" class="container mx-auto flex-1 overflow-x-hidden overflow-y-auto bg-[#0f212e] px-1">
                     {{ $slot }}
                 </main>
                 @if(!in_array(Route::currentRouteName(), ['slots.play', 'slots.mobile']))
