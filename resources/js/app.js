@@ -24,6 +24,23 @@ Turbo.session.drive = true;
 // ПОЛНОСТЬЮ отключаем прогресс-бар
 Turbo.setProgressBarDelay(999999); // Никогда не показываем
 
+// Отладка Turbo навигации
+document.addEventListener('turbo:click', (event) => {
+    console.log('🔵 Turbo Click:', event.detail.url);
+});
+
+document.addEventListener('turbo:before-visit', (event) => {
+    console.log('🟢 Turbo Before Visit:', event.detail.url);
+});
+
+document.addEventListener('turbo:visit', (event) => {
+    console.log('🟡 Turbo Visit:', event.detail.url);
+});
+
+document.addEventListener('turbo:load', () => {
+    console.log('✅ Turbo Load Complete');
+});
+
 // Включаем prefetch для мгновенных переходов
 document.addEventListener('turbo:before-fetch-request', (event) => {
     // Добавляем заголовок для определения Turbo запросов

@@ -163,7 +163,7 @@
                 loading: true,
                 error: false,
                 fullscreen: false,
-                gameSlug: '{{ $gameSlug }}',
+                gameSlug: '{{ $gameSlug ?? $game->slug }}',
                 gameUrl: null,
                 loadTimeout: null,
                 
