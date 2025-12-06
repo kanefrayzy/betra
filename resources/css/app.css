@@ -11,7 +11,7 @@
     bottom: 0;
     background: rgba(15, 33, 46, 0.98);
     backdrop-filter: blur(10px);
-    z-index: 1000;
+    z-index: 20; /* Ниже чата (z-30) но выше основного контента */
     display: flex;
     align-items: flex-start;
     justify-content: center;
