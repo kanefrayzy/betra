@@ -81,7 +81,8 @@ import {
     setupSidebarController,
     setupChatStore,
     setupUIStore,
-    setupChatGlobals
+    setupChatGlobals,
+    setupGamePlayer
 } from './core/livewire-hooks.js';
 
 // Отложенная загрузка некритичных модулей
@@ -111,6 +112,7 @@ setupSidebarController();
 setupChatStore();
 setupUIStore();
 setupChatGlobals();
+setupGamePlayer();
 
 // Загружаем некритичные модули после основной инициализации
 loadNonCriticalModules();

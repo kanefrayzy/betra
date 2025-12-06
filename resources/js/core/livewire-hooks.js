@@ -174,3 +174,119 @@ export function setupChatGlobals() {
         }
     }
 }
+
+/**
+ * Alpine компонент для игрового плеера
+ */
+export function setupGamePlayer() {
+    document.addEventListener('alpine:init', () => {
+        if (typeof Alpine === 'undefined') return;
+        
+        Alpine.data('gamePlayer', (gameSlug) => ({
+            loading: true,
+            error: false,
+            fullscreen: false,
+            gameSlug: gameSlug,
+            gameUrl: null,
+            loadTimeout: null,
+            
+            init() {
+                this.fetchGameUrl();
+                
+                window.addEventListener('message', (event) => {
+                    if (event.data === 'closeGame' || event.data === 'close' || event.data === 'GAME_MODE:LOBBY') {
+                        window.location.href = window.appConfig?.routes?.slotsLobby || '/slots';
+                    }
+                });
+                
+                document.addEventListener('fullscreenchange', () => {
+                    this.fullscreen = !!document.fullscreenElement;
+                });
+            },
+            
+            async fetchGameUrl() {
+                try {
+                    const response = await fetch(`/slots/api/game-url/${this.gameSlug}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load game');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.url) {
+                        this.gameUrl = data.url;
+                        this.$nextTick(() => {
+                            this.loadGame();
+                        });
+                    } else {
+                        this.error = true;
+                        this.loading = false;
+                    }
+                } catch (err) {
+                    console.error('Game URL fetch error:', err);
+                    this.error = true;
+                    this.loading = false;
+                }
+            },
+            
+            loadGame() {
+                if (!this.gameUrl || !this.$refs.iframe) {
+                    this.loading = false;
+                    this.error = true;
+                    return;
+                }
+                
+                this.loadTimeout = setTimeout(() => {
+                    this.loading = false;
+                }, 8000);
+                
+                this.$refs.iframe.src = this.gameUrl;
+            },
+            
+            hideLoader() {
+                if (this.loadTimeout) {
+                    clearTimeout(this.loadTimeout);
+                }
+                this.loading = false;
+            },
+            
+            retry() {
+                this.error = false;
+                this.loading = true;
+                this.gameUrl = null;
+                this.$refs.iframe.src = 'about:blank';
+                setTimeout(() => {
+                    this.fetchGameUrl();
+                }, 100);
+            },
+            
+            toggleFullscreen() {
+                const iframe = this.$refs.iframe;
+                
+                if (!document.fullscreenElement) {
+                    if (iframe.requestFullscreen) {
+                        iframe.requestFullscreen();
+                    } else if (iframe.webkitRequestFullscreen) {
+                        iframe.webkitRequestFullscreen();
+                    } else if (iframe.msRequestFullscreen) {
+                        iframe.msRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }
+            }
+        }));
+    });
+}
